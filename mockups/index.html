@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VENTANA SECA · Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #F2EDD5;
+      --red-orange: #E7390D;
+      --orange: #F26716;
+      --green-dark: #084A24;
+      --green-deep: #04261E;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      font-weight: 400;
+      background: var(--cream);
+      color: var(--green-deep);
+      min-height: 100vh;
+    }
+    button, a { font-family: inherit; cursor: pointer; }
+    img { display: none; }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--green-dark);
+      color: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 22px;
+      flex-wrap: wrap;
+    }
+    .logo-box {
+      border: 1.5px dashed var(--cream);
+      min-width: 88px;
+      min-height: 40px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .nav-links button {
+      background: transparent;
+      border: 0;
+      color: var(--cream);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 10px;
+    }
+    .nav-links button[aria-pressed="true"] {
+      color: var(--orange);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    .btn-primary {
+      background: var(--red-orange);
+      color: var(--cream);
+      border: 0;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .btn-primary:hover { background: var(--orange); }
+    .btn-secondary {
+      background: transparent;
+      border: 1.5px solid var(--green-dark);
+      color: var(--green-dark);
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .btn-secondary:hover {
+      background: var(--green-dark);
+      color: var(--cream);
+    }
+
+    .hero {
+      padding: 48px 22px 36px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .eyebrow {
+      font-family: "DM Sans", sans-serif;
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin: 0 0 10px;
+    }
+    .hero h1 {
+      font-family: "DM Serif Display", serif;
+      font-weight: 400;
+      font-size: clamp(36px, 6vw, 62px);
+      line-height: 1.05;
+      color: var(--green-dark);
+      margin: 0 0 14px;
+      max-width: 16ch;
+    }
+    .hero .lead {
+      margin: 0 0 22px;
+      max-width: 48ch;
+      font-size: 17px;
+    }
+    .hero-cta { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .band {
+      background: var(--green-deep);
+      color: var(--cream);
+      padding: 28px 22px;
+    }
+    .band-inner { max-width: 1100px; margin: 0 auto; }
+    .band h2 {
+      font-family: "DM Serif Display", serif;
+      font-weight: 400;
+      font-size: 28px;
+      margin: 0 0 8px;
+    }
+    .band p { margin: 0; max-width: 62ch; }
+
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 22px 64px; }
+    .stage { display: none; }
+    .stage.on { display: block; }
+
+    .who {
+      background: #fff;
+      border-left: 4px solid var(--orange);
+      padding: 14px 16px;
+      margin-bottom: 22px;
+    }
+    .who .eyebrow { margin-bottom: 6px; }
+    .who h2 {
+      font-family: "DM Serif Display", serif;
+      font-weight: 400;
+      font-size: 26px;
+      color: var(--green-dark);
+      margin: 0 0 6px;
+    }
+    .who p { margin: 0; max-width: 68ch; }
+
+    .note {
+      background: #e8e2c8;
+      border-left: 3px solid var(--green-dark);
+      padding: 10px 12px;
+      font-size: 13px;
+      margin: 12px 0 0;
+    }
+
+    .phone-stage { display: flex; justify-content: center; padding: 8px 0 12px; }
+    .phone {
+      width: 360px;
+      min-height: 700px;
+      background: var(--cream);
+      border: 10px solid var(--green-deep);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .status {
+      background: var(--green-deep);
+      color: var(--cream);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .appbar {
+      background: var(--green-dark);
+      color: var(--cream);
+      padding: 14px 14px 16px;
+    }
+    .appbar h1 {
+      font-family: "DM Serif Display", serif;
+      font-weight: 400;
+      font-size: 26px;
+      margin: 2px 0 0;
+    }
+    .appbar p { margin: 6px 0 0; font-size: 13px; }
+    .offline {
+      background: var(--red-orange);
+      color: var(--cream);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .list { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .card {
+      width: 100%;
+      text-align: left;
+      background: #fff;
+      border: 0;
+      border-left: 4px solid var(--orange);
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 10px;
+      color: var(--green-deep);
+    }
+    .card:hover { border-left-color: var(--red-orange); }
+    .pri {
+      width: 36px; height: 36px;
+      background: var(--red-orange);
+      color: var(--cream);
+      display: grid; place-items: center;
+      font-weight: 700;
+    }
+    .card h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--green-dark); }
+    .meta { font-size: 12.5px; margin-top: 2px; }
+    .accion { margin-top: 6px; font-size: 13.5px; }
+    .badge {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--orange);
+      white-space: nowrap;
+    }
+    .detail { padding: 0 14px 20px; }
+    .back {
+      display: inline-block;
+      margin: 10px 14px 0;
+      background: none;
+      border: 0;
+      color: var(--green-dark);
+      font-weight: 700;
+      padding: 0;
+    }
+    .just {
+      background: #e8e2c8;
+      border-left: 3px solid var(--green-dark);
+      padding: 10px 12px;
+      font-size: 13.5px;
+      margin: 12px 0;
+    }
+    label { display: block; font-size: 13px; font-weight: 700; color: var(--green-dark); margin: 12px 0 6px; }
+    input[type=text], input[type=number] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--green-dark);
+      background: #fff;
+      font: inherit;
+      color: var(--green-deep);
+    }
+    .pills, .si-no { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pills button, .si-no button {
+      border: 1.5px solid var(--green-dark);
+      background: transparent;
+      color: var(--green-dark);
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .pills button[aria-pressed="true"],
+    .si-no button[aria-pressed="true"] {
+      background: var(--green-dark);
+      color: var(--cream);
+    }
+    .si-no button { flex: 1; }
+    .save {
+      width: 100%;
+      margin-top: 16px;
+      padding: 13px;
+      background: var(--red-orange);
+      color: var(--cream);
+      border: 0;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .save:hover { background: var(--orange); }
+    .saved { margin-top: 16px; }
+    .saved li { font-size: 13.5px; margin-bottom: 6px; }
+
+    .desk { background: #fff; border-left: 4px solid var(--red-orange); }
+    .desk-bar {
+      background: var(--green-dark);
+      color: var(--cream);
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .desk-bar h2 {
+      font-family: "DM Serif Display", serif;
+      font-weight: 400;
+      font-size: 28px;
+      margin: 0;
+    }
+    .desk-bar p { margin: 6px 0 0; font-size: 13px; }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px 20px 8px; }
+    .kpi { background: var(--cream); padding: 14px; }
+    .kpi b {
+      display: block;
+      font-family: "DM Serif Display", serif;
+      font-size: 32px;
+      color: var(--green-dark);
+      font-weight: 400;
+    }
+    .kpi span { font-size: 13px; }
+    .grid { display: grid; grid-template-columns: 1fr 280px; gap: 16px; padding: 8px 20px 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #e8e2c8; vertical-align: top; }
+    th {
+      font-weight: 500;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--green-dark);
+    }
+    .side { background: var(--cream); padding: 14px; }
+    .msg {
+      background: #fff;
+      border-left: 4px solid var(--orange);
+      padding: 12px;
+      font-size: 14px;
+    }
+    .msg small { display: block; margin-top: 8px; font-size: 12px; }
+    .ph {
+      border: 1.5px dashed var(--green-dark);
+      background: #e8e2c8;
+      min-height: 120px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--green-dark);
+    }
+
+    footer {
+      background: var(--green-deep);
+      color: var(--cream);
+      padding: 28px 22px 40px;
+    }
+    .foot { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    footer a { color: var(--cream); }
+    footer a:hover { color: var(--orange); }
+
+    @media (max-width: 860px) {
+      .kpis, .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="logo-box">[LOGO]</div>
+    <nav class="nav-links" aria-label="Persona">
+      <button type="button" data-view="brigada" aria-pressed="true">Brigadista</button>
+      <button type="button" data-view="predio" aria-pressed="false">Predio sin red</button>
+      <button type="button" data-view="panel" aria-pressed="false">Jefe distrital</button>
+      <button type="button" data-view="vecino" aria-pressed="false">Vecino</button>
+    </nav>
+    <button class="btn-primary" type="button" data-view="brigada">Ver cola</button>
+  </header>
+
+  <section class="hero">
+    <p class="eyebrow">Mockup · Hackatón Quito · Track salud</p>
+    <h1>De un corte de agua, a una cola de brigada.</h1>
+    <p class="lead">Una sola web. El brigadista camina. El jefe cubre. El vecino tapa el tanque. Nadie reporta fotos.</p>
+    <div class="hero-cta">
+      <button class="btn-primary" type="button" data-view="brigada">Entrar como brigada</button>
+      <button class="btn-secondary" type="button" data-view="panel">Entrar al panel</button>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="band-inner">
+      <h2>Tres personas. Un producto.</h2>
+      <p>Caso de demo: corte Interagua, 8 feb 2026, planta La Toma. 11 h norte/centro, 16 h sur. Pidieron reservas de agua.</p>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <section id="brigada" class="stage on">
+      <div class="who">
+        <p class="eyebrow">Usuario 1</p>
+        <h2>Brigadista · cola del día</h2>
+        <p>Lista ya ordenada. No elige barrio: camina el 1, luego el 2. Un toque abre el predio.</p>
+      </div>
+      <div class="phone-stage">
+        <div class="phone" aria-label="Cola de brigada">
+          <div class="status"><span>Celular</span><span>Con red</span></div>
+          <div class="appbar">
+            <p class="eyebrow" style="color:var(--orange)">Cola de hoy</p>
+            <h1>Guayaquil</h1>
+            <p>15 feb 2026 · 7 barrios · Interagua</p>
+          </div>
+          <div class="list" id="lista"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="predio" class="stage">
+      <div class="who">
+        <p class="eyebrow">Usuario 1 · en la casa</p>
+        <h2>Predio sin red</h2>
+        <p>Sin internet. Registra recipientes en esa casa. Se guarda en el teléfono. Al volver la red, el jefe lo ve.</p>
+        <p class="note">Predio = una casa o lote. Guasmo es el barrio. “Calle 3, casa 18” es el predio.</p>
+      </div>
+      <div class="phone-stage">
+        <div class="phone">
+          <div class="status"><span>Celular</span><span>Sin red</span></div>
+          <div class="offline">SIN CONEXIÓN · se guarda en el teléfono</div>
+          <div class="appbar">
+            <p class="eyebrow" style="color:var(--orange)">Prioridad 1 · regla A</p>
+            <h1 id="predio-nombre">Guasmo</h1>
+            <p>Barriles y tinas · pedir que tapen</p>
+          </div>
+          <button class="back" type="button" data-view="brigada">← Volver a la cola</button>
+          <div class="detail">
+            <div class="just" id="predio-just">Corte de 16 h hace 7 días. Interagua pidió reservas de agua.</div>
+            <label for="casa">Casa o dirección</label>
+            <input id="casa" type="text" value="Calle 3, casa 18">
+            <label for="nrec">Nº de recipientes</label>
+            <input id="nrec" type="number" min="0" value="3">
+            <label>Tipo</label>
+            <div class="pills" id="tipos">
+              <button type="button" aria-pressed="true">Tina</button>
+              <button type="button" aria-pressed="false">Tanque</button>
+              <button type="button" aria-pressed="false">Llanta</button>
+              <button type="button" aria-pressed="false">Otro</button>
+            </div>
+            <label>¿Larva a simple vista?</label>
+            <div class="si-no" id="larva">
+              <button type="button" aria-pressed="false">Sí</button>
+              <button type="button" aria-pressed="true">No</button>
+            </div>
+            <button class="save" type="button" id="guardar">Guardar predio</button>
+            <div class="saved">
+              <b>Ya visitados en este barrio</b>
+              <ul id="visitados">
+                <li>Casa 12 · 4 tinas · sin larva · pendiente de sync</li>
+                <li>Casa 14 · 2 tanques · sin larva · pendiente de sync</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel" class="stage">
+      <div class="who">
+        <p class="eyebrow">Usuario 2</p>
+        <h2>Jefe de control vectorial</h2>
+        <p>La misma cola, en computador. El número que importa: manzanas de alto riesgo visitadas antes del pico.</p>
+        <p class="note">2 / 7 y “2 predios” son dato de demo, no una medición real.</p>
+      </div>
+      <div class="desk">
+        <div class="desk-bar">
+          <div>
+            <h2>Panel distrital · Guayaquil</h2>
+            <p>Fuente: corte 8 feb 2026 · planta La Toma · pidieron reservas</p>
+          </div>
+          <button class="btn-primary" type="button" onclick="window.print()">Imprimir ruta</button>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><b id="kpi-cov">2 / 7</b><span>manzanas alto riesgo con predio (demo)</span></div>
+          <div class="kpi"><b id="kpi-pred">2</b><span>predios registrados hoy (demo)</span></div>
+          <div class="kpi"><b>A</b><span>regla dominante: corte + almacenar</span></div>
+        </div>
+        <div class="grid">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Barrio</th><th>Regla</th><th>Acción</th><th>Estado</th></tr>
+            </thead>
+            <tbody id="tabla"></tbody>
+          </table>
+          <aside class="side">
+            <p class="eyebrow">Mensaje al barrio</p>
+            <p class="msg">Hoy hay corte de agua en Guasmo por 16 horas. Si llena tanques o tinas, TÁPELOS.<small>SMS / WhatsApp · el vecino no reporta · no es otra app</small></p>
+            <div class="ph" style="margin-top:12px">[imagen: captura del comunicado Interagua 8-feb-2026]</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="vecino" class="stage">
+      <div class="who">
+        <p class="eyebrow">Usuario 3</p>
+        <h2>Vecino del barrio cortado</h2>
+        <p>No entra a esta web. Recibe un texto el día del corte. No manda fotos.</p>
+      </div>
+      <div class="phone-stage">
+        <div class="phone">
+          <div class="status"><span>Mensaje</span><span>SMS</span></div>
+          <div class="appbar">
+            <p class="eyebrow" style="color:var(--orange)">Receptor, no sensor</p>
+            <h1>Guasmo</h1>
+            <p>Hoy · 16 horas sin agua</p>
+          </div>
+          <div class="detail">
+            <div class="ph" style="margin:16px 0">[imagen: burbuja de SMS / WhatsApp]</div>
+            <div class="just">Hoy hay corte de agua en Guasmo por 16 horas. Si llena tanques o tinas, TÁPELOS. Un recipiente destapado cría Aedes en 7 días.</div>
+            <p class="note">No responda. No es una línea de reporte.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="foot">
+      <div>
+        <div class="logo-box" style="margin-bottom:12px">[LOGO]</div>
+        <div>VENTANA SECA · mockup de producto</div>
+      </div>
+      <div>
+        <a href="#brigada">Brigada</a> ·
+        <a href="#panel">Panel</a> ·
+        <a href="#vecino">Vecino</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const BARRIOS = [
+      { n:1, id:"guasmo", nombre:"Guasmo", zona:"Sur", h:16, accion:"Inspeccionar barriles y tinas.", just:"Corte de 16 h hace 7 días. Interagua pidió reservas de agua.", estado:"2 predios · demo" },
+      { n:2, id:"isla-trinitaria", nombre:"Isla Trinitaria", zona:"Sur", h:16, accion:"Inspeccionar barriles y tinas.", just:"Corte de 16 h hace 7 días.", estado:"Sin visita" },
+      { n:3, id:"cristo-del-consuelo", nombre:"Cristo del Consuelo", zona:"Sur", h:16, accion:"Inspeccionar barriles y tinas.", just:"Corte de 16 h hace 7 días.", estado:"Sin visita" },
+      { n:4, id:"bastion-popular", nombre:"Bastión Popular", zona:"Norte", h:11, accion:"Inspeccionar barriles y tinas.", just:"Corte de 11 h hace 7 días.", estado:"Sin visita" },
+      { n:5, id:"pascuales", nombre:"Pascuales", zona:"Norte", h:11, accion:"Inspeccionar barriles y tinas.", just:"Corte de 11 h hace 7 días.", estado:"Sin visita" },
+      { n:6, id:"alborada", nombre:"Alborada", zona:"Norte", h:11, accion:"Inspeccionar barriles y tinas.", just:"Corte de 11 h hace 7 días.", estado:"Sin visita" },
+      { n:7, id:"sauces", nombre:"Sauces", zona:"Norte", h:11, accion:"Inspeccionar barriles y tinas.", just:"Corte de 11 h hace 7 días.", estado:"Sin visita" }
+    ];
+
+    document.getElementById("lista").innerHTML = BARRIOS.map((b) => `
+      <button class="card" type="button" data-open="${b.id}">
+        <span class="pri">${b.n}</span>
+        <span>
+          <h3>${b.nombre}</h3>
+          <div class="meta">${b.zona} · ${b.h} h · 8 feb</div>
+          <div class="accion">${b.accion}</div>
+        </span>
+        <span class="badge">Regla A</span>
+      </button>`).join("");
+
+    document.getElementById("tabla").innerHTML = BARRIOS.map((b) => `
+      <tr>
+        <td>${b.n}</td>
+        <td>${b.nombre}<br><small>${b.zona}</small></td>
+        <td>A</td>
+        <td>${b.accion}</td>
+        <td>${b.estado}</td>
+      </tr>`).join("");
+
+    function show(id) {
+      document.querySelectorAll(".stage").forEach((s) => s.classList.toggle("on", s.id === id));
+      document.querySelectorAll("[data-view]").forEach((b) => {
+        if (b.hasAttribute("aria-pressed")) b.setAttribute("aria-pressed", b.dataset.view === id);
+      });
+    }
+    document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => show(b.dataset.view)));
+    document.getElementById("lista").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-open]");
+      if (!btn) return;
+      const b = BARRIOS.find((x) => x.id === btn.dataset.open);
+      document.getElementById("predio-nombre").textContent = b.nombre;
+      document.getElementById("predio-just").textContent = b.just;
+      show("predio");
+    });
+    document.getElementById("tipos").addEventListener("click", (e) => {
+      if (e.target.tagName !== "BUTTON") return;
+      [...e.currentTarget.children].forEach((b) => b.setAttribute("aria-pressed", b === e.target));
+    });
+    document.getElementById("larva").addEventListener("click", (e) => {
+      if (e.target.tagName !== "BUTTON") return;
+      [...e.currentTarget.children].forEach((b) => b.setAttribute("aria-pressed", b === e.target));
+    });
+    document.getElementById("guardar").addEventListener("click", () => {
+      const casa = document.getElementById("casa").value || "Casa";
+      const n = document.getElementById("nrec").value;
+      const tipo = [...document.getElementById("tipos").querySelectorAll("button")].find((b) => b.getAttribute("aria-pressed") === "true").textContent;
+      const li = document.createElement("li");
+      li.textContent = casa + " · " + n + " " + tipo.toLowerCase() + " · guardado sin red";
+      document.getElementById("visitados").prepend(li);
+      document.getElementById("kpi-pred").textContent = String(Number(document.getElementById("kpi-pred").textContent) + 1);
+    });
+  </script>
+</body>
+</html>
