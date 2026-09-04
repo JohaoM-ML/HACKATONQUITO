@@ -1,0 +1,256 @@
+DIVISIÓN DE TAREAS — VENTANA SECA
+Dos personas. Un contrato. Cero bloqueo.
+========================================================================
+
+REGLA DE ORO
+------------------------------------------------------------------------
+Ustedes NO se dividen “frontend vs backend” de forma vaga.
+Se dividen por ENTREGABLE DE LA DEMO.
+
+  Persona A = el CEREBRO   (datos + motor + gráfica retrospectiva)
+  Persona B = las MANOS    (app de brigada + panel + demo en 3 min)
+
+El único archivo que las une se llama:
+
+  data/cola.json
+
+Persona A lo PRODUCE.
+Persona B lo CONSUME.
+Si A todavía no lo tiene, B trabaja con data/cola.ejemplo.json
+(mismo formato). Nadie espera a nadie.
+
+
+LO QUE YA ESTÁ HECHO (nadie lo rehace)
+------------------------------------------------------------------------
+- Informe e investigación
+- Documento LaTeX
+- datos_cortes_interagua.csv  (7 cortes reales)
+- datos_dengue_provincia_2026.csv
+- Este plan y el contrato de cola.json
+
+
+LO QUE NO SE CONSTRUYE EN EL HACKATÓN
+------------------------------------------------------------------------
+- No se pide Excel a Interagua ni al MSP
+- No se entrena un DLNM “de verdad” con datos de manzana
+  (no existen sin convenio; un jurado lo ve)
+- No se raspa el portal esta noche
+- No se hace clasificador de fotos / app de reporte ciudadano
+- No se despliega hardware
+
+
+========================================================================
+PERSONA A  —  CEREBRO
+========================================================================
+
+ENTREGABLE: un archivo data/cola.json que salga de un motor,
+            más una gráfica que se pueda poner en el pitch.
+
+A1. Expandir cortes → barrios (1–2 h)
+    Partir datos_cortes_interagua.csv en una fila POR BARRIO.
+    Archivo: data/barrios_cortes.csv
+    Columnas mínimas:
+      barrio, zona, fecha_corte, duracion_horas, pidio_almacenar (si/no),
+      fuente_url, lat, lon   (lat/lon aproximados de Wikipedia/OSM, no exactos)
+
+    Caso estrella (obligatorio, ya está en el CSV):
+      8-feb-2026, planta La Toma, 11 h norte/centro, 16 h sur,
+      pidió “mantener reservas”:
+        Bastión Popular, Pascuales, Alborada, Sauces,
+        Cristo del Consuelo, Isla Trinitaria, Guasmo,
+        Durán, Nobol
+
+A2. Motor de reglas (2–3 h)
+    Archivo: src/motor/reglas.js  +  src/motor/generar-cola.js
+    Fecha de evaluación = una fecha que se pasa por argumento
+    (para la demo: 2026-02-15 y 2026-06-01).
+
+    REGLAS (no se inventan otras):
+      A  corte ≥ 8 h  hace 0–14 días  + pidió almacenar
+         → COLA ESTA SEMANA   acción: barriles y tinas
+      B  corte hace 12–20 semanas
+         → ALERTA DE BROTE TARDÍO   (hipótesis Lowe, no hecho EC)
+      C  lluvia fuerte hace 0–8 semanas, sin corte
+         → MINGA DE LLANTAS         (si no hay CHIRPS: temporada
+           invernal sí/no, no fingir mm)
+      D  cantón con casos subiendo
+         → +prioridad, NO define el barrio
+
+    Salida: data/cola.json  (ver contrato más abajo)
+    Cada barrio lleva: regla, puntaje, accion, justificacion.
+
+A3. Curva retrospectiva HONESTA (1–2 h)
+    10–15 números de dengue semanal de Guayas / Guayaquil
+    sacados de gacetas MSP (PDF). Archivo: data/dengue_guayas_semanal.csv
+
+    Gráfica: fechas de corte vs. curva de casos a escala de CANTÓN.
+    SI la curva no muestra el rezago de 3–5 meses, NO lo dibujes
+    como si existiera. Muestras el cruce espacial
+    (dónde se cortó vs. dónde el plan nacional priorizaba)
+    y dices: “validar el rezago con datos locales es el mes 1”.
+
+A4. Capa “DLNM” para el pitch (1 h, no más)
+    NO entrenas el modelo.
+    Dejas un notebook o una función que:
+      - escribe la fórmula (DLNM + INLA, misma familia que EWARS)
+      - marca qué se usaría como cross-basis (corte, lluvia)
+      - deja un TODO: “se ajusta cuando haya LIRAa y casos por manzana”
+    En el pitch: “el motor de reglas es la versión operativa del
+    DLNM; el ajuste bayesiano es el mes 1 del piloto”.
+
+
+========================================================================
+PERSONA B  —  MANOS
+========================================================================
+
+ENTREGABLE: la demo de 3 minutos funcionando, incluso en modo avión.
+
+B1. App de brigada, PWA offline (3–4 h)
+    Archivos: src/app/index.html  src/app/app.js  src/app/sw.js
+    Una sola pantalla, teléfono en la mano:
+
+      1. Lista ordenada de barrios (la COLA)
+      2. Al tocar un barrio: “qué hacer hoy”
+         (barriles/tinas  o  llantas  o  alerta tardía)
+      3. Por predio: nº de recipientes, tipo, ¿positivo?  [guardar]
+      4. Banner “SIN CONEXIÓN” cuando no hay red
+      5. Al reconectar: “sincronizado”
+
+    Datos: fetch('cola.json') o IndexedDB si ya se descargó.
+    Service worker para que sobreviva al modo avión.
+    Cero login. Cero mapa pesado. Cero fotos.
+
+B2. Panel distrital (1–2 h)
+    Archivo: src/app/panel.html
+    Lo que ve el jefe de control vectorial:
+      - % de manzanas de alto riesgo visitadas
+      - lista de barrios por regla (A/B/C)
+      - botón “exportar / imprimir”
+    Misma cola.json. Nada más.
+
+B3. Mensaje al barrio cortado (30 min)
+    NO es una app de ciudadano. Es un texto listo para WhatsApp/SMS
+    que se dispara el día del corte:
+
+      “Hoy hay corte de agua en [BARRIO] por [N] horas.
+       Si llena tanques o tinas, TÁPELOS.
+       Un recipiente destapado cría Aedes en 7 días.”
+
+    Una pantalla o un .txt con 3 mensajes de ejemplo basta.
+    El ciudadano es RECEPTOR, no sensor.
+
+B4. Ensayar la demo (última hora, juntos)
+    Reloj en mano. El guion ya está escrito (abajo).
+    Persona B maneja la pantalla. Persona A habla.
+
+
+========================================================================
+CONTRATO  —  data/cola.json
+========================================================================
+
+{
+  "generado_en": "2026-02-15",
+  "canton": "Guayaquil",
+  "empresa_agua": "Interagua",
+  "modelo": "reglas (proxy operativo del DLNM; ajuste INLA = mes 1)",
+  "barrios": [
+    {
+      "id": "guasmo",
+      "nombre": "Guasmo",
+      "zona": "Sur",
+      "lat": -2.243,
+      "lon": -79.896,
+      "fecha_corte": "2026-02-08",
+      "duracion_horas": 16,
+      "pidio_almacenar": true,
+      "regla": "A",
+      "puntaje": 92,
+      "prioridad": 1,
+      "accion": "Inspeccionar barriles y tinas. Pedir que tapen.",
+      "justificacion": "Corte de 16 h hace 7 días. Interagua pidió reservas de agua.",
+      "fuente_url": "https://www.primicias.ec/..."
+    }
+  ]
+}
+
+CAMPOS OBLIGATORIOS: id, nombre, regla, puntaje, prioridad, accion, justificacion
+CAMPOS QUE B PUEDE IGNORAR SI FALTAN: lat, lon, fuente_url
+
+
+========================================================================
+CÓMO TRABAJAR SIN PISARSE
+========================================================================
+
+1. Los dos clonan el mismo repo (ya está en GitHub).
+2. A trabaja SOLO dentro de  src/motor/  y  data/
+3. B trabaja SOLO dentro de  src/app/
+4. Nadie edita el archivo del otro. Si hay que cambiar el contrato
+   de cola.json, se avisan en 1 mensaje y se actualiza el ejemplo.
+5. Commits chicos, cada 1–2 horas, a main o a ramas
+   a/motor  y  b/app, con un merge antes de la demo.
+6. Integración: B apunta a data/cola.json en vez de cola.ejemplo.json
+   (5 minutos, no una tarde).
+
+
+========================================================================
+ORDEN DEL DÍA (si quedan ~12–16 horas)
+========================================================================
+
+HORA 0–1   juntos   leer este archivo, acordar quién es A y quién es B,
+                    levantar el esqueleto, copiar cola.ejemplo.json
+HORA 1–4   paralelo A1+A2  /  B1
+HORA 4     juntos   ¿B puede leer un JSON de A? si no, A entrega
+                    aunque sea 5 barrios del 8-feb
+HORA 4–7   paralelo A3     /  B2+B3
+HORA 7–8   juntos   integrar, modo avión, ensayar demo 2 veces
+HORA 8+    juntos   pitch (A habla ciencia, B maneja la pantalla)
+
+
+========================================================================
+GUION DE 3 MINUTOS (quién dice qué)
+========================================================================
+
+0:00–0:30  A habla, B muestra el comunicado de Interagua 8-feb-2026
+           “Este es un documento público. Es una predicción de
+            criaderos. Salud no lo lee.”
+
+0:30–1:15  A habla, B muestra la gráfica corte vs. dengue
+           “El brote no llega con la lluvia. Llega con el rezago
+            que Lowe midió. Validarlo en Ecuador es el mes 1.”
+           (si la curva local no lo muestra, A NO lo inventa)
+
+1:15–2:00  B muestra panel: cola del motor vs. “dónde habrían
+           ido las brigadas”. A da la cifra de discrepancia.
+
+2:00–2:40  B pone el teléfono en modo avión, recorre 2 predios,
+           guarda recipientes, reconecta. A: “cero hábito nuevo,
+           solo cambia el orden en que camina.”
+
+2:40–3:00  A cierra: “No pedimos presupuesto ni hardware.
+           Pedimos leer un documento que el Estado ya publica.
+           El modelo es DLNM+INLA, la misma familia que EWARS.
+           Hoy corre como reglas. El ajuste fino es el piloto.”
+
+
+========================================================================
+SI SOLO UNO PUEDE CODEAR BIEN
+========================================================================
+
+Esa persona es B (la demo se ve; sin demo no hay premio).
+La otra es A y trabaja en hoja + JSON a mano + gráfica,
+no en un motor elegante. Un JSON escrito a mano con los
+7 barrios del 8-feb YA alimenta la app.
+El motor se puede mentir menos de lo que se puede mentir
+una app que no abre en modo avión.
+
+
+========================================================================
+FRASE SI EL JURADO PREGUNTA “¿Y EL DLNM?”
+========================================================================
+
+“El DLNM+INLA es el modelo de destino, el mismo de Lowe y de
+ EWARS (OMS), ya validado en Colombia. Sin casos por manzana
+ ni LIRAa no se puede ajustar sin fingir. El MVP es el proxy
+ operativo: las reglas A–D son la cross-basis hecha explícita.
+ El primer entregable del piloto es ajustar esos rezagos con
+ datos locales.”
