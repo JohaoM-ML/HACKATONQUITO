@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#084A24">
+  <title>Panel · VENTANA SECA</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./estilos.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" media="print" onload="this.media='all'">
+</head>
+<body>
+  <div id="offline-banner" class="offline-banner">SIN CONEXIÓN · panel con datos locales</div>
+  <div id="sync-banner" class="sync-banner"></div>
+
+  <header class="topbar">
+    <div>
+      <p class="brand">Panel distrital</p>
+      <div class="meta" id="hdr-meta">Guayaquil · cargando…</div>
+    </div>
+    <nav>
+      <a href="./index.html">Inicio</a>
+      <a href="./brigada.html">Brigada</a>
+      <a href="./panel.html" class="active">Panel</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <div id="error" class="error-box" style="display:none"></div>
+
+    <p class="eyebrow">Usuario · jefe de control vectorial</p>
+    <h1>Misma cola. Cobertura real de este dispositivo.</h1>
+
+    <div class="kpis">
+      <div class="kpi"><b id="kpi-cov">—</b><span>barrios A con ≥1 predio visitado</span></div>
+      <div class="kpi"><b id="kpi-pred">0</b><span>predios registrados (IndexedDB)</span></div>
+      <div class="kpi"><b id="kpi-regla">A</b><span>regla dominante en cola de caminata</span></div>
+    </div>
+
+    <div class="note" id="nota-d"></div>
+    <div class="note warn" id="nota-modelo"></div>
+
+    <div class="filters" id="filtros">
+      <button type="button" data-f="A" aria-pressed="true">Regla A</button>
+      <button type="button" data-f="B" aria-pressed="false">Regla B (hipótesis)</button>
+      <button type="button" data-f="all" aria-pressed="false">Todas</button>
+      <button class="btn-primary" type="button" style="margin-left:auto" onclick="window.print()">Imprimir ruta</button>
+    </div>
+
+    <div class="grid-panel">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Barrio</th>
+            <th>Regla</th>
+            <th>Acción</th>
+            <th>Motivo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla"></tbody>
+      </table>
+      <aside class="side">
+        <p class="eyebrow">Mensaje al barrio (receptor)</p>
+        <p class="msg" id="msg-barrio">
+          Hoy hay corte de agua. Si llena tanques o tinas, TÁPELOS.
+          <small>SMS / WhatsApp · el vecino no reporta · no es otra app</small>
+        </p>
+        <p class="eyebrow" style="margin-top:16px">Comunicado</p>
+        <p class="note" id="link-fuente" style="margin:0"></p>
+        <p class="eyebrow" style="margin-top:16px">Regla C</p>
+        <p class="note" id="nota-c" style="margin:0"></p>
+      </aside>
+    </div>
+
+    <h2 style="margin-top:28px;font-size:20px">Alertas B — requieren confirmación humana</h2>
+    <p class="note warn">
+      Regla B = corte hace 12–20 semanas. Es la hipótesis de rezago Lowe.
+      <strong>No está validada en Ecuador con estos experimentos.</strong>
+      No forma parte de la cola de caminata por defecto.
+    </p>
+    <div class="list" id="lista-b"></div>
+  </main>
+
+  <script src="./app.js"></script>
+  <script>
+    VS.setupOfflineUI();
+    VS.registerSW();
+
+    let COLA = null;
+    let PREDIOS = [];
+    let filtro = "A";
+
+    function countsByBarrio() {
+      const m = {};
+      PREDIOS.forEach((p) => {
+        m[p.barrioId] = (m[p.barrioId] || 0) + 1;
+      });
+      return m;
+    }
+
+    function render() {
+      if (!COLA) return;
+      const counts = countsByBarrio();
+      const aItems = VS.colaBrigada(COLA);
+      const visitadosA = aItems.filter((b) => (counts[b.id] || 0) > 0).length;
+      document.getElementById("kpi-cov").textContent = visitadosA + " / " + aItems.length;
+      document.getElementById("kpi-pred").textContent = String(PREDIOS.length);
+      document.getElementById("hdr-meta").textContent =
+        COLA.canton + " · evaluación " + COLA.generado_en + " · " + COLA.empresa_agua;
+
+      const d = COLA.contexto_cantonal && COLA.contexto_cantonal.dengue;
+      document.getElementById("nota-d").textContent =
+        "Regla D: tendencia " + (d ? d.tendencia : "unknown") +
+        ". " + (d ? d.nota : "") +
+        " Geografía: " + (d && d.geografia ? d.geografia : "unknown") +
+        " · no define barrio.";
+
+      document.getElementById("nota-modelo").textContent = COLA.nota_modelo || "";
+
+      const lluvia = COLA.contexto_cantonal && COLA.contexto_cantonal.lluvia;
+      document.getElementById("nota-c").textContent =
+        (lluvia && lluvia.regla_c_razon) || "C sin ítems.";
+
+      const firstA = aItems[0];
+      if (firstA) {
+        document.getElementById("msg-barrio").innerHTML =
+          "Hoy hay corte de agua en <strong>" + firstA.nombre + "</strong> por " +
+          VS.formatDuracion(firstA) + ". Si llena tanques o tinas, TÁPELOS." +
+          "<small>SMS / WhatsApp · el vecino no reporta · no es otra app</small>";
+        document.getElementById("link-fuente").innerHTML = firstA.fuente_url
+          ? "<a href=\"" + firstA.fuente_url + "\" target=\"_blank\" rel=\"noopener\">" +
+            (firstA.fuente || "Fuente") + " · confianza " + (firstA.confianza || "?") + "</a>"
+          : "Fuente unknown";
+      }
+
+      let rows = COLA.barrios || [];
+      if (filtro === "A") rows = rows.filter((b) => b.regla === "A");
+      else if (filtro === "B") rows = rows.filter((b) => b.regla === "B");
+
+      document.getElementById("tabla").innerHTML = rows.map((b) => {
+        const n = counts[b.id] || 0;
+        return "<tr>" +
+          "<td>" + b.prioridad + "</td>" +
+          "<td>" + b.nombre + "<br><small>" + (b.zona || "") + " · conf " + (b.confianza || "?") + "</small></td>" +
+          "<td>" + b.regla + (b.hipotesis ? " *" : "") + "</td>" +
+          "<td>" + b.accion + "</td>" +
+          "<td><small>" + b.justificacion + "</small></td>" +
+          "<td>" + (n ? n + " predio(s)" : "Sin visita") + "</td>" +
+          "</tr>";
+      }).join("");
+
+      const bItems = VS.alertasB(COLA);
+      document.getElementById("lista-b").innerHTML = bItems.length
+        ? bItems.map((b) => `
+          <div class="card hyp">
+            <span class="pri" style="background:#666">${b.prioridad}</span>
+            <span>
+              <h3>${b.nombre}</h3>
+              <div class="meta-line">${b.fecha_corte || ""} · requiere confirmación humana</div>
+              <div class="accion">${b.justificacion}</div>
+            </span>
+            <span class="badge b">Regla B</span>
+          </div>`).join("")
+        : "<p class=\"note\">Ninguna alerta B en esta fecha de evaluación.</p>";
+    }
+
+    document.getElementById("filtros").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-f]");
+      if (!btn) return;
+      filtro = btn.dataset.f;
+      [...document.getElementById("filtros").querySelectorAll("[data-f]")].forEach((b) => {
+        b.setAttribute("aria-pressed", b === btn);
+      });
+      render();
+    });
+
+    Promise.all([VS.loadCola(), VS.todosPredios()])
+      .then(([colaRes, predios]) => {
+        COLA = colaRes.data;
+        PREDIOS = predios;
+        render();
+      })
+      .catch((e) => {
+        const box = document.getElementById("error");
+        box.style.display = "block";
+        box.textContent = e.message;
+      });
+  </script>
+</body>
+</html>

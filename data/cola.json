@@ -1,0 +1,639 @@
+{
+  "generado_en": "2026-02-15",
+  "canton": "Guayaquil",
+  "empresa_agua": "Interagua",
+  "modelo": "reglas (proxy operativo del DLNM; ajuste INLA = mes 1)",
+  "nota_modelo": "El modelo estadístico conjunto (clima+cortes) empeoró MAE 288→394 en experimentos NAT. No se afirma rezago 3–5 meses validado en Ecuador. Validar rezago = mes 1 del piloto.",
+  "nota_datos": "Sectores tomados exclusivamente de sectores_ejemplo del CSV. Lista incompleta por diseño (ejemplos de prensa). lat/lon=null. Predios no existen en datos: se registran en campo.",
+  "puntaje_nota": "Ranking operativo transparente, no calibrado, no es probabilidad de brote.",
+  "contexto_cantonal": {
+    "dengue": {
+      "tendencia": "estable",
+      "nota": "Tendencia estable en 4 semanas. Sin bonus D.",
+      "semanas": [
+        {
+          "semana_id": "2026-W04",
+          "casos": 114,
+          "geografia": "Guayas",
+          "confianza": "B"
+        },
+        {
+          "semana_id": "2026-W05",
+          "casos": 113,
+          "geografia": "Guayas",
+          "confianza": "B"
+        },
+        {
+          "semana_id": "2026-W06",
+          "casos": 99,
+          "geografia": "Guayas",
+          "confianza": "B"
+        },
+        {
+          "semana_id": "2026-W07",
+          "casos": 123,
+          "geografia": "Guayas",
+          "confianza": "B"
+        }
+      ],
+      "geografia": "Guayas (provincial, no cantonal/barrio)",
+      "fuente": "MSP Gaceta ETV — extracción etiquetas 2026",
+      "confianza": "B",
+      "aplica_bonus_prioridad": false
+    },
+    "lluvia": {
+      "temporada_invernal": true,
+      "precip_mm_acum_0_8_sem": 425.2,
+      "lluvia_material": true,
+      "nota": "Regla C es cantonal (lluvia sin corte). Sin catálogo de barrios sin corte no se emiten ítems. Precip. acum. 0–8 sem: 425 mm. Temporada invernal: sí.",
+      "regla_c_items": [],
+      "regla_c_razon": "Sin catálogo de barrios sin corte: C no emite ítems."
+    }
+  },
+  "barrios": [
+    {
+      "id": "cristo-del-consuelo",
+      "nombre": "Cristo del Consuelo",
+      "zona": "Sur",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2026-02-08",
+      "duracion_horas": "11-16",
+      "duracion_horas_num": 13.5,
+      "pidio_almacenar": true,
+      "regla": "A",
+      "puntaje": 94,
+      "accion": "Inspeccionar barriles y tinas. Pedir que tapen.",
+      "justificacion": "Corte de 11-16 h (umbral con 13.5 h) hace 7 días. Interagua/prensa reportó pedido de almacenar. Regla A: cola de esta semana.",
+      "fuente": "Primicias",
+      "fuente_url": "https://www.primicias.ec/guayaquil/corte-agua-guayaquil-horarios-sectores-donde-cortes-domingo-interagua-115356/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "derivado"
+      ],
+      "incertidumbre": [
+        "duracion_es_rango_punto_medio",
+        "lista_sectores_ejemplo_incompleta"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 7,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 1,
+          "origen": "derivado"
+        },
+        {
+          "campo": "duracion_horas_umbral",
+          "valor": 13.5,
+          "origen": "derivado",
+          "rango_observado": "11-16"
+        },
+        {
+          "campo": "pidio_almacenar",
+          "valor": true,
+          "origen": "observado"
+        }
+      ],
+      "hipotesis": false,
+      "requiere_confirmacion_humana": false,
+      "label_regla": "COLA ESTA SEMANA",
+      "aplica_d": false,
+      "motivo_corte": "mantenimiento subestacion 69kV planta La Toma + rehabilitacion acueducto 1050mm",
+      "prioridad": 1
+    },
+    {
+      "id": "fertisa",
+      "nombre": "Fertisa",
+      "zona": "Sur",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2026-02-08",
+      "duracion_horas": "11-16",
+      "duracion_horas_num": 13.5,
+      "pidio_almacenar": true,
+      "regla": "A",
+      "puntaje": 94,
+      "accion": "Inspeccionar barriles y tinas. Pedir que tapen.",
+      "justificacion": "Corte de 11-16 h (umbral con 13.5 h) hace 7 días. Interagua/prensa reportó pedido de almacenar. Regla A: cola de esta semana.",
+      "fuente": "Primicias",
+      "fuente_url": "https://www.primicias.ec/guayaquil/corte-agua-guayaquil-horarios-sectores-donde-cortes-domingo-interagua-115356/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "derivado"
+      ],
+      "incertidumbre": [
+        "duracion_es_rango_punto_medio",
+        "lista_sectores_ejemplo_incompleta"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 7,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 1,
+          "origen": "derivado"
+        },
+        {
+          "campo": "duracion_horas_umbral",
+          "valor": 13.5,
+          "origen": "derivado",
+          "rango_observado": "11-16"
+        },
+        {
+          "campo": "pidio_almacenar",
+          "valor": true,
+          "origen": "observado"
+        }
+      ],
+      "hipotesis": false,
+      "requiere_confirmacion_humana": false,
+      "label_regla": "COLA ESTA SEMANA",
+      "aplica_d": false,
+      "motivo_corte": "mantenimiento subestacion 69kV planta La Toma + rehabilitacion acueducto 1050mm",
+      "prioridad": 2
+    },
+    {
+      "id": "guasmo",
+      "nombre": "Guasmo",
+      "zona": "Sur",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2026-02-08",
+      "duracion_horas": "11-16",
+      "duracion_horas_num": 13.5,
+      "pidio_almacenar": true,
+      "regla": "A",
+      "puntaje": 94,
+      "accion": "Inspeccionar barriles y tinas. Pedir que tapen.",
+      "justificacion": "Corte de 11-16 h (umbral con 13.5 h) hace 7 días. Interagua/prensa reportó pedido de almacenar. Regla A: cola de esta semana.",
+      "fuente": "Primicias",
+      "fuente_url": "https://www.primicias.ec/guayaquil/corte-agua-guayaquil-horarios-sectores-donde-cortes-domingo-interagua-115356/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "derivado"
+      ],
+      "incertidumbre": [
+        "duracion_es_rango_punto_medio",
+        "lista_sectores_ejemplo_incompleta"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 7,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 1,
+          "origen": "derivado"
+        },
+        {
+          "campo": "duracion_horas_umbral",
+          "valor": 13.5,
+          "origen": "derivado",
+          "rango_observado": "11-16"
+        },
+        {
+          "campo": "pidio_almacenar",
+          "valor": true,
+          "origen": "observado"
+        }
+      ],
+      "hipotesis": false,
+      "requiere_confirmacion_humana": false,
+      "label_regla": "COLA ESTA SEMANA",
+      "aplica_d": false,
+      "motivo_corte": "mantenimiento subestacion 69kV planta La Toma + rehabilitacion acueducto 1050mm",
+      "prioridad": 3
+    },
+    {
+      "id": "isla-trinitaria",
+      "nombre": "Isla Trinitaria",
+      "zona": "Sur",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2026-02-08",
+      "duracion_horas": "11-16",
+      "duracion_horas_num": 13.5,
+      "pidio_almacenar": true,
+      "regla": "A",
+      "puntaje": 94,
+      "accion": "Inspeccionar barriles y tinas. Pedir que tapen.",
+      "justificacion": "Corte de 11-16 h (umbral con 13.5 h) hace 7 días. Interagua/prensa reportó pedido de almacenar. Regla A: cola de esta semana.",
+      "fuente": "Primicias",
+      "fuente_url": "https://www.primicias.ec/guayaquil/corte-agua-guayaquil-horarios-sectores-donde-cortes-domingo-interagua-115356/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "derivado"
+      ],
+      "incertidumbre": [
+        "duracion_es_rango_punto_medio",
+        "lista_sectores_ejemplo_incompleta"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 7,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 1,
+          "origen": "derivado"
+        },
+        {
+          "campo": "duracion_horas_umbral",
+          "valor": 13.5,
+          "origen": "derivado",
+          "rango_observado": "11-16"
+        },
+        {
+          "campo": "pidio_almacenar",
+          "valor": true,
+          "origen": "observado"
+        }
+      ],
+      "hipotesis": false,
+      "requiere_confirmacion_humana": false,
+      "label_regla": "COLA ESTA SEMANA",
+      "aplica_d": false,
+      "motivo_corte": "mantenimiento subestacion 69kV planta La Toma + rehabilitacion acueducto 1050mm",
+      "prioridad": 4
+    },
+    {
+      "id": "la-floresta",
+      "nombre": "La Floresta",
+      "zona": "Sur",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2026-02-08",
+      "duracion_horas": "11-16",
+      "duracion_horas_num": 13.5,
+      "pidio_almacenar": true,
+      "regla": "A",
+      "puntaje": 94,
+      "accion": "Inspeccionar barriles y tinas. Pedir que tapen.",
+      "justificacion": "Corte de 11-16 h (umbral con 13.5 h) hace 7 días. Interagua/prensa reportó pedido de almacenar. Regla A: cola de esta semana.",
+      "fuente": "Primicias",
+      "fuente_url": "https://www.primicias.ec/guayaquil/corte-agua-guayaquil-horarios-sectores-donde-cortes-domingo-interagua-115356/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "derivado"
+      ],
+      "incertidumbre": [
+        "duracion_es_rango_punto_medio",
+        "lista_sectores_ejemplo_incompleta"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 7,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 1,
+          "origen": "derivado"
+        },
+        {
+          "campo": "duracion_horas_umbral",
+          "valor": 13.5,
+          "origen": "derivado",
+          "rango_observado": "11-16"
+        },
+        {
+          "campo": "pidio_almacenar",
+          "valor": true,
+          "origen": "observado"
+        }
+      ],
+      "hipotesis": false,
+      "requiere_confirmacion_humana": false,
+      "label_regla": "COLA ESTA SEMANA",
+      "aplica_d": false,
+      "motivo_corte": "mantenimiento subestacion 69kV planta La Toma + rehabilitacion acueducto 1050mm",
+      "prioridad": 5
+    },
+    {
+      "id": "las-malvinas",
+      "nombre": "Las Malvinas",
+      "zona": "Sur",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2026-02-08",
+      "duracion_horas": "11-16",
+      "duracion_horas_num": 13.5,
+      "pidio_almacenar": true,
+      "regla": "A",
+      "puntaje": 94,
+      "accion": "Inspeccionar barriles y tinas. Pedir que tapen.",
+      "justificacion": "Corte de 11-16 h (umbral con 13.5 h) hace 7 días. Interagua/prensa reportó pedido de almacenar. Regla A: cola de esta semana.",
+      "fuente": "Primicias",
+      "fuente_url": "https://www.primicias.ec/guayaquil/corte-agua-guayaquil-horarios-sectores-donde-cortes-domingo-interagua-115356/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "derivado"
+      ],
+      "incertidumbre": [
+        "duracion_es_rango_punto_medio",
+        "lista_sectores_ejemplo_incompleta"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 7,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 1,
+          "origen": "derivado"
+        },
+        {
+          "campo": "duracion_horas_umbral",
+          "valor": 13.5,
+          "origen": "derivado",
+          "rango_observado": "11-16"
+        },
+        {
+          "campo": "pidio_almacenar",
+          "valor": true,
+          "origen": "observado"
+        }
+      ],
+      "hipotesis": false,
+      "requiere_confirmacion_humana": false,
+      "label_regla": "COLA ESTA SEMANA",
+      "aplica_d": false,
+      "motivo_corte": "mantenimiento subestacion 69kV planta La Toma + rehabilitacion acueducto 1050mm",
+      "prioridad": 6
+    },
+    {
+      "id": "alborada-13",
+      "nombre": "Alborada 13",
+      "zona": "Norte",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2025-10-20",
+      "duracion_horas": null,
+      "duracion_horas_num": null,
+      "pidio_almacenar": false,
+      "regla": "B",
+      "puntaje": 46,
+      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
+      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
+      "fuente": "El Universo",
+      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "inferido"
+      ],
+      "incertidumbre": [
+        "duracion_horas_desconocida",
+        "pidio_almacenar_desconocido",
+        "lista_sectores_ejemplo_incompleta",
+        "regla_b_hipotesis_no_validada_ecuador"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 118,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 16.9,
+          "origen": "derivado"
+        }
+      ],
+      "hipotesis": true,
+      "requiere_confirmacion_humana": true,
+      "label_regla": "ALERTA TARDÍA (hipótesis)",
+      "aplica_d": false,
+      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
+      "prioridad": 7
+    },
+    {
+      "id": "guayacanes",
+      "nombre": "Guayacanes",
+      "zona": "Norte",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2025-10-20",
+      "duracion_horas": null,
+      "duracion_horas_num": null,
+      "pidio_almacenar": false,
+      "regla": "B",
+      "puntaje": 46,
+      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
+      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
+      "fuente": "El Universo",
+      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "inferido"
+      ],
+      "incertidumbre": [
+        "duracion_horas_desconocida",
+        "pidio_almacenar_desconocido",
+        "lista_sectores_ejemplo_incompleta",
+        "regla_b_hipotesis_no_validada_ecuador"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 118,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 16.9,
+          "origen": "derivado"
+        }
+      ],
+      "hipotesis": true,
+      "requiere_confirmacion_humana": true,
+      "label_regla": "ALERTA TARDÍA (hipótesis)",
+      "aplica_d": false,
+      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
+      "prioridad": 8
+    },
+    {
+      "id": "rio-sol",
+      "nombre": "Rio Sol",
+      "zona": "Norte",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2025-10-20",
+      "duracion_horas": null,
+      "duracion_horas_num": null,
+      "pidio_almacenar": false,
+      "regla": "B",
+      "puntaje": 46,
+      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
+      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
+      "fuente": "El Universo",
+      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "inferido"
+      ],
+      "incertidumbre": [
+        "duracion_horas_desconocida",
+        "pidio_almacenar_desconocido",
+        "lista_sectores_ejemplo_incompleta",
+        "regla_b_hipotesis_no_validada_ecuador"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 118,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 16.9,
+          "origen": "derivado"
+        }
+      ],
+      "hipotesis": true,
+      "requiere_confirmacion_humana": true,
+      "label_regla": "ALERTA TARDÍA (hipótesis)",
+      "aplica_d": false,
+      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
+      "prioridad": 9
+    },
+    {
+      "id": "samanes",
+      "nombre": "Samanes",
+      "zona": "Norte",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2025-10-20",
+      "duracion_horas": null,
+      "duracion_horas_num": null,
+      "pidio_almacenar": false,
+      "regla": "B",
+      "puntaje": 46,
+      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
+      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
+      "fuente": "El Universo",
+      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "inferido"
+      ],
+      "incertidumbre": [
+        "duracion_horas_desconocida",
+        "pidio_almacenar_desconocido",
+        "lista_sectores_ejemplo_incompleta",
+        "regla_b_hipotesis_no_validada_ecuador"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 118,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 16.9,
+          "origen": "derivado"
+        }
+      ],
+      "hipotesis": true,
+      "requiere_confirmacion_humana": true,
+      "label_regla": "ALERTA TARDÍA (hipótesis)",
+      "aplica_d": false,
+      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
+      "prioridad": 10
+    },
+    {
+      "id": "union-civica",
+      "nombre": "Union Civica",
+      "zona": "Norte",
+      "lat": null,
+      "lon": null,
+      "fecha_corte": "2025-10-20",
+      "duracion_horas": null,
+      "duracion_horas_num": null,
+      "pidio_almacenar": false,
+      "regla": "B",
+      "puntaje": 46,
+      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
+      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
+      "fuente": "El Universo",
+      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
+      "confianza": "B",
+      "origen_dato": [
+        "observado",
+        "inferido"
+      ],
+      "incertidumbre": [
+        "duracion_horas_desconocida",
+        "pidio_almacenar_desconocido",
+        "lista_sectores_ejemplo_incompleta",
+        "regla_b_hipotesis_no_validada_ecuador"
+      ],
+      "evidencias": [
+        {
+          "campo": "dias_desde_corte",
+          "valor": 118,
+          "origen": "derivado"
+        },
+        {
+          "campo": "semanas_desde_corte",
+          "valor": 16.9,
+          "origen": "derivado"
+        }
+      ],
+      "hipotesis": true,
+      "requiere_confirmacion_humana": true,
+      "label_regla": "ALERTA TARDÍA (hipótesis)",
+      "aplica_d": false,
+      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
+      "prioridad": 11
+    }
+  ],
+  "cola_brigada": [
+    "cristo-del-consuelo",
+    "fertisa",
+    "guasmo",
+    "isla-trinitaria",
+    "la-floresta",
+    "las-malvinas"
+  ],
+  "alertas_hipotesis": [
+    "alborada-13",
+    "guayacanes",
+    "rio-sol",
+    "samanes",
+    "union-civica"
+  ],
+  "meta": {
+    "n_sectores_csv_total": 257,
+    "n_candidatos_unicos": 176,
+    "n_regla_a": 6,
+    "n_regla_b": 5,
+    "n_regla_c": 0,
+    "fuente_cortes": "data/clean/cortes_interagua_clean.csv",
+    "barrios_cortes": "data/barrios_cortes.csv"
+  }
+}

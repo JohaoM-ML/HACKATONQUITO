@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#084A24">
+  <title>VENTANA SECA</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./estilos.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" media="print" onload="this.media='all'">
+</head>
+<body>
+  <div id="offline-banner" class="offline-banner">SIN CONEXIÓN · se usa la copia en este dispositivo</div>
+  <div id="sync-banner" class="sync-banner"></div>
+
+  <header class="topbar">
+    <div>
+      <p class="brand">VENTANA SECA</p>
+      <div class="meta">Guayaquil · Interagua → orden de trabajo</div>
+    </div>
+    <nav>
+      <a href="./index.html" class="active">Inicio</a>
+      <a href="./brigada.html">Brigada</a>
+      <a href="./panel.html">Panel</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <p class="eyebrow">Producto operativo · demo hackatón</p>
+    <h1>Leemos un documento que Interagua ya publica y lo convertimos en orden de trabajo.</h1>
+    <p class="lead">
+      No pedimos un sensor nuevo. Tomamos el comunicado de corte de agua,
+      aplicamos reglas A–D y entregamos la cola que camina el brigadista — también sin red.
+    </p>
+
+    <div class="ficha" id="ficha-comunicado">
+      <p class="eyebrow">Entrada observada</p>
+      <h2>Comunicado / prensa · 8 feb 2026</h2>
+      <p>Mantenimiento subestación 69 kV planta La Toma + rehabilitación acueducto 1050 mm. Pidieron mantener reservas.</p>
+      <dl>
+        <dt>Fecha corte</dt><dd>2026-02-08</dd>
+        <dt>Duración</dt><dd>11–16 h (rango reportado; umbral usa 13.5 h)</dd>
+        <dt>Sectores en CSV</dt><dd>Guasmo; Isla Trinitaria; Cristo del Consuelo; La Floresta; Fertisa; Las Malvinas <em>(lista ejemplo, puede ser incompleta)</em></dd>
+        <dt>Fuente</dt><dd><a id="fuente-url" href="https://www.primicias.ec/guayaquil/corte-agua-guayaquil-horarios-sectores-donde-cortes-domingo-interagua-115356/" target="_blank" rel="noopener">Primicias</a> · confianza <strong>B</strong> (prensa)</dd>
+        <dt>Evaluación</dt><dd>2026-02-15 → motor de reglas → cola.json</dd>
+      </dl>
+    </div>
+
+    <div class="note">
+      <strong>Qué es hecho vs. qué es regla.</strong>
+      El corte y la fuente son observados. La categoría A/B/C/D es una regla operativa (proxy), no una predicción calibrada de brote.
+      Validar el rezago epidemiológico en Ecuador es el <strong>mes 1 del piloto</strong>, no un hallazgo ya demostrado.
+    </div>
+
+    <div class="note warn" id="nota-modelo">
+      El modelo estadístico conjunto (clima+cortes) empeoró MAE 288→394 en experimentos exploratorios.
+      Hoy corre como reglas. El ajuste fino es el piloto.
+    </div>
+
+    <div class="cta-row">
+      <a class="btn-primary" href="./brigada.html">Entrar como brigada</a>
+      <a class="btn-secondary" href="./panel.html">Entrar al panel</a>
+    </div>
+
+    <p class="trace" id="cola-meta"></p>
+  </main>
+
+  <script src="./app.js"></script>
+  <script>
+    VS.setupOfflineUI();
+    VS.registerSW();
+    VS.loadCola()
+      .then(({ data, from }) => {
+        const a = (data.cola_brigada || []).length;
+        const meta = document.getElementById("cola-meta");
+        meta.textContent =
+          "Cola generada: " + data.generado_en +
+          " · " + a + " barrios regla A" +
+          " · cargada desde " + from +
+          " · " + (data.modelo || "");
+        if (data.nota_modelo) {
+          document.getElementById("nota-modelo").textContent = data.nota_modelo;
+        }
+      })
+      .catch((e) => {
+        document.getElementById("cola-meta").textContent = "Error: " + e.message;
+      });
+  </script>
+</body>
+</html>
