@@ -1,0 +1,281 @@
+ARQUITECTURA WEB — VENTANA SECA
+Una sola PWA. Dos pantallas. Un motor detrás.
+========================================================================
+
+RESPUESTA CORTA
+------------------------------------------------------------------------
+Sí: los 3 están en el mismo producto web.
+
+  1. MOTOR     → no es una pantalla. Es el cerebro (JS) que
+                 convierte cortes de agua en cola.json
+  2. BRIGADA   → pantalla del celular  (/brigada)
+  3. PANEL     → pantalla del jefe     (/panel)
+
+No hay una web AND una PWA. Hay UNA web que, con
+manifest + service worker, se comporta como app offline.
+
+
+========================================================================
+1. DIBUJO
+========================================================================
+
+                    ┌─────────────────────────────────────┐
+                    │     DATOS PÚBLICOS (entrada)        │
+                    │  cortes Interagua  ·  dengue MSP    │
+                    │  (CSV / JSON estáticos en /data)    │
+                    └─────────────────┬───────────────────┘
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────────┐
+                    │  MOTOR DE REGLAS  src/motor/        │
+                    │  reglas A B C D  (proxy del DLNM)   │
+                    │  salida: data/cola.json             │
+                    └─────────────────┬───────────────────┘
+                                      │  un solo contrato
+                         ┌────────────┴────────────┐
+                         ▼                         ▼
+              ┌──────────────────┐      ┌──────────────────┐
+              │  /brigada        │      │  /panel          │
+              │  celular         │      │  computador      │
+              │  cola + predios  │      │  cobertura       │
+              └────────┬─────────┘      └────────▲─────────┘
+                       │  IndexedDB              │
+                       │  hallazgos por predio   │
+                       └─────────────────────────┘
+                                      │
+                    ┌─────────────────┴───────────────────┐
+                    │  SERVICE WORKER  (sw.js)            │
+                    │  cachea HTML/JS/JSON → modo avión   │
+                    └─────────────────────────────────────┘
+
+
+========================================================================
+2. QUÉ CONTIENE CADA UNO
+========================================================================
+
+------------------------------------------------
+PIEZA 1 · MOTOR          no se “ve”, se EJECUTA
+------------------------------------------------
+Carpeta:   src/motor/
+Entrada:   data/barrios_cortes.csv
+           data/dengue_guayas_semanal.csv   (opcional, regla D)
+Salida:    data/cola.json
+
+Contiene:
+  - Fecha de evaluación (ej. 2026-02-15)
+  - Por cada barrio:
+      días desde el corte
+      ¿duró ≥ 8 h?
+      ¿pidieron almacenar?
+      → regla A / B / C / D
+      → puntaje, prioridad, acción, justificación
+  - NO contiene red neuronal, NO ajusta INLA
+  - SÍ deja comentado: “esto es la cross-basis del DLNM
+    hecha explícita; el ajuste bayesiano es el mes 1”
+
+Cómo se arma:
+  1. Leer CSV de cortes ya partidos por barrio
+  2. Aplicar las 4 reglas (if / else, nada más)
+  3. Ordenar por puntaje
+  4. Escribir cola.json
+
+Se puede correr de dos formas (elijan UNA):
+  a) script Node:  node src/motor/generar-cola.js --fecha 2026-02-15
+  b) módulo que la propia web importa y corre en el navegador
+     al cargar /panel  (más simple para el hackatón: no hay servidor)
+
+Recomendación hackatón: (b). Cero backend.
+
+
+------------------------------------------------
+PIEZA 2 · BRIGADA        /brigada     celular
+------------------------------------------------
+Carpeta:   src/app/  (misma app que el panel)
+Ve:        el brigadista
+
+Contiene, y NADA más:
+  1. Encabezado: “Cola de hoy · Guayaquil · 7 barrios”
+  2. Lista ordenada (prioridad 1, 2, 3…)
+       nombre del barrio
+       regla (A / B / C) como etiqueta
+       acción en una línea  (“tinas y barriles”)
+  3. Al tocar un barrio:
+       justificación (“corte 16 h hace 7 días, pidieron reservas”)
+       formulario de UN predio:
+         dirección o nº de casa
+         nº de recipientes
+         tipo: tanque / tina / llanta / otro
+         ¿con larva?  sí / no
+         [guardar]
+       lista de predios ya visitados en ese barrio
+  4. Banner rojo “SIN CONEXIÓN” si navigator.onLine === false
+  5. Al volver la red: “Sincronizado · N predios”
+
+NO contiene:
+  mapa pesado, login, fotos, chat, registro de ciudadanos
+
+Cómo se arma:
+  - HTML + CSS + JS vanilla (o un solo archivo)
+  - Al abrir: lee cola.json (o IndexedDB si ya se cacheó)
+  - Cada “guardar” escribe en IndexedDB
+  - Service worker cachea: html, js, css, cola.json
+  - Demo: Chrome → modo avión → seguir usando
+
+
+------------------------------------------------
+PIEZA 3 · PANEL          /panel       computador
+------------------------------------------------
+Carpeta:   src/app/  (la misma)
+Ve:        el jefe de control vectorial
+
+Contiene, y NADA más:
+  1. Número grande: “X / Y manzanas de alto riesgo visitadas”
+  2. Tabla de la misma cola
+       barrio · regla · acción · predios registrados · estado
+  3. Filtro por regla (A / B / C)
+  4. Botón imprimir / “exportar ruta”
+  5. (Opcional) el comunicado de Interagua del 8-feb, linkeado
+
+Cómo se arma:
+  - Misma cola.json
+  - Suma los predios que la brigada guardó en IndexedDB
+    (en la demo, el mismo navegador; no hace falta servidor)
+  - window.print() para el botón imprimir
+
+
+------------------------------------------------
+EXTRA, NO ES 4ª PIEZA · mensaje al vecino
+------------------------------------------------
+Un recuadro en /panel o un .txt:
+  “Hoy hay corte en [BARRIO] por [N] h. Tape tanques y tinas.”
+No es otra app. No se programa WhatsApp.
+
+
+========================================================================
+3. ESTRUCTURA DE CARPETAS
+========================================================================
+
+HACKATON QUITO/
+│
+├── data/                          ← Persona A
+│   ├── datos_cortes_interagua.csv     (ya existe)
+│   ├── barrios_cortes.csv             (A lo parte por barrio)
+│   ├── dengue_guayas_semanal.csv      (A, si da tiempo)
+│   ├── cola.ejemplo.json              (ya existe, B arranca con esto)
+│   └── cola.json                      (A lo genera; B lo consume)
+│
+├── src/
+│   ├── motor/                     ← Persona A
+│   │   ├── reglas.js                  if/else A-B-C-D
+│   │   └── generar-cola.js            lee CSV → escribe cola.json
+│   │
+│   └── app/                       ← Persona B
+│       ├── index.html                 home: dos botones
+│       │                                [Entrar como brigada]
+│       │                                [Entrar al panel]
+│       ├── brigada.html               pantalla celular
+│       ├── panel.html                 pantalla jefe
+│       ├── app.js                     leer cola + IndexedDB
+│       ├── estilos.css
+│       ├── sw.js                      cache offline
+│       └── manifest.json              “instalar en el celular”
+│
+├── division-tareas.txt
+└── arquitectura-web.txt           ← este archivo
+
+
+Cómo se “sirve” en el hackatón:
+  Abrir la carpeta con un servidor estático, nada más.
+
+    npx --yes serve src/app
+
+  O en VS Code: Live Server sobre src/app/index.html
+
+  Para que el service worker funcione hace falta http://localhost,
+  no file://
+
+
+========================================================================
+4. CAPAS (de abajo hacia arriba)
+========================================================================
+
+Capa 0  DATOS
+        CSV / JSON estáticos. No hay base de datos. No hay API.
+
+Capa 1  MOTOR
+        Funciones puras. Entrada: barrio + fecha. Salida: {regla, puntaje}.
+        Testeable a mano: “Guasmo, 8-feb, evaluado el 15-feb → regla A”.
+
+Capa 2  CONTRATO
+        cola.json  (el único acuerdo entre A y B)
+        Campos obligatorios:
+          id, nombre, regla, puntaje, prioridad, accion, justificacion
+
+Capa 3  PERSISTENCIA LOCAL
+        IndexedDB:
+          store "cola"       → la lista descargada
+          store "predios"    → {barrioId, casa, tipo, n, larva, ts}
+        Si no hay red, se lee de aquí. Si hay red, se refresca cola
+        y se marca predios.sincronizado = true.
+
+Capa 4  UI
+        /            puerta (2 botones)
+        /brigada     lista + formulario
+        /panel       cobertura + imprimir
+
+Capa 5  OFFLINE
+        sw.js cachea Capa 4 + cola.json
+        manifest.json permite “Añadir a pantalla de inicio”
+
+
+========================================================================
+5. FLUJO DE UN DÍA REAL (y de la demo)
+========================================================================
+
+  1. Motor corre (o ya corrió) con fecha = hoy
+     → cola.json con Guasmo #1, Isla Trinitaria #2, …
+
+  2. Brigadista abre /brigada en el centro de salud (hay wifi)
+     → service worker descarga cola + HTML
+
+  3. Sale a la calle, pone modo avión
+     → lista sigue ahí
+     → registra 2 predios en Guasmo (IndexedDB)
+
+  4. Vuelve, hay red
+     → “Sincronizado”
+     → /panel ahora muestra 2 predios en Guasmo
+     → el % de cobertura sube
+
+En la demo los pasos 2–4 pasan en 40 segundos
+en el mismo teléfono.
+
+
+========================================================================
+6. QUÉ NO ENTRA EN ESTA ARQUITECTURA
+========================================================================
+
+  - Servidor, login, usuarios, roles
+  - Base de datos remota (Supabase, Firebase) — opcional y peligrosa
+    si se cae la red en la demo
+  - Mapa Leaflet/Mapbox — solo si sobra una hora
+  - Scraping de Interagua en vivo
+  - Entrenar DLNM / INLA / red neuronal
+  - App nativa Android / iOS
+  - Segunda web “institucional”
+
+
+========================================================================
+7. CONTRATO DE INTEGRACIÓN (5 MINUTOS, NO UNA TARDE)
+========================================================================
+
+Persona B, en app.js:
+
+  const URL_COLA = "../data/cola.json";          // cuando A lo tenga
+  const FALLBACK = "../data/cola.ejemplo.json";  // mientras tanto
+
+Persona A no toca src/app/.
+Persona B no toca src/motor/.
+
+Si hay que cambiar un campo de cola.json, se avisan
+y se actualiza cola.ejemplo.json primero.
