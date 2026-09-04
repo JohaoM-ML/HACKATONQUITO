@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resiliencia climática ante El Niño · Análisis de problemas y propuesta · Hackatón Quito</title>
+<meta name="description" content="Investigación de problemas, estado del arte, priorización, red team y propuesta ganadora para el desafío de resiliencia climática ante El Niño en Ecuador, Perú y Colombia.">
+<style>
+:root{
+  --bg:#ffffff; --panel:#f7f8fa; --ink:#14161a; --ink2:#4a5058; --ink3:#7b828c;
+  --line:#e3e6ea; --accent:#1c5fd6;
+  --danger:#d1382c; --warning:#c07a14; --info:#1c5fd6; --success:#177a4a; --neutral:#9aa2ac;
+  --maxw:980px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0f1115; --panel:#161920; --ink:#e8eaee; --ink2:#a8b0ba; --ink3:#767e89;
+         --line:#262b34; --accent:#5b93f5; --danger:#ef6a5c; --warning:#e0a53c;
+         --info:#5b93f5; --success:#3fae76; --neutral:#5a626d; }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:44px;max-width:1320px;margin:0 auto;padding:0 28px}
+nav{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:34px 0;border-right:1px solid var(--line)}
+nav .brand{font-weight:700;font-size:14px;letter-spacing:.02em;margin-bottom:4px}
+nav .sub{font-size:12px;color:var(--ink3);margin-bottom:20px;line-height:1.45}
+nav a{display:block;padding:7px 12px 7px 0;color:var(--ink2);text-decoration:none;font-size:13.5px;border-left:2px solid transparent;padding-left:12px}
+nav a:hover{color:var(--ink);border-left-color:var(--accent)}
+main{padding:34px 0 100px;max-width:var(--maxw)}
+header.hero{padding:26px 0 34px;border-bottom:1px solid var(--line);margin-bottom:12px}
+header.hero h1{font-size:31px;line-height:1.2;margin:0 0 12px;letter-spacing:-.015em}
+header.hero p{color:var(--ink2);margin:0 0 8px;max-width:70ch}
+header.hero .meta{font-size:13px;color:var(--ink3);margin-top:16px}
+section{padding:38px 0;border-bottom:1px solid var(--line)}
+section:last-child{border-bottom:0}
+h2{font-size:23px;margin:0 0 6px;letter-spacing:-.01em}
+h3{font-size:18px;margin:26px 0 8px}
+h3.big{font-size:27px;margin:2px 0 6px;letter-spacing:-.01em}
+h4{font-size:14.5px;margin:20px 0 6px;color:var(--ink2);font-weight:650}
+p{margin:0 0 12px;max-width:78ch}
+p.lead{color:var(--ink2);font-size:15.5px}
+p.note{font-size:12.5px;color:var(--ink3);margin-top:-2px}
+p.kicker{font-size:11.5px;letter-spacing:.09em;font-weight:700;color:var(--accent);margin:0 0 4px}
+p.tag{font-size:12px;font-weight:600;margin:10px 0 0}
+blockquote{margin:14px 0;padding:2px 0 2px 18px;border-left:2px solid var(--accent);
+  color:var(--ink);font-size:15.5px;max-width:78ch}
+.callout{border:1px solid var(--line);border-left:3px solid var(--neutral);background:var(--panel);
+  padding:14px 16px;border-radius:6px;margin:16px 0;font-size:14.5px;color:var(--ink2)}
+.callout .callout-title{font-weight:650;color:var(--ink);margin-bottom:5px;font-size:14.5px}
+.callout.danger{border-left-color:var(--danger)}
+.callout.warning{border-left-color:var(--warning)}
+.callout.info{border-left-color:var(--info)}
+.callout.success{border-left-color:var(--success)}
+.tw{overflow-x:auto;margin:12px 0 18px;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--panel);font-weight:650;font-size:12.5px;color:var(--ink2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--panel) 55%,transparent)}
+td:first-child{font-weight:550}
+.a-center{text-align:center}.a-right{text-align:right}
+tr.t-danger td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
+tr.t-warning td:first-child{box-shadow:inset 3px 0 0 var(--warning)}
+tr.t-info td:first-child{box-shadow:inset 3px 0 0 var(--info)}
+tr.t-success td:first-child{box-shadow:inset 3px 0 0 var(--success)}
+details.card{border:1px solid var(--line);border-radius:6px;margin:9px 0;background:var(--panel)}
+details.card summary{cursor:pointer;padding:12px 15px;font-weight:600;font-size:14.5px;
+  display:flex;gap:14px;align-items:flex-start;justify-content:space-between;list-style:none}
+details.card summary::-webkit-details-marker{display:none}
+details.card summary::before{content:"▸";color:var(--ink3);flex:0 0 auto;transform:translateY(1px)}
+details.card[open] summary::before{content:"▾"}
+details.card summary span{flex:1}
+details.card summary em{font-style:normal;font-size:12px;color:var(--ink3);white-space:nowrap;font-weight:500}
+.card-body{padding:2px 15px 15px;background:var(--bg);border-top:1px solid var(--line);
+  border-radius:0 0 6px 6px}
+.card-body h4:first-child{margin-top:14px}
+ul.rt{margin:6px 0 0;padding-left:18px}
+ul.rt li{margin-bottom:8px;color:var(--ink2);font-size:14.5px;max-width:78ch}
+ul.rt li:last-child{color:var(--ink);font-weight:500}
+.stats{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0 6px}
+.stat{flex:1 1 165px;border:1px solid var(--line);border-radius:6px;padding:13px 15px;background:var(--panel)}
+.stat b{display:block;font-size:25px;line-height:1.15;letter-spacing:-.02em}
+.stat span{display:block;font-size:12px;color:var(--ink3);margin-top:5px;line-height:1.4}
+.stat.t-danger b{color:var(--danger)}.stat.t-warning b{color:var(--warning)}
+.stat.t-info b{color:var(--info)}.stat.t-success b{color:var(--success)}
+.bars{margin:12px 0 6px}
+.bar-row{display:grid;grid-template-columns:minmax(120px,230px) 1fr 96px;gap:12px;align-items:center;
+  margin-bottom:7px;font-size:13px}
+.bar-label{color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{background:var(--panel);border-radius:3px;height:17px;overflow:hidden;
+  border:1px solid var(--line);position:relative}
+.bar-track.dual{height:23px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:2px}
+.bar-fill{display:block;height:100%;border-radius:2px;background:var(--accent);min-width:2px}
+.bar-track.dual .bar-fill{height:8px}
+.bar-fill.t-danger{background:var(--danger)}.bar-fill.t-warning{background:var(--warning)}
+.bar-fill.t-info{background:var(--info)}.bar-fill.t-success{background:var(--success)}
+.bar-fill.t-neutral{background:var(--neutral)}.bar-fill.t-accent{background:var(--accent)}
+.bar-fill.a{background:var(--success)}.bar-fill.b{background:var(--info)}
+.bar-value{text-align:right;color:var(--ink3);font-variant-numeric:tabular-nums;font-size:12.5px}
+.legend{display:flex;gap:18px;font-size:12.5px;color:var(--ink2);margin:8px 0 4px}
+.legend .sw,.donut-legend .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.legend .sw.a{background:var(--success)}.legend .sw.b{background:var(--info)}
+.donut-wrap{display:flex;gap:26px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.donut{width:150px;height:150px;border-radius:50%;flex:0 0 auto;
+  -webkit-mask:radial-gradient(circle,transparent 52%,#000 53%);
+  mask:radial-gradient(circle,transparent 52%,#000 53%)}
+.donut-legend{list-style:none;margin:0;padding:0;font-size:13px;color:var(--ink2)}
+.donut-legend li{margin-bottom:6px}
+.donut-legend b{color:var(--ink);font-variant-numeric:tabular-nums}
+footer{padding:34px 0 60px;color:var(--ink3);font-size:12.5px;max-width:78ch}
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:0;padding:0 18px}
+  nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:22px 0}
+  nav a{display:inline-block;border-left:0;border-bottom:2px solid transparent;padding:5px 12px 5px 0;margin-right:6px}
+  .bar-row{grid-template-columns:1fr;gap:3px}
+  .bar-value{text-align:left}
+}
+@media print{
+  nav{display:none}
+  .wrap{display:block;max-width:none;padding:0}
+  main{max-width:none;padding:0}
+  body{font-size:10.5pt;color:#000;background:#fff}
+  details.card{border:1px solid #ccc;background:#fff;break-inside:avoid}
+  details.card:not([open])>.card-body{display:block !important}
+  details.card summary::before{content:""}
+  section{break-inside:auto;page-break-inside:auto;border-bottom:1px solid #ddd}
+  h2,h3,h4{break-after:avoid}
+  .tw{overflow:visible;break-inside:auto}
+  tr{break-inside:avoid}
+  a{color:#000;text-decoration:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <div class="brand">Resiliencia climática ante El Niño</div>
+  <div class="sub">Investigación de problemas y propuesta<br>Hackatón Quito · Ecuador, Perú, Colombia</div>
+  <a href="#contexto">Contexto y tesis</a><a href="#evidencia">Evidencia académica</a><a href="#problemas">Fases 1-2 · Problemas</a><a href="#tracks">Tracks · Impacto comparado</a><a href="#arte">Fase 3 · Estado del arte</a><a href="#prioridad">Fase 4 · Priorización</a><a href="#soluciones">Fases 5-7 · Soluciones y red team</a><a href="#top5">Fase 8 · Top 5</a><a href="#duelo">Duelo · Finalista A vs B</a><a href="#ventana-seca">Finalista A · VENTANA SECA</a><a href="#aval-verde">Finalista B · AVAL VERDE</a>
+</nav>
+<main>
+<header class="hero">
+  <h1>Resiliencia climática ante El Niño: qué problema atacar y por qué</h1>
+  <p>Investigación de problemas, revisión de evidencia académica, estado del arte institucional, matriz de priorización, generación de soluciones, crítica adversarial y dos propuestas finalistas desarrolladas al mismo nivel de detalle.</p>
+  <p>El documento está construido sobre una regla: ninguna afirmación relevante se presenta sin fuente, y cada pieza de evidencia está etiquetada por su fuerza. Las inferencias propias aparecen marcadas como hipótesis y no como hallazgos, incluidas las que sostienen la propuesta recomendada.</p>
+  <div class="meta">11 secciones · 20 hallazgos con fuente · 13 problemas · 8 soluciones evaluadas y sometidas a red team · generado el 3 de septiembre de 2026</div>
+</header>
+<section id="contexto">
+<h2>Contexto y tesis</h2>
+<div class="callout warning"><div class="callout-title">La ventana de preparación es ahora</div><div>El CPC/NOAA estima más del 90% de probabilidad de un evento muy fuerte y cerca de 69% de probabilidad de un evento históricamente sin precedentes para octubre-diciembre de 2026, con anomalías ya observadas de +2,9 °C en la región Niño 1+2. El ERFEN de Ecuador ubica la mayor expresión entre noviembre y diciembre. El Anticipation Hub advierte que en Ecuador y Perú la preparación de la temporada de lluvias debe iniciarse antes de noviembre. Al mismo tiempo, ENFEN proyecta magnitud moderada. Esa divergencia entre fuentes oficiales no es ruido: es un problema documentado que ya paralizó decisiones en 2017.</div></div>
+<h3>La tesis de este análisis</h3>
+<p class="lead">Después de revisar la literatura y el estado institucional real de Ecuador, el hallazgo central es incómodo para un hackatón: los sistemas que parecen faltar en realidad ya existen, y los que existen fallan por razones que ninguna aplicación resuelve. INAMHI ya opera un pronóstico hidrológico nacional a quince días sobre 2.300 tramos de río. La malla de comunicación offline ya existe, es abierta y cuesta menos de veinte dólares por nodo. Las apps de reporte ciudadano ya se probaron y se sabe, con números, que mueren a los cincuenta días.</p>
+<p class="lead">Lo que sí falta es de otro tipo: nadie está conectando datos operativos que ya se publican con las decisiones que dependen de ellos. El caso más nítido y con mejor respaldo científico es el de la empresa de agua potable, que publica con días de anticipación y con resolución de barrio el mapa exacto de dónde miles de hogares van a llenar recipientes destapados —y a veces se lo ordena explícitamente— mientras el sector salud programa sus brigadas de control vectorial mirando la lluvia y los casos ya notificados.</p>
+<h3>Magnitud del problema sanitario, antes de que llegue la lluvia</h3>
+<div class="stats"><div class="stat t-danger"><b>28.652</b><span>Casos de dengue en Ecuador a mediados de agosto de 2026</span></div><div class="stat t-danger"><b>35</b><span>Fallecidos por dengue en 2026</span></div><div class="stat t-warning"><b>11</b><span>Semanas consecutivas por encima de 2025</span></div><div class="stat t-danger"><b>91,5%</b><span>Resistencia de Ae. aegypti a deltametrina</span></div></div>
+<p class="note">Fuente: Ministerio de Salud Pública del Ecuador, corte 15-ago-2026; resistencia según gaceta INSPI con información hasta junio de 2025.</p>
+<h4>Severidad clínica de los casos de dengue de 2026</h4>
+<div class="donut-wrap">
+<div class="donut" style="background:conic-gradient(var(--neutral) 0% 84.99098944477817%, var(--warning) 84.99098944477817% 99.15472410538058%, var(--danger) 99.15472410538058% 100%)"></div>
+<ul class="donut-legend"><li><i class="sw" style="background:var(--neutral)"></i>Sin signos de alarma (19.808) <b>85.0%</b></li><li><i class="sw" style="background:var(--warning)"></i>Con signos de alarma (3.301) <b>14.2%</b></li><li><i class="sw" style="background:var(--danger)"></i>Dengue grave (197) <b>0.8%</b></li></ul></div>
+<p class="note">Número de casos notificados. Fuente: registros oficiales del MSP hasta la semana epidemiológica 28 de 2026 (total 23.306 casos).</p>
+<h4>Capacidad de observación hidrometeorológica de INAMHI</h4>
+<div class="bars"><div class="bar-row">
+<span class="bar-label">Antes de 2010</span>
+<span class="bar-track"><span class="bar-fill t-neutral" style="width:100%"></span></span>
+<span class="bar-value">230 est.</span>
+</div><div class="bar-row">
+<span class="bar-label">Desactivadas</span>
+<span class="bar-track"><span class="bar-fill t-danger" style="width:60.86956521739131%"></span></span>
+<span class="bar-value">140 est.</span>
+</div><div class="bar-row">
+<span class="bar-label">Activas hoy</span>
+<span class="bar-track"><span class="bar-fill t-warning" style="width:39.130434782608695%"></span></span>
+<span class="bar-value">90 est.</span>
+</div><div class="bar-row">
+<span class="bar-label">Con alianzas</span>
+<span class="bar-track"><span class="bar-fill t-info" style="width:73.91304347826086%"></span></span>
+<span class="bar-value">170 est.</span>
+</div></div>
+<p class="note">Número de estaciones hidrometeorológicas. Fuente: declaraciones del jefe de pronósticos y alertas de INAMHI (El Comercio) e informe de la Contraloría General del Estado. Varias de las estaciones perdidas fueron vandalizadas en Esmeraldas y Guayas.</p>
+<div class="callout info"><div class="callout-title">Nota metodológica sobre las fuentes</div><div>El servidor de búsqueda académica funcionó durante la primera parte de la investigación y luego se desconectó de forma permanente. Las primeras consultas se hicieron con él sobre OpenAlex, Crossref y PubMed; el resto de la evidencia se recuperó por investigación web, que alcanzó los mismos artículos revisados por pares. Toda la evidencia está etiquetada por fuerza, y las inferencias propias están marcadas como hipótesis y no como hallazgos.</div></div>
+<blockquote>Las cifras cuantitativas de esta sección provienen de fuentes oficiales y de literatura revisada por pares. Las puntuaciones de la matriz de priorización son juicio analítico propio, explícitamente subjetivo, y se muestran desagregadas por criterio para que puedan ser discutidas y modificadas.</blockquote>
+</section>
+<section id="evidencia">
+<h2>Evidencia académica</h2>
+<p class="lead">20 hallazgos que sostienen todo el análisis. No es una bibliografía: cada entrada existe porque cambia una decisión de diseño. Se incluye deliberadamente evidencia negativa, es decir, estudios que demuestran que un enfoque popular no funciona.</p>
+<details class="card" open>
+<summary><span>El riesgo de dengue es alto en zonas urbanas 3 a 5 meses DESPUÉS de una sequía extrema, por el uso de recipientes improv…</span></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>El riesgo de dengue es alto en zonas urbanas 3 a 5 meses DESPUÉS de una sequía extrema, por el uso de recipientes improvisados de almacenamiento. Las condiciones muy húmedas elevan el riesgo el mismo mes y hasta 3 meses después. Los autores señalan explícitamente que las intervenciones deberían programarse en esa ventana y no solo durante la temporada cálida y lluviosa.</p>
+<h4>Fuente</h4>
+<p>Lowe et al., Lancet Planetary Health (2021), Brasil — confirma hallazgos previos en Barbados (Lowe et al., PLOS Medicine 2018)</p>
+<h4>Relevancia</h4>
+<p>Define una ventana de intervención de 3 a 5 meses que hoy nadie usa operativamente. Es el reloj equivocado, no el mapa equivocado.</p>
+<h4>Implicación tecnológica</h4>
+<p>Un motor de focalización temporal puede adelantar el despliegue de brigadas un trimestre completo respecto a la práctica actual.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card" open>
+<summary><span>En Huaquillas (Ecuador), de todos los factores evaluados a nivel de hogar, la interrupción del suministro de agua fue el…</span></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>En Huaquillas (Ecuador), de todos los factores evaluados a nivel de hogar, la interrupción del suministro de agua fue el ÚNICO factor de riesgo estadísticamente significativo para la presencia de Aedes aegypti. El mismo vínculo está documentado en Machala.</p>
+<h4>Fuente</h4>
+<p>Household and climate factors influence Aedes aegypti presence in the arid city of Huaquillas, Ecuador — PLOS Neglected Tropical Diseases (2021)</p>
+<h4>Relevancia</h4>
+<p>Es evidencia ecuatoriana, a nivel de hogar, y apunta a una variable de infraestructura, no de clima ni de educación.</p>
+<h4>Implicación tecnológica</h4>
+<p>La unidad de análisis correcta no es el cantón ni la lluvia: es el sector de la red de agua potable con servicio irregular.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card" open>
+<summary><span>En Machala, los mejores modelos para predecir presencia de pupas de Ae. aegypti incluyeron prácticas de almacenamiento d…</span></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>En Machala, los mejores modelos para predecir presencia de pupas de Ae. aegypti incluyeron prácticas de almacenamiento de agua, acceso a agua entubada, número de hogares por predio y condición de la casa y el patio. La lluvia y la temperatura mínima predijeron oviposición, pero su efecto varió por localidad según el tipo de recipiente.</p>
+<h4>Fuente</h4>
+<p>Stewart-Ibarra et al., PLOS ONE (2013) — Dengue Vector Dynamics Influenced by Climate and Social Factors in Ecuador</p>
+<h4>Relevancia</h4>
+<p>Confirma que el factor social-infraestructural domina y que el efecto del clima está mediado por el tipo de recipiente.</p>
+<h4>Implicación tecnológica</h4>
+<p>Un modelo puramente meteorológico está estructuralmente mal especificado. Hay que modelar el recipiente.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>Existe una ventana estrecha de densidad poblacional, entre ~3.000 y ~7.000 hab/km², especialmente propensa a brotes de d…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>Existe una ventana estrecha de densidad poblacional, entre ~3.000 y ~7.000 hab/km², especialmente propensa a brotes de dengue. Las zonas con alta densidad o con suministro de agua adecuado no sufrieron brotes severos. El riesgo fue mayor en zonas rurales que urbanas, explicado en gran medida por la falta de agua entubada.</p>
+<h4>Fuente</h4>
+<p>Population Density, Water Supply, and the Risk of Dengue Fever in Vietnam — PLOS Medicine (cohorte de 75.000 hogares georreferenciados)</p>
+<h4>Relevancia</h4>
+<p>Da un filtro geográfico cuantitativo y barato, y desmonta el supuesto de que el dengue es un problema de ciudad densa.</p>
+<h4>Implicación tecnológica</h4>
+<p>Se puede construir una capa de priorización con densidad poblacional pública, sin ningún sensor.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>Ecuador acumuló 28.652 casos de dengue y 35 fallecidos hasta mediados de agosto de 2026, con 11 semanas consecutivas por…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>Ecuador acumuló 28.652 casos de dengue y 35 fallecidos hasta mediados de agosto de 2026, con 11 semanas consecutivas por encima de 2025. Manabí, Guayas y Los Ríos concentran los contagios; Galápagos tiene la mayor incidencia (1.011 por 100.000). Circula el serotipo DENV-3.</p>
+<h4>Fuente</h4>
+<p>Ministerio de Salud Pública del Ecuador, corte 15-ago-2026; OPS SE29 (1,47 millones de casos sospechosos en la región en 2026)</p>
+<h4>Relevancia</h4>
+<p>El problema ya está escalando ANTES de que empiece la temporada lluviosa de El Niño 2026-27.</p>
+<h4>Implicación tecnológica</h4>
+<p>La línea base es alta y ascendente: cualquier mejora en focalización tiene un denominador grande.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>Las poblaciones ecuatorianas de Aedes aegypti evaluadas presentan 91,5% de resistencia a deltametrina y 62% a temefos. L…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>Las poblaciones ecuatorianas de Aedes aegypti evaluadas presentan 91,5% de resistencia a deltametrina y 62% a temefos. La resistencia a un tercer compuesto pasó de 15,91% (dic-2024) a 31,25% (jun-2025). Los propios investigadores concluyen que no se resuelve con fumigación y que hay que combinar el control químico con la reducción de criaderos.</p>
+<h4>Fuente</h4>
+<p>Gaceta del Instituto Nacional de Investigación en Salud Pública (INSPI), Ecuador, información hasta junio 2025</p>
+<h4>Relevancia</h4>
+<p>La herramienta principal de respuesta del Estado —fumigar— tiene eficacia marginal. El control de criaderos deja de ser complemento y pasa a ser la intervención principal.</p>
+<h4>Implicación tecnológica</h4>
+<p>El recurso escaso y decisivo es el tiempo-hombre de brigada caminando manzanas. Optimizar su asignación tiene valor directo.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>EPMAPS (Quito) publica un Mapa de Suspensiones y un Calendario de racionamientos por barrio y por horario. En noviembre …</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>EPMAPS (Quito) publica un Mapa de Suspensiones y un Calendario de racionamientos por barrio y por horario. En noviembre de 2024 hubo cortes de hasta 10 horas en 95 barrios, afectando a ~100.000 habitantes. Interagua (Guayaquil) anunció una suspensión de 12 a 14 horas y declaró que los tanqueros no abastecerían viviendas, por lo que era 'crucial que los ciudadanos realicen su abastecimiento previo'.</p>
+<h4>Fuente</h4>
+<p>EPMAPS (agua.quito.gob.ec, Mapa de Suspensiones y Calendario de racionamientos); comunicados de Interagua, Guayaquil</p>
+<h4>Relevancia</h4>
+<p>El Estado publica, con días de anticipación y con resolución de barrio, el mapa de dónde miles de hogares van a llenar recipientes. En algunos casos lo ordena explícitamente.</p>
+<h4>Implicación tecnológica</h4>
+<p>Existe un predictor de criaderos, público, georreferenciado y anticipado, que el sector salud no consume. Es el insumo central del producto.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>La suspensión de agua de Guayaquil se originó en trabajos de CELEC EP–Transelectric en la subestación Pascuales, que ali…</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>La suspensión de agua de Guayaquil se originó en trabajos de CELEC EP–Transelectric en la subestación Pascuales, que alimenta la planta La Toma: sin energía, la planta detiene la producción de agua.</p>
+<h4>Fuente</h4>
+<p>Comunicado de Interagua sobre la suspensión del 9 de noviembre</p>
+<h4>Relevancia</h4>
+<p>Documenta la cascada energía → agua → almacenamiento doméstico → criaderos, en un caso real y fechado.</p>
+<h4>Implicación tecnológica</h4>
+<p>El calendario de mantenimiento eléctrico también es un predictor de riesgo sanitario. Ninguna institución cruza esas dos agendas.</p>
+<p class="tag t-info">Evidencia moderada</p></div></details>
+<details class="card">
+<summary><span>En Mosquito Alert Italia, con más de 18.000 participantes reclutados, solo ~30% envió algún reporte; de quienes reportar…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>En Mosquito Alert Italia, con más de 18.000 participantes reclutados, solo ~30% envió algún reporte; de quienes reportaron, ~50% envió uno solo. La probabilidad de reportar cae bruscamente tras el registro y se aproxima a cero alrededor de los 50 días. La misma tendencia se observó en España.</p>
+<h4>Fuente</h4>
+<p>Involving citizen scientists in monitoring arthropod vectors: The case of Mosquito Alert in Italy — Science of the Total Environment (2024)</p>
+<h4>Relevancia</h4>
+<p>Evidencia negativa decisiva: cualquier solución que dependa de reporte ciudadano voluntario sostenido está muerta en ~50 días.</p>
+<h4>Implicación tecnológica</h4>
+<p>El reportero debe ser alguien ya remunerado u obligado a hacer el recorrido (brigadista, técnico, lecturista), no un voluntario.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>DengueChat logró reducir los índices entomológicos a niveles óptimos y por debajo del umbral de transmisión durante todo…</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>DengueChat logró reducir los índices entomológicos a niveles óptimos y por debajo del umbral de transmisión durante todo el periodo de estudio, mientras los barrios control se mantuvieron en niveles de alarma o emergencia. Los autores insisten en que el resultado vino de combinar software con 'socialware' y trabajo presencial, y que la plataforma no puede paracaidearse en un barrio.</p>
+<h4>Fuente</h4>
+<p>Holston et al., American Journal of Tropical Medicine and Hygiene (2021) — DengueChat (estudio piloto, no aleatorizado, muestra pequeña)</p>
+<h4>Relevancia</h4>
+<p>Demuestra que la reducción de criaderos SÍ mueve los indicadores entomológicos, y que el cuello de botella es organizativo, no tecnológico.</p>
+<h4>Implicación tecnológica</h4>
+<p>El producto debe insertarse en una estructura de brigadas existente y medir índices entomológicos, no descargas.</p>
+<p class="tag t-info">Evidencia moderada</p></div></details>
+<details class="card">
+<summary><span>Durante El Niño costero de 2017, los pronósticos contradictorios entre Estados Unidos y Perú provocaron un debate hidrom…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>Durante El Niño costero de 2017, los pronósticos contradictorios entre Estados Unidos y Perú provocaron un debate hidrometeorológico que 'frenó la toma de decisiones'. El problema de definición de El Niño genera incertidumbre y altera la percepción del riesgo según la región del Pacífico que se use para identificar el evento.</p>
+<h4>Fuente</h4>
+<p>Ramírez &amp; Briones, International Journal of Disaster Risk Science (2017) — Understanding the El Niño Costero of 2017</p>
+<h4>Relevancia</h4>
+<p>Se está repitiendo ahora mismo: el CPC/NOAA da &gt;90% de probabilidad de evento muy fuerte y ~69% de evento histórico para oct-dic 2026, mientras ENFEN proyecta magnitud moderada o débil en Niño 3.4.</p>
+<h4>Implicación tecnológica</h4>
+<p>Toda solución cuyo disparador dependa de 'que se declare El Niño' heredará esa parálisis. El disparador debe ser local y observable.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>En Lima, las inundaciones de 2020 aumentaron el tiempo promedio de acceso a servicios de salud de 33 a 48 minutos. En Ma…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>En Lima, las inundaciones de 2020 aumentaron el tiempo promedio de acceso a servicios de salud de 33 a 48 minutos. En Manila, 22% de la población perdió por completo el acceso a servicios de salud de mayor nivel con inundaciones de más de 15 cm.</p>
+<h4>Fuente</h4>
+<p>Tariverdi, Núñez-del-Prado, Leonova &amp; Rentschler, Scientific Reports (2023) — Measuring accessibility to public services and infrastructure criticality</p>
+<h4>Relevancia</h4>
+<p>Cuantifica que el daño relevante no es el activo vial sino la pérdida de acceso de la población, y lo hace con datos abiertos en ciudades latinoamericanas.</p>
+<h4>Implicación tecnológica</h4>
+<p>Se puede calcular 'quién quedó sin acceso' con OSM, ubicación de establecimientos y mancha de inundación, sin instrumentación nueva.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>En el Barotse (Zambia), la inundación estacional redujo del 55% al 29% la proporción de mujeres con acceso caminando en …</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>En el Barotse (Zambia), la inundación estacional redujo del 55% al 29% la proporción de mujeres con acceso caminando en menos de 2 horas a su sitio de parto más cercano, y del 65% al 23% la posibilidad de referencia vehicular a cuidados obstétricos de emergencia en menos de una hora.</p>
+<h4>Fuente</h4>
+<p>Mróz et al., International Journal of Health Geographics (2023) — Impacts of seasonal flooding on geographical access to maternal healthcare</p>
+<h4>Relevancia</h4>
+<p>Muestra que el impacto varía mes a mes con el avance de la onda de inundación, no como un evento binario.</p>
+<h4>Implicación tecnológica</h4>
+<p>La pérdida de accesibilidad debe modelarse como una serie temporal, no como un mapa único post-evento.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>INAMHI opera actualmente 90 estaciones hidrometeorológicas, frente a las 230 que existían antes de 2010; 140 fueron desa…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>INAMHI opera actualmente 90 estaciones hidrometeorológicas, frente a las 230 que existían antes de 2010; 140 fueron desactivadas por restricciones presupuestarias y varias fueron vandalizadas, entre ellas las de Esmeraldas y parte de Guayas. No hay radar meteorológico y hay equipos sin actualizar en 15 años. Con alianzas alcanza información de al menos 170 estaciones. Las alertas se emiten con 48 horas de anticipación y en algunos casos 6 horas.</p>
+<h4>Fuente</h4>
+<p>Declaraciones del jefe de pronósticos y alertas de INAMHI (El Comercio); informe de la Contraloría General del Estado sobre la red hidrológica</p>
+<h4>Relevancia</h4>
+<p>Las estaciones perdidas están justo en las provincias de mayor exposición a El Niño. La calibración es peor donde más se necesita.</p>
+<h4>Implicación tecnológica</h4>
+<p>Cualquier solución que asuma datos hidrométricos densos y confiables en la costa ecuatoriana está mal fundada.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>La Contraloría documentó que la red hidrológica nacional se compone principalmente de estaciones limnimétricas en sitios…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>La Contraloría documentó que la red hidrológica nacional se compone principalmente de estaciones limnimétricas en sitios de difícil acceso, que es complicado encontrar personas que hagan las lecturas de forma constante, que las inspecciones ocurren 1 o 2 veces al año, que en varios sitios no existen observadores y la medición está suspendida, y que otras estaciones están azolvadas por falta de mantenimiento.</p>
+<h4>Fuente</h4>
+<p>Informe de la Contraloría General del Estado, Ecuador</p>
+<h4>Relevancia</h4>
+<p>El problema no es de sensores sino de operación y mantenimiento sostenido. Es el mismo muro contra el que choca cualquier IoT de hackathon.</p>
+<h4>Implicación tecnológica</h4>
+<p>Una propuesta con hardware desplegado en campo debe responder quién lo mantiene, o será una estación azolvada más.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>INAMHI opera la plataforma INAMHI-GEOGLOWS (SERVIR-Amazonia/NASA), con Hydroviewer cubriendo ~2.300 tramos de río y pron…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>INAMHI opera la plataforma INAMHI-GEOGLOWS (SERVIR-Amazonia/NASA), con Hydroviewer cubriendo ~2.300 tramos de río y pronóstico a 15 días, validación histórica en 235 estaciones, pronóstico de nivel en 270 y una app de manchas de inundación satelitales. Registra aproximadamente 40 casos validados de alerta de inundación en 38 cuencas durante 2024-2025, y SNGR usa sus productos.</p>
+<h4>Fuente</h4>
+<p>From Data Streams to Decisions: Multi-Source Hydrometeorological Integration Platforms — IntechOpen (2026)</p>
+<h4>Relevancia</h4>
+<p>El pronóstico hidrológico nacional ya existe, es abierto, es institucional y funciona. Construir 'otro predictor de inundaciones' es redundante.</p>
+<h4>Implicación tecnológica</h4>
+<p>El vacío no está en el pronóstico sino en su traducción a impacto local y en su entrega a la última milla.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>El producto diario NASA Black Marble (VNP46A2, 500 m, desde 2012, corregido por luna, atmósfera y BRDF) permite monitore…</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>El producto diario NASA Black Marble (VNP46A2, 500 m, desde 2012, corregido por luna, atmósfera y BRDF) permite monitorear sistemáticamente apagones por desastre. Un flujo de trabajo validado en la tormenta Uri (Texas) obtuvo la mejor correlación con datos reales de corte al usar una reducción de 26% en la radiancia, y encontró que las comunidades latinas sufrieron más apagones.</p>
+<h4>Fuente</h4>
+<p>Monitoring disaster-related power outages using NASA Black Marble (ISPRS Archives, 2018); Power outage and environmental justice in Winter Storm Uri (International Journal of Digital Earth, 2023)</p>
+<h4>Relevancia</h4>
+<p>Ofrece un detector de apagones gratuito, diario y global, sin desplegar nada en territorio.</p>
+<h4>Implicación tecnológica</h4>
+<p>Permite inferir aislamiento sin depender de que la comunidad afectada pueda reportar. Su límite es la nubosidad, crítico justo en temporada lluviosa.</p>
+<p class="tag t-info">Evidencia moderada</p></div></details>
+<details class="card">
+<summary><span>Meshtastic es una malla LoRa de código abierto con nodos por debajo de US$20, alcance de ~4 km en zona urbana y hasta ~1…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>Meshtastic es una malla LoRa de código abierto con nodos por debajo de US$20, alcance de ~4 km en zona urbana y hasta ~15 km en zona rural, alimentación solar o por batería, y despliegues comunitarios reales en Latinoamérica (más de 300 nodos activos en Argentina, cobertura completa de Bahía Blanca y Bariloche), con gateways de alertas del servicio meteorológico y puentes a WhatsApp.</p>
+<h4>Fuente</h4>
+<p>Comunidades Meshtastic Chile/Argentina (Duoc UC, Sudoeste Mesh, SalsiMesh); Resilience Analysis in Off-Grid LoRa Mesh Networks (arXiv, 2026)</p>
+<h4>Relevancia</h4>
+<p>La capa de comunicación offline ya está resuelta y es gratis. Reconstruirla es la trampa clásica de hackathon.</p>
+<h4>Implicación tecnológica</h4>
+<p>Hay que construir la capa de decisión ENCIMA de Meshtastic, no otra malla.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+<details class="card">
+<summary><span>Los marcos de acción anticipatoria requieren disparadores suficientemente confiables para justificar el desembolso; los …</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>Los marcos de acción anticipatoria requieren disparadores suficientemente confiables para justificar el desembolso; los pronósticos no existen para todos los países o amenazas y pueden no tener la resolución o destreza necesarias, especialmente a plazos largos, por lo que el momento de la acción debe balancear destreza del pronóstico contra necesidad operativa. En Sudamérica hay marcos activos o en desarrollo para El Niño en Colombia, Ecuador, Perú, Bolivia y Venezuela, pero los montos comprometidos no alcanzan la escala de un evento moderado a fuerte.</p>
+<h4>Fuente</h4>
+<p>Chaves-Gonzalez et al., Frontiers in Climate (2022) — Anticipatory action: Lessons for the future; GTAA LAC ENSO advocacy 2026 (Anticipation Hub)</p>
+<h4>Relevancia</h4>
+<p>Hay dinero anticipatorio institucional buscando disparadores accionables, y una ventana declarada: la preparación en Ecuador y Perú debe iniciar antes de noviembre.</p>
+<h4>Implicación tecnológica</h4>
+<p>Un motor que produzca disparadores locales verificables tiene un comprador institucional identificado y un calendario político favorable.</p>
+<p class="tag t-info">Evidencia moderada</p></div></details>
+<details class="card">
+<summary><span>El Niño 2026-27 está en fortalecimiento. El CPC/NOAA reporta anomalías superiores a +2,0 °C en el Pacífico ecuatorial es…</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><h4>Hallazgo</h4>
+<p>El Niño 2026-27 está en fortalecimiento. El CPC/NOAA reporta anomalías superiores a +2,0 °C en el Pacífico ecuatorial este, +2,9 °C en Niño 1+2, y estima &gt;90% de probabilidad de evento muy fuerte y ~69% de probabilidad de un evento histórico (RONI ≥ +2,5 °C) en oct-dic 2026. El ERFEN de Ecuador señala similitud relativa tanto con 1997-98 como con el debilitado 2023-24, y ubica la mayor expresión entre noviembre y diciembre. ENFEN mantiene alerta de El Niño costero con magnitud más probablemente moderada.</p>
+<h4>Fuente</h4>
+<p>CPC/NOAA ENSO Diagnostic Discussion; Comité ERFEN Ecuador; comunicados oficiales ENFEN (Perú)</p>
+<h4>Relevancia</h4>
+<p>La ventana de preparación es ahora, y la divergencia entre fuentes oficiales es un hecho verificable del presente, no una hipótesis.</p>
+<h4>Implicación tecnológica</h4>
+<p>El pitch tiene urgencia real y fechada. También justifica no atar el producto a una declaración oficial de El Niño.</p>
+<p class="tag t-success">Evidencia fuerte</p></div></details>
+</section>
+<section id="problemas">
+<h2>Fases 1-2 · Problemas</h2>
+<h3>Fase 1 — Problemas concretos, con anatomía completa</h3>
+<p class="lead">Trece problemas descompuestos en usuario afectado, actor que hoy intenta resolverlo, causa, consecuencia, momento crítico, información que falta, decisión que se toma mal o tarde, y tecnología candidata. La etiqueta indica si el problema está respaldado por evidencia o si todavía es una hipótesis nuestra.</p>
+<details class="card" open>
+<summary><span>P1 · Salud · Las brigadas de control vectorial se despliegan con el reloj equivocado</span></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Familias en barrios periurbanos con servicio de agua irregular en Manabí, Guayas, Los Ríos, El Oro</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>Brigadas de control vectorial del MSP y direcciones distritales de salud</td></tr><tr><td>Causa</td><td>La programación se guía por casos ya notificados y por la temporada cálida y lluviosa; la evidencia sitúa la construcción del riesgo 3 a 5 meses antes, tras la interrupción del servicio de agua</td></tr><tr><td>Consecuencia</td><td>Se interviene cuando la transmisión ya está en curso; el recurso más escaso (tiempo-hombre de brigada) se gasta con retorno bajo</td></tr><tr><td>Momento crítico</td><td>Antes (3 a 5 meses antes del brote)</td></tr><tr><td>Información que falta</td><td>Qué manzanas acumularon recipientes de almacenamiento y cuándo empezó esa acumulación</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>A qué manzana enviar la brigada mañana y en qué orden recorrerlas</td></tr><tr><td>Tecnología candidata</td><td>Fusión de datos operativos de la empresa de agua, capa de densidad poblacional, temperatura satelital y app offline-first de brigada con retroalimentación</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia fuerte</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P2 · Salud · La fumigación ya no funciona pero sigue siendo la respuesta visible del Estado</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Población en zonas endémicas</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>MSP, gobiernos locales</td></tr><tr><td>Causa</td><td>91,5% de resistencia a deltametrina y 62% a temefos, con tendencia creciente</td></tr><tr><td>Consecuencia</td><td>Gasto en insumos de baja eficacia y, peor, falsa sensación de protección en la comunidad tras el paso del carro fumigador</td></tr><tr><td>Momento crítico</td><td>Durante</td></tr><tr><td>Información que falta</td><td>Mapa de resistencia a nivel local y evidencia comparada de qué intervención rinde más por hora de brigada</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Fumigar en lugar de eliminar criaderos</td></tr><tr><td>Tecnología candidata</td><td>Sistema de decisión que priorice reducción de fuente y mida índices entomológicos como resultado</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia fuerte</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P3 · Riesgos · Nadie sabe qué comunidades quedaron incomunicadas, porque justamente no pueden reportarlo</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Comunidades rurales y periurbanas aisladas</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>SNGRE, COE cantonales, ECU-911</td></tr><tr><td>Causa</td><td>El sistema de respuesta es reactivo a reportes entrantes; la ausencia de reportes se lee como ausencia de problema</td></tr><tr><td>Consecuencia</td><td>Sesgo sistemático de la respuesta hacia las comunidades conectadas; las más afectadas entran últimas en el consolidado</td></tr><tr><td>Momento crítico</td><td>Durante</td></tr><tr><td>Información que falta</td><td>Qué localidades dejaron de emitir cualquier señal y desde cuándo</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Priorizar la asignación de helicópteros, brigadas y ayuda según el volumen de reportes recibidos</td></tr><tr><td>Tecnología candidata</td><td>Luces nocturnas VIIRS, latido periódico sobre malla LoRa existente, detección de anomalías en series de reportes</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia moderada</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P4 · Riesgos · Se mide el daño al activo vial, no la pérdida de acceso de la población</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Población que depende de un único camino para llegar a hospital, escuela o mercado</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>MTOP, prefecturas, GAD municipales, COE</td></tr><tr><td>Causa</td><td>Los reportes de campo se organizan por infraestructura afectada, no por servicio perdido</td></tr><tr><td>Consecuencia</td><td>Se repara lo visible y lo transitado, no lo crítico; poblaciones pequeñas con un único acceso quedan invisibles</td></tr><tr><td>Momento crítico</td><td>Durante y después</td></tr><tr><td>Información que falta</td><td>Cuántas personas perdieron acceso a qué servicio y por cuál segmento exacto de vía</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>El orden de priorización de la maquinaria y las reparaciones</td></tr><tr><td>Tecnología candidata</td><td>Análisis de red sobre OpenStreetMap, ubicación de establecimientos, mancha de inundación satelital, grilla de población</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia fuerte</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P5 · Telecom · La alerta se produce a tiempo pero se pierde en la última milla institucional</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Habitantes de riberas y laderas</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>INAMHI emite, SNGRE difunde, el GAD y el teniente político ejecutan</td></tr><tr><td>Causa</td><td>La cadena depende de personas, teléfonos y grupos de mensajería; la alerta nacional no está traducida a una acción concreta por localidad</td></tr><tr><td>Consecuencia</td><td>Se pierden las 48 horas de anticipación que el sistema ya produce</td></tr><tr><td>Momento crítico</td><td>Antes</td></tr><tr><td>Información que falta</td><td>Qué significa el pronóstico en términos de 'a qué hora sube el agua en mi calle'</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Cuándo evacuar y qué mover primero</td></tr><tr><td>Tecnología candidata</td><td>Umbrales de impacto locales, entrega multicanal degradable (SMS, radio, sirena, malla LoRa)</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia fuerte</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P6 · Riesgos · El pronóstico hidrológico nacional existe pero no está traducido a impacto local</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Técnico de gestión de riesgos de un GAD pequeño</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>INAMHI-GEOGLOWS, SNGR</td></tr><tr><td>Causa</td><td>La plataforma entrega caudal pronosticado en tramos de río; nadie sabe qué significan 400 m³/s para su barrio</td></tr><tr><td>Consecuencia</td><td>Un buen pronóstico no se convierte en decisión; se espera a ver el agua</td></tr><tr><td>Momento crítico</td><td>Antes</td></tr><tr><td>Información que falta</td><td>La función que conecta caudal pronosticado con área inundada y con población y activos expuestos</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Activar o no el protocolo, y con cuánta antelación abrir albergues</td></tr><tr><td>Tecnología candidata</td><td>Curvas caudal-inundación con modelo digital de elevación, calibradas con marcas históricas de agua</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia fuerte</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P7 · Riesgos · Pronósticos oficiales divergentes paralizan la decisión municipal</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Alcalde y jefe de riesgos de un cantón costero</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>ERFEN, ENFEN, CPC/NOAA, medios</td></tr><tr><td>Causa</td><td>Distintas regiones del Pacífico y distintos índices producen narrativas incompatibles sobre la magnitud del evento</td></tr><tr><td>Consecuencia</td><td>Se posterga el gasto preventivo por miedo a actuar en vano y a la sanción política</td></tr><tr><td>Momento crítico</td><td>Antes</td></tr><tr><td>Información que falta</td><td>Cuál es la acción que conviene tomar igual, sea el evento fuerte o débil</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Comprometer o no presupuesto preventivo antes de que se declare oficialmente el evento</td></tr><tr><td>Tecnología candidata</td><td>Disparadores escalados por decisión, análisis de arrepentimiento, cartera de acciones sin arrepentimiento</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia fuerte</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P8 · Salud · La cascada energía → agua → salud no la modela ninguna institución</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Barrios al final de la red de distribución</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>CELEC, empresas eléctricas, empresas municipales de agua, MSP; cada una con su propio calendario</td></tr><tr><td>Causa</td><td>Un mantenimiento en una subestación detiene una planta potabilizadora y produce una suspensión de agua de 12 a 14 horas, con almacenamiento doméstico masivo</td></tr><tr><td>Consecuencia</td><td>Riesgo sanitario generado por una decisión de otro sector, sin que nadie lo contabilice</td></tr><tr><td>Momento crítico</td><td>Antes</td></tr><tr><td>Información que falta</td><td>El cruce entre el calendario de mantenimiento eléctrico, el de suspensiones de agua y el mapa de riesgo vectorial</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Programar cortes sin considerar el costo sanitario ni acompañarlos de medidas de tapado de recipientes</td></tr><tr><td>Tecnología candidata</td><td>Integración de agendas operativas, grafo de dependencias entre servicios, simulación de cascada</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia moderada</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P9 · Agro · El pequeño productor no puede probar el daño, entonces la compensación no llega</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Productores de arroz, banano, maíz y cacao en cuencas bajas del Guayas</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>MAG con evaluación manual, banca pública, aseguradoras</td></tr><tr><td>Causa</td><td>La evidencia se levanta en papel, sin georreferencia ni fecha verificable, y el flujo de verificación es lento</td></tr><tr><td>Consecuencia</td><td>Descapitalización, endeudamiento informal y abandono de la parcela</td></tr><tr><td>Momento crítico</td><td>Después</td></tr><tr><td>Información que falta</td><td>Evidencia georreferenciada, fechada y corroborable del estado del cultivo antes y después</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>A quién se le reconoce la pérdida y con qué monto, y cuánto tarda</td></tr><tr><td>Tecnología candidata</td><td>Captura offline-first con sello de tiempo y ubicación, corroboración con radar Sentinel-1 y series de índices de vegetación</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia moderada</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P10 · Salud · La vigilancia epidemiológica es pasiva y llega con semanas de rezago</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Poblaciones en zonas de brote incipiente</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>MSP, vigilancia epidemiológica distrital</td></tr><tr><td>Causa</td><td>El caso entra al sistema cuando la persona busca atención y el registro se consolida</td></tr><tr><td>Consecuencia</td><td>Se responde sobre una foto vieja de la epidemia</td></tr><tr><td>Momento crítico</td><td>Durante</td></tr><tr><td>Información que falta</td><td>Señal adelantada de transmisión antes de la notificación clínica</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Dónde concentrar la respuesta esta semana</td></tr><tr><td>Tecnología candidata</td><td>Indicadores adelantados de infraestructura, índices entomológicos de brigada como señal, modelos con rezagos distribuidos</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia fuerte</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P11 · Agro · La saturación del suelo y la asfixia radicular no se monitorean, se descubren</span><em>Evidencia limitada</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Pequeño y mediano productor</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>El propio productor, con criterio visual</td></tr><tr><td>Causa</td><td>El daño por anegamiento y hongos ocurre bajo el suelo antes de ser visible en la planta</td></tr><tr><td>Consecuencia</td><td>Se pierde la ventana de drenaje y de aplicación preventiva de fungicidas</td></tr><tr><td>Momento crítico</td><td>Durante</td></tr><tr><td>Información que falta</td><td>Estado de saturación del suelo por lote y su tendencia</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Cuándo drenar y cuándo aplicar tratamiento preventivo</td></tr><tr><td>Tecnología candidata</td><td>Sensores de humedad de suelo de bajo costo con radio de largo alcance, alertas por SMS o voz</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia limitada</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P12 · Telecom · Los reportes de campo se pierden cuando la conectividad es intermitente</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Brigadista, técnico de campo, teniente político</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>SNGRE, GAD, MSP</td></tr><tr><td>Causa</td><td>Las herramientas asumen conexión permanente; el formulario se llena en papel y se transcribe días después</td></tr><tr><td>Consecuencia</td><td>Información que existió pero nunca llegó a la decisión; doble digitación y errores</td></tr><tr><td>Momento crítico</td><td>Durante y después</td></tr><tr><td>Información que falta</td><td>Nada: la información existe y se pierde en el camino</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Todas las que dependen del consolidado de campo</td></tr><tr><td>Tecnología candidata</td><td>Almacenamiento local con sincronización oportunista y resolución de conflictos, sin dependencia de conexión</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia fuerte</td></tr></tbody></table></div></div></details>
+<details class="card">
+<summary><span>P13 · Riesgos · Las estaciones hidrológicas no tienen observadores y la calibración falla donde más importa</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Dimensión</th><th>Detalle</th></tr></thead><tbody><tr><td>Usuario afectado</td><td>Todo el sistema nacional de alerta</td></tr><tr><td>Quién intenta resolverlo hoy</td><td>INAMHI, con 90 estaciones activas frente a 230 antes de 2010</td></tr><tr><td>Causa</td><td>Presupuesto, vandalismo, sitios de difícil acceso, ausencia de observadores locales, azolvamiento</td></tr><tr><td>Consecuencia</td><td>El modelo se corrige peor en Esmeraldas y Guayas, justo las provincias más expuestas</td></tr><tr><td>Momento crítico</td><td>Antes</td></tr><tr><td>Información que falta</td><td>Verdad de terreno de nivel de agua en la costa</td></tr><tr><td>Decisión que se toma mal o tarde</td><td>Los umbrales de alerta que se derivan de series poco fiables</td></tr><tr><td>Tecnología candidata</td><td>Lectura de escalas limnimétricas por visión computacional, testigos locales incentivados, corroboración satelital</td></tr><tr><td>Fuerza de la evidencia</td><td>Evidencia fuerte</td></tr></tbody></table></div></div></details>
+<h3>Fase 2 — Problemas ocultos por razonamiento de segundo y tercer orden</h3>
+<p class="lead">Aquí es donde la investigación produce lo que una lluvia de ideas no produciría. Cada cadena parte de un problema obvio y pregunta repetidamente qué decisión se vuelve difícil, qué información haría falta, cómo se obtiene hoy y qué pasa si esa infraestructura también falla.</p>
+<details class="card">
+<summary><span>Cadena A — La sequía causa dengue, y el causante es un documento administrativo</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><p>Se corta el agua, por estiaje o por daño a la infraestructura. La empresa municipal publica el calendario de racionamiento y en algunos casos declara que los tanqueros no abastecerán viviendas, por lo que es crucial que los ciudadanos se abastezcan previamente. Miles de hogares llenan recipientes, muchos destapados. Tres a cinco meses después aparece el brote de dengue, según Lowe y colegas en Brasil y Barbados. En Huaquillas, la interrupción del suministro fue el único factor de riesgo significativo a nivel de hogar. Nadie conecta el calendario de la empresa de agua con la programación de brigadas del Ministerio de Salud. La consecuencia es que existe un predictor de criaderos público, georreferenciado y con meses de anticipación, que el sector salud no consume.</p></div></details>
+<details class="card">
+<summary><span>Cadena B — Un mantenimiento eléctrico genera riesgo epidemiológico</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><p>CELEC programa trabajos en la subestación Pascuales. Sin energía, la planta potabilizadora La Toma detiene la producción. Interagua suspende el servicio de doce a catorce horas en Guayaquil y cantones vecinos. Los hogares almacenan. El riesgo vectorial que se genera es consecuencia de una decisión tomada en el sector eléctrico, contabilizada por nadie. Tres agencias con tres calendarios que no se cruzan producen un daño que ninguna reporta como propio. Es el ejemplo más limpio de un problema que solo existe como consecuencia de otro problema.</p></div></details>
+<details class="card">
+<summary><span>Cadena C — El indicador que se reporta no es el que importa</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><p>Una inundación destruye una carretera. La decisión difícil no es repararla sino elegir cuál reparar primero, y para eso hace falta saber cuántas personas perdieron acceso a qué servicio. Hoy esa información no se produce: los reportes se organizan por kilómetros de vía afectada. Tariverdi y colegas midieron que en Lima las inundaciones de 2020 elevaron el acceso promedio a salud de 33 a 48 minutos, y que en Manila el 22% de la población perdió todo acceso a servicios de salud superiores con quince centímetros de agua. Mróz y colegas mostraron en Zambia que la proporción de mujeres con acceso caminando a su sitio de parto cayó del 55% al 29%. Doscientos metros de camino de tierra pueden importar más que diez kilómetros de asfalto, y el sistema actual no puede verlo.</p></div></details>
+<details class="card">
+<summary><span>Cadena D — La respuesta está sesgada hacia quien puede hablar</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><p>La comunidad queda incomunicada. Por definición, no reporta. El consolidado del centro de operaciones se construye con los reportes que llegan, así que la comunidad no aparece. Los recursos se asignan según ese consolidado. El resultado es que la intensidad de la respuesta es inversamente proporcional a la gravedad del aislamiento. La ausencia de señal debería ser la alarma más fuerte del sistema y hoy se procesa como falta de datos.</p></div></details>
+<details class="card">
+<summary><span>Cadena E — La respuesta visible produce desprotección</span><em>Evidencia moderada</em></summary>
+<div class="card-body"><p>Pasa el carro fumigador. La comunidad observa que el Estado actuó. Pero con 91,5% de resistencia a deltametrina el efecto real es marginal, y los propios investigadores del INSPI concluyen que no se resuelve fumigando. La consecuencia de segundo orden es peor que la ineficacia: una señal de protección que reduce el incentivo a eliminar criaderos, que es la única intervención que la evidencia respalda. La respuesta más visible del Estado puede estar produciendo el comportamiento equivocado.</p></div></details>
+<details class="card">
+<summary><span>Cadena F — Una base de datos que parece cobertura y es ruido</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><p>Se lanza una app de reporte ciudadano. Los primeros días llegan muchos reportes. A los cincuenta días la tasa es prácticamente cero, como midieron en Mosquito Alert con dieciocho mil participantes. Pero la base de datos sigue existiendo, y ahora contiene una muestra sesgada hacia barrios con conectividad y hacia el primer mes. Las autoridades deciden sobre esa muestra creyendo que es cobertura. La solución no solo falló: dejó al sistema peor de lo que estaba, porque introdujo confianza en datos fantasma.</p></div></details>
+<details class="card">
+<summary><span>Cadena G — El modelo se calibra peor justamente donde más importa</span><em>Evidencia fuerte</em></summary>
+<div class="card-body"><p>INAMHI pasó de 230 estaciones a 90, y entre las vandalizadas están las de Esmeraldas y parte de Guayas. GEOGLOWS corrige sus simulaciones con datos observados de estaciones. Menos estaciones en la costa significa peor corrección en la costa, que es precisamente la región donde El Niño se expresa con más fuerza. La Contraloría añade que muchas estaciones son limnimétricas en sitios de difícil acceso, que en varios lugares no hay observadores y la medición está suspendida, y que hay estaciones azolvadas. El corolario para cualquier propuesta con hardware es directo: si no se responde quién lo mantiene, será una estación azolvada más.</p></div></details>
+</section>
+<section id="tracks">
+<h2>Tracks · Impacto comparado</h2>
+<h3>¿Cuál de los cuatro tracks es el más afectado?</h3>
+<p class="lead">La respuesta depende por completo de la unidad de medida, y las tres respuestas posibles apuntan a tracks distintos. Esta es la razón por la que conviene decidir explícitamente qué se está optimizando antes de elegir un track.</p>
+<h4>Daño económico por track, El Niño 1997-98 en Ecuador</h4>
+<div class="bars"><div class="bar-row">
+<span class="bar-label">3 · Agrotecnología</span>
+<span class="bar-track"><span class="bar-fill t-danger" style="width:100%"></span></span>
+<span class="bar-value">US$ 1.243,7 M</span>
+</div><div class="bar-row">
+<span class="bar-label">1 · Telecom y vialidad</span>
+<span class="bar-track"><span class="bar-fill t-warning" style="width:63.262844737476875%"></span></span>
+<span class="bar-value">US$ 786,8 M</span>
+</div><div class="bar-row">
+<span class="bar-label">4 · Gestión de riesgos</span>
+<span class="bar-track"><span class="bar-fill t-info" style="width:26.622175765859936%"></span></span>
+<span class="bar-value">US$ 331,1 M</span>
+</div><div class="bar-row">
+<span class="bar-label">2 · Salud pública</span>
+<span class="bar-track"><span class="bar-fill t-neutral" style="width:1.527699606014312%"></span></span>
+<span class="bar-value">US$ 19 M</span>
+</div><div class="bar-row">
+<span class="bar-label">No asignable a un track</span>
+<span class="bar-track"><span class="bar-fill t-info" style="width:39.294041971536544%"></span></span>
+<span class="bar-value">US$ 488,7 M</span>
+</div></div>
+<p class="note">Daños totales en millones de dólares corrientes (directos más indirectos). Fuente: informe CEPAL sobre El Niño 1997-1998 en Ecuador, total nacional US$ 2.869,3 M. La asignación de sectores CEPAL a tracks del hackatón es propia.</p>
+<h4>Participación de cada track en el daño total</h4>
+<div class="donut-wrap">
+<div class="donut" style="background:conic-gradient(var(--danger) 0% 43.34506674101698%, var(--warning) 43.34506674101698% 70.76638901474229%, var(--neutral) 70.76638901474229% 87.798417732548%, var(--info) 87.798417732548% 99.33781758617084%, var(--success) 99.33781758617084% 100%)"></div>
+<ul class="donut-legend"><li><i class="sw" style="background:var(--danger)"></i>Agrotecnología <b>43.3%</b></li><li><i class="sw" style="background:var(--warning)"></i>Telecom y vialidad <b>27.4%</b></li><li><i class="sw" style="background:var(--neutral)"></i>No asignable <b>17.0%</b></li><li><i class="sw" style="background:var(--info)"></i>Gestión de riesgos <b>11.5%</b></li><li><i class="sw" style="background:var(--success)"></i>Salud pública <b>0.7%</b></li></ul></div>
+<div class="callout warning"><div class="callout-title">Salud pública concentra 0,7% del daño económico y ahí está justamente la oportunidad</div><div>Los 19 millones de dólares del sector salud frente a los 1.244 millones del agropecuario no significan que el problema sanitario sea menor. Significan que es el track con menor huella contable y, por lo tanto, el menos instrumentado y el que menos atención institucional recibe. El sector agropecuario ya tiene plan de acción con escenarios cuantificados del MAG y la SGR, seguro agrícola subvencionado por el Estado y modelos de pérdida esperada del Banco Central. Salud no tiene nada equivalente para el riesgo vectorial.</div></div>
+<h4>Las tres respuestas, según lo que se mida</h4>
+<div class="tw"><table><thead><tr><th>Criterio</th><th>Track más afectado</th><th>Evidencia</th></tr></thead><tbody><tr class="t-danger"><td>Pérdida económica</td><td>3 · Agrotecnología, con amplio margen</td><td>En 1997-98 el sector agropecuario y pesca perdió US$ 1.243,7 M, es decir 43,3% del daño nacional total. El plan de acción de la SGR para 2023-24 proyectó 945.504 hectáreas afectadas, equivalentes al 44% de la superficie agrícola nacional, y US$ 1.800 M de pérdidas agrícolas, con el arroz entre US$ 257 y 427 M y el banano en US$ 600 M de exportaciones. El Banco Central estimó pérdidas esperadas de US$ 2.332 M para un Niño moderado y US$ 2.705 M para uno severo.</td></tr><tr class="t-warning"><td>Vidas perdidas durante el evento</td><td>1 y 4 · Telecomunicaciones y gestión de riesgos</td><td>Los fallecidos de 1997-98 (entre 244 y 286 según la fuente, más 147 a 162 heridos y 36 a 52 desaparecidos) se produjeron por inundaciones y deslizamientos, no por enfermedad. El daño humano agudo pertenece al eje de alerta, evacuación y aislamiento, no al sanitario.</td></tr><tr class="t-info"><td>Daño que ya está ocurriendo hoy, antes del pico</td><td>2 · Salud pública</td><td>Es el único track con daño observado y en aceleración en este momento: 28.652 casos de dengue y 35 fallecidos hasta mediados de agosto de 2026, con once semanas consecutivas por encima de 2025, y todo esto antes de que empiece la temporada lluviosa. En los otros tres tracks el daño de 2026-27 es todavía pronóstico.</td></tr><tr class="t-neutral"><td>Desprotección del afectado</td><td>3 · Agrotecnología</td><td>Hasta abril de 2023 había 15.247 hectáreas con pérdida total, pero solo 8.735 hectáreas aseguradas de los 5,2 millones de hectáreas de superficie agropecuaria del país, cerca del 0,17%. Y según el IICA los productores contratan el seguro solo cuando la entidad financiera lo exige para dar crédito.</td></tr></tbody></table></div>
+<h4>Discrepancia entre fuentes que conviene no ocultar</h4>
+<p>El costo de El Niño 1997-98 como porcentaje del PIB ecuatoriano varía de forma incómoda según la fuente: la FAO lo sitúa alrededor del 15% del PIB nominal, el plan de acción de la SGR en 17%, y el Banco Central del Ecuador en cerca de 2,7%. La diferencia se explica porque no todos miden lo mismo: unos suman daños directos e indirectos contra el PIB de un año, otros estiman el impacto sobre el crecimiento, que la FAO cifra en 1,2% del PIB. Si se cita esta magnitud en un pitch, conviene decir cuál de las dos cosas se está midiendo.</p>
+<blockquote>El track más afectado y el mejor track para competir no son el mismo. Agrotecnología concentra el daño, y por eso mismo concentra también los actores, los planes y el presupuesto ya existentes. Salud pública concentra menos del uno por ciento del daño contable y por eso conserva un vacío de instrumentación que una propuesta pequeña sí puede llenar en un fin de semana.</blockquote>
+</section>
+<section id="arte">
+<h2>Fase 3 · Estado del arte</h2>
+<p class="lead">La pregunta útil no es qué se puede construir sino qué problema importante sigue sin resolverse. Este mapeo se hizo antes de generar soluciones, y su efecto principal fue descartar propuestas que parecían buenas.</p>
+<div class="tw"><table><thead><tr><th>Dominio</th><th>Qué existe hoy</th><th>Qué funciona</th><th>Qué no funciona</th><th>El vacío aprovechable</th></tr></thead><tbody><tr><td>Pronóstico hidrológico</td><td>INAMHI-GEOGLOWS (SERVIR-Amazonia/NASA): 2.300 tramos de río, pronóstico a 15 días, validación en 235 estaciones, app de manchas de inundación. GloFAS a escala global.</td><td>Funciona de verdad: unos 40 casos validados de alerta de inundación en 38 cuencas durante 2024-2025, adoptado por INAMHI y usado por SNGR.</td><td>Entrega caudal, no impacto. Es una plataforma web que requiere internet y criterio técnico. Se corrige con estaciones que en la costa ya no existen.</td><td>La traducción de caudal a impacto local y su entrega a la última milla. Construir otro pronosticador sería redundante.</td></tr><tr><td>Comunicación offline</td><td>Meshtastic: código abierto, nodos por debajo de US$20, 4 km urbanos y hasta 15 rurales, solar. Más de 300 nodos en Argentina, cobertura completa de Bahía Blanca y Bariloche, gateways de alertas y puente a WhatsApp.</td><td>Funciona y ya está desplegado por comunidades en Chile y Argentina, sin financiamiento estatal.</td><td>No resuelve quién mantiene los nodos, quién escucha del otro lado ni qué se hace con el mensaje recibido.</td><td>La capa de decisión sobre la malla. La radio ya está resuelta y es gratis.</td></tr><tr><td>Predicción de dengue</td><td>Modelos climáticos de alta calidad: Mills &amp; Donnelly en Piura, Tumbes y Lambayeque; Lowe en Barbados y Brasil. Todos con variables meteorológicas.</td><td>Muy bien: clasificación correcta del 100% de brotes futuros con umbral de 50 por 100.000 y probabilidad de falsa alarma de 0,12 en el caso peruano.</td><td>Predicen el cantón y el mes, no la manzana ni la semana. Y omiten la variable que la evidencia ecuatoriana señala como causal proximal: la interrupción del servicio de agua.</td><td>Bajar la resolución a manzana usando el dato operativo de la empresa de agua, y convertir la predicción en cola de trabajo.</td></tr><tr><td>Reporte ciudadano</td><td>Mosquito Alert (18.000 participantes en Italia, 23 países europeos) y DengueChat en Latinoamérica.</td><td>DengueChat sí redujo índices entomológicos por debajo del umbral de transmisión, frente a barrios control en nivel de alarma.</td><td>Mosquito Alert: solo 30% reporta alguna vez, la mitad una única vez, y la tasa cae a casi cero a los 50 días. Los autores de DengueChat insisten en que el resultado vino del trabajo presencial, no del software.</td><td>Ninguno para el reporte voluntario. El vacío está en herramientas para quien ya está pagado para recorrer el territorio.</td></tr><tr><td>Detección de apagones y daños</td><td>NASA Black Marble VNP46A2: 500 m, diario, desde 2012, corregido por luna y atmósfera. Flujos validados en Sandy, María y la tormenta Uri.</td><td>Detecta apagones de forma sistemática y gratuita, sin desplegar nada. En Uri identificó además inequidad en la distribución de cortes.</td><td>Se bloquea con nubosidad, que es la condición dominante en una emergencia por lluvias. 500 m no distingue caseríos.</td><td>Uso complementario para corroborar aislamiento, nunca como detector único en temporada lluviosa.</td></tr><tr><td>Acción anticipatoria</td><td>Marcos activos o en desarrollo para El Niño en Colombia, Ecuador, Perú, Bolivia y Venezuela. Financiamiento basado en pronósticos de OCHA y la Cruz Roja.</td><td>Los pilotos de OCHA alcanzaron cerca de 2,2 millones de personas en Somalia, Etiopía y Bangladesh.</td><td>Los disparadores requieren destreza que muchos pronósticos no tienen, y los montos comprometidos no alcanzan la escala de un evento moderado a fuerte.</td><td>Hay dinero institucional buscando disparadores locales verificables. Es un comprador identificado con calendario favorable.</td></tr><tr><td>Accesibilidad e infraestructura crítica</td><td>Método publicado por Tariverdi y colegas con casos de Lima y Manila, sobre datos abiertos. Mróz y colegas para acceso materno en Zambia.</td><td>El método es sólido, replicable y usa exclusivamente datos abiertos.</td><td>No está operacionalizado en Ecuador: es un artículo, no una herramienta de sala de situación.</td><td>La implementación operativa. El aporte sería de adopción, no de invención, y hay que decirlo.</td></tr></tbody></table></div>
+<div class="callout danger"><div class="callout-title">Consecuencia directa: tres ideas quedan eliminadas antes de nacer</div><div>Construir una malla LoRa de emergencia duplica Meshtastic. Construir una app de reporte ciudadano de criaderos está empíricamente refutada. Construir otro predictor de inundaciones compite contra un sistema nacional que ya funciona. Estas tres son, con alta probabilidad, las propuestas más frecuentes del hackatón.</div></div>
+</section>
+<section id="prioridad">
+<h2>Fase 4 · Priorización</h2>
+<p class="lead">Trece criterios, puntuados de 1 a 10, sobre problemas y no sobre soluciones. Las puntuaciones son juicio analítico propio, no una medición, y se muestran desagregadas para que puedan discutirse.</p>
+<div class="bars"><div class="bar-row">
+<span class="bar-label">P1 · Brigadas vectoriales con el reloj equivocado</span>
+<span class="bar-track"><span class="bar-fill t-success" style="width:90%"></span></span>
+<span class="bar-value">90/100</span>
+</div><div class="bar-row">
+<span class="bar-label">P4 · Se mide el activo vial, no el acceso perdido</span>
+<span class="bar-track"><span class="bar-fill t-success" style="width:83%"></span></span>
+<span class="bar-value">83/100</span>
+</div><div class="bar-row">
+<span class="bar-label">P3 · Nadie sabe quién quedó incomunicado</span>
+<span class="bar-track"><span class="bar-fill t-info" style="width:80%"></span></span>
+<span class="bar-value">80/100</span>
+</div><div class="bar-row">
+<span class="bar-label">P6 · Pronóstico nacional sin traducción a impacto local</span>
+<span class="bar-track"><span class="bar-fill t-info" style="width:81%"></span></span>
+<span class="bar-value">81/100</span>
+</div><div class="bar-row">
+<span class="bar-label">P7 · Pronósticos divergentes paralizan la decisión</span>
+<span class="bar-track"><span class="bar-fill t-info" style="width:77%"></span></span>
+<span class="bar-value">77/100</span>
+</div><div class="bar-row">
+<span class="bar-label">P8 · Cascada energía → agua → salud sin dueño</span>
+<span class="bar-track"><span class="bar-fill t-info" style="width:76%"></span></span>
+<span class="bar-value">76/100</span>
+</div><div class="bar-row">
+<span class="bar-label">P9 · Productor sin evidencia de daño</span>
+<span class="bar-track"><span class="bar-fill t-neutral" style="width:73%"></span></span>
+<span class="bar-value">73/100</span>
+</div><div class="bar-row">
+<span class="bar-label">P5 · Última milla de la alerta</span>
+<span class="bar-track"><span class="bar-fill t-neutral" style="width:70%"></span></span>
+<span class="bar-value">70/100</span>
+</div><div class="bar-row">
+<span class="bar-label">P2 · Fumigación ineficaz como respuesta visible</span>
+<span class="bar-track"><span class="bar-fill t-neutral" style="width:64%"></span></span>
+<span class="bar-value">64/100</span>
+</div><div class="bar-row">
+<span class="bar-label">P13 · Estaciones sin observadores, calibración fallida</span>
+<span class="bar-track"><span class="bar-fill t-neutral" style="width:62%"></span></span>
+<span class="bar-value">62/100</span>
+</div></div>
+<p class="note">Puntuación total normalizada sobre 100, a partir de trece criterios de 1 a 10 (máximo bruto 130). Corte para el top 5: 78. Fuente: valoración propia de este análisis, no una medición empírica.</p>
+<div class="tw"><table><thead><tr><th class="a-left">#</th><th class="a-left">Problema</th><th class="a-center">Sev</th><th class="a-center">Pers</th><th class="a-center">Urg</th><th class="a-center">Evid</th><th class="a-center">Sol</th><th class="a-center">Inn</th><th class="a-center">Téc</th><th class="a-center">MVP</th><th class="a-center">Demo</th><th class="a-center">Imp</th><th class="a-center">Esc</th><th class="a-center">Dif</th><th class="a-center">Real</th><th class="a-right">Bruto</th><th class="a-right">/100</th></tr></thead><tbody><tr class="t-success"><td class="a-left">P1</td><td class="a-left">Brigadas vectoriales con el reloj equivocado</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">10</td><td class="a-center">10</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">8</td><td class="a-right">117</td><td class="a-right">90</td></tr><tr class="t-success"><td class="a-left">P4</td><td class="a-left">Se mide el activo vial, no el acceso perdido</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">8</td><td class="a-center">7</td><td class="a-right">108</td><td class="a-right">83</td></tr><tr class="t-info"><td class="a-left">P3</td><td class="a-left">Nadie sabe quién quedó incomunicado</td><td class="a-center">9</td><td class="a-center">7</td><td class="a-center">9</td><td class="a-center">7</td><td class="a-center">9</td><td class="a-center">10</td><td class="a-center">6</td><td class="a-center">7</td><td class="a-center">9</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">6</td><td class="a-right">104</td><td class="a-right">80</td></tr><tr class="t-info"><td class="a-left">P6</td><td class="a-left">Pronóstico nacional sin traducción a impacto local</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">8</td><td class="a-center">7</td><td class="a-center">7</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">6</td><td class="a-center">8</td><td class="a-right">105</td><td class="a-right">81</td></tr><tr class="t-info"><td class="a-left">P7</td><td class="a-left">Pronósticos divergentes paralizan la decisión</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">10</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">9</td><td class="a-center">7</td><td class="a-center">6</td><td class="a-center">5</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">5</td><td class="a-right">100</td><td class="a-right">77</td></tr><tr class="t-info"><td class="a-left">P8</td><td class="a-left">Cascada energía → agua → salud sin dueño</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">7</td><td class="a-center">10</td><td class="a-center">10</td><td class="a-center">6</td><td class="a-center">6</td><td class="a-center">6</td><td class="a-center">8</td><td class="a-center">7</td><td class="a-center">10</td><td class="a-center">5</td><td class="a-right">99</td><td class="a-right">76</td></tr><tr class="t-neutral"><td class="a-left">P9</td><td class="a-left">Productor sin evidencia de daño</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">7</td><td class="a-center">6</td><td class="a-center">7</td><td class="a-center">7</td><td class="a-center">7</td><td class="a-center">8</td><td class="a-center">7</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">7</td><td class="a-center">7</td><td class="a-right">95</td><td class="a-right">73</td></tr><tr class="t-neutral"><td class="a-left">P5</td><td class="a-left">Última milla de la alerta</td><td class="a-center">10</td><td class="a-center">9</td><td class="a-center">10</td><td class="a-center">9</td><td class="a-center">4</td><td class="a-center">3</td><td class="a-center">7</td><td class="a-center">7</td><td class="a-center">7</td><td class="a-center">9</td><td class="a-center">7</td><td class="a-center">3</td><td class="a-center">6</td><td class="a-right">91</td><td class="a-right">70</td></tr><tr class="t-neutral"><td class="a-left">P2</td><td class="a-left">Fumigación ineficaz como respuesta visible</td><td class="a-center">9</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">5</td><td class="a-center">5</td><td class="a-center">5</td><td class="a-center">5</td><td class="a-center">5</td><td class="a-center">8</td><td class="a-center">7</td><td class="a-center">4</td><td class="a-center">5</td><td class="a-right">83</td><td class="a-right">64</td></tr><tr class="t-neutral"><td class="a-left">P13</td><td class="a-left">Estaciones sin observadores, calibración fallida</td><td class="a-center">7</td><td class="a-center">8</td><td class="a-center">8</td><td class="a-center">9</td><td class="a-center">6</td><td class="a-center">5</td><td class="a-center">5</td><td class="a-center">5</td><td class="a-center">4</td><td class="a-center">7</td><td class="a-center">6</td><td class="a-center">5</td><td class="a-center">5</td><td class="a-right">80</td><td class="a-right">62</td></tr></tbody></table></div>
+<details class="card">
+<summary><span>Definición de los trece criterios</span></summary>
+<div class="card-body"><div class="tw"><table><thead><tr><th>Abreviatura</th><th>Criterio</th></tr></thead><tbody><tr><td>Sev</td><td>Severidad del daño</td></tr><tr><td>Pers</td><td>Personas afectadas</td></tr><tr><td>Urg</td><td>Urgencia frente a la ventana El Niño 2026-27</td></tr><tr><td>Evid</td><td>Evidencia académica disponible</td></tr><tr><td>Sol</td><td>Falta de soluciones adecuadas hoy</td></tr><tr><td>Inn</td><td>Potencial de innovación</td></tr><tr><td>Téc</td><td>Viabilidad técnica</td></tr><tr><td>MVP</td><td>Viabilidad de MVP en el hackathon</td></tr><tr><td>Demo</td><td>Facilidad de demostración en 3 minutos</td></tr><tr><td>Imp</td><td>Impacto potencial si se implementa</td></tr><tr><td>Esc</td><td>Escalabilidad a otras comunidades</td></tr><tr><td>Dif</td><td>Diferenciación frente a lo existente</td></tr><tr><td>Real</td><td>Potencial de implementación real</td></tr></tbody></table></div></div></details>
+<h4>Lo que revela la matriz</h4>
+<p>El problema de la última milla de la alerta obtiene la severidad y la urgencia más altas de toda la tabla, y sin embargo cae al octavo lugar. La razón es que puntúa 4 en falta de soluciones y 3 en diferenciación: es un problema real y grave que muchísima gente ya está atacando. Ese es exactamente el tipo de trampa que una lluvia de ideas convencional no detecta, porque la intuición sobre gravedad no distingue entre un problema sin resolver y un problema muy atendido.</p>
+<p>En el otro extremo, la cascada energía-agua-salud obtiene 10 en falta de soluciones, 10 en innovación y 10 en diferenciación, y aun así termina sexta, penalizada por viabilidad de MVP y por facilidad de demostración. El primer lugar lo toma el problema que combina evidencia máxima con viabilidad máxima, que es la combinación que un hackatón premia.</p>
+</section>
+<section id="soluciones">
+<h2>Fases 5-7 · Soluciones y red team</h2>
+<p class="lead">8 propuestas, cada una evaluada en las dieciséis dimensiones exigidas y luego atacada sin cortesía. Se incluyen a propósito dos propuestas malas, porque descartarlas con evidencia es parte del argumento: demuestra que el camino elegido se eligió y no se ocurrió.</p>
+<details class="card" open>
+<summary><span>VENTANA SECA — sobrevive</span></summary>
+<div class="card-body"><h4>Insight</h4>
+<p>El mejor predictor de dónde habrá criaderos no está en los datos meteorológicos: está en el calendario de suspensiones y las órdenes de trabajo de la empresa de agua potable. El Estado publica ese mapa por barrio con días de anticipación, y en algunos casos ordena explícitamente a la población almacenar agua. Salud no lo lee.</p>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>Respuesta</th></tr></thead><tbody><tr><td>Problema</td><td>Las brigadas de control vectorial —el recurso decisivo, dado que la fumigación enfrenta 91,5% de resistencia— se despliegan tarde y en la manzana equivocada.</td></tr><tr><td>Usuario</td><td>Jefe de control vectorial del distrito de salud (planifica) y brigadista (ejecuta con el teléfono en la mano, sin señal).</td></tr><tr><td>Cómo funciona</td><td>Ingesta del calendario y mapa de suspensiones de la empresa de agua, más órdenes de trabajo y reportes de tanqueros. Se cruza con la grilla de población para aislar la banda crítica de 3.000 a 7.000 hab/km², con temperatura de superficie satelital y con precipitación. Un modelo de rezagos distribuidos produce, por manzana, una probabilidad de acumulación de recipientes con dos mecanismos: rezago de 0 a 3 meses por exceso de lluvia y rezago de 3 a 5 meses por interrupción de servicio. La salida no es un mapa de calor sino una cola de trabajo ordenada, con ruta optimizada, que la brigada descarga y usa sin conexión. Lo que la brigada encuentra en cada predio (número y tipo de recipientes, positividad) vuelve al modelo y lo recalibra.</td></tr><tr><td>Tecnología</td><td>Raspado y normalización de portales de empresas de agua, PostGIS, modelo de rezagos distribuidos no lineales, PWA offline-first con IndexedDB y sincronización oportunista, opcionalmente clasificación de tipo de recipiente en el dispositivo.</td></tr><tr><td>Datos y su procedencia</td><td>Mapa y calendario de suspensiones de EPMAPS e Interagua (públicos, sin API, requieren raspado). Casos de dengue por parroquia del MSP. Grilla de población (censo INEC, WorldPop, High Resolution Settlement Layer). Temperatura de superficie y precipitación (MODIS/VIIRS, CHIRPS, GPM). Índices entomológicos históricos del MSP. Todos accesibles sin convenio, excepto los índices entomológicos y las órdenes de trabajo, que mejoran mucho el modelo y requieren acuerdo.</td></tr><tr><td>Sin internet</td><td>El brigadista trabaja siempre sin conexión: la cola de manzanas se descarga en el centro de salud y se sincroniza al volver. El modelo corre en servidor, no en campo. Si no hay internet en el distrito, la cola se imprime.</td></tr><tr><td>Sin electricidad</td><td>No hay hardware en territorio. El único requisito energético es cargar un teléfono, que ya se carga. Ante apagones prolongados, la cola en papel sigue siendo válida porque la ventana de riesgo es de meses, no de horas.</td></tr><tr><td>MVP del hackatón</td><td>Motor de riesgo entrenado con datos históricos reales de suspensiones y casos de un cantón, validación retrospectiva contra el brote observado, y la app de brigada funcionando sin conexión con captura de hallazgos.</td></tr><tr><td>Demo de 3 minutos</td><td>Reproducir un brote real usando únicamente el calendario de cortes publicado por la propia empresa de agua, mostrar que el pico llegó con el rezago predicho, superponer dónde estuvieron realmente las brigadas y cuantificar la diferencia. Cerrar poniendo el teléfono en modo avión y recorriendo la cola.</td></tr><tr><td>Costos</td><td>Cercano a cero en infraestructura: datos abiertos y una instancia pequeña. El costo real es integración institucional y el tiempo de brigada, que ya está presupuestado.</td></tr><tr><td>Quién lo opera</td><td>La dirección distrital de salud, dentro de su proceso vigente de programación de brigadas. No crea una operación nueva.</td></tr><tr><td>Quién paga</td><td>MSP y direcciones distritales; gobiernos autónomos descentralizados con competencia sanitaria; empresas de agua, que ganan un argumento de gestión social; fondos de acción anticipatoria que buscan disparadores accionables.</td></tr><tr><td>Riesgo principal</td><td>El eslabón débil es el dato de la empresa de agua: si el portal cambia, si la calidad es pobre o si la interrupción no programada no queda registrada, el modelo se degrada.</td></tr><tr><td>Puntuación</td><td>90 / 100</td></tr></tbody></table></div>
+<h4>Red team</h4>
+<ul class="rt"><li>¿Ya existe? No en esta forma. Existen predictores climáticos de dengue muy buenos (Mills &amp; Donnelly modelaron Piura, Tumbes y Lambayeque clasificando correctamente el 100% de los brotes futuros con umbral de 50 por 100.000 y solo 0,12 de falsas alarmas). Pero todos usan variables meteorológicas. Ninguno usa el dato operativo de la empresa de agua, que es la variable causal proximal según la evidencia ecuatoriana.</li><li>¿Es solo otra app? La app es lo menos importante. El activo es el cruce de dos agendas institucionales que hoy no se hablan. Si nos copian la app, no tienen el modelo ni la relación con la empresa de agua.</li><li>¿El usuario lo necesita? Sí, y crucialmente no le pedimos trabajo nuevo: el brigadista ya camina manzanas. Solo cambiamos el orden. Esto esquiva el fracaso documentado de Mosquito Alert, donde el reporte voluntario cae a cero en 50 días.</li><li>¿Qué pasa si el dato es incorrecto? El costo del falso positivo es bajo: una brigada visita una manzana que no lo necesitaba, que es exactamente lo que hace hoy de todas formas. El riesgo asimétrico juega a favor.</li><li>¿Y si el MSP no adopta? Ruta alternativa por el lado de la empresa de agua y del municipio, que también tienen mandato y presupuesto. Y el modelo tiene valor por sí solo como insumo de acción anticipatoria.</li><li>Debilidad honesta: la cadena 'El Niño aumenta las interrupciones de servicio por turbiedad y daño a infraestructura' es una hipótesis nuestra y necesita validarse con datos operativos de la empresa. Lo que está probado es que la interrupción eleva el riesgo, no que El Niño eleve las interrupciones.</li><li>Segunda debilidad: la evidencia del rezago de 3 a 5 meses viene de Brasil y Barbados. La replicación con datos ecuatorianos es parte del trabajo, no un resultado que podamos asumir.</li></ul></div></details>
+<details class="card" open>
+<summary><span>QUIÉN QUEDA SOLO — sobrevive</span></summary>
+<div class="card-body"><h4>Insight</h4>
+<p>Una vía cortada no es un problema de ingeniería civil sino de accesibilidad. La misma inundación puede cortar diez kilómetros de asfalto sin aislar a nadie, o doscientos metros de camino de tierra y dejar a tres mil personas sin ruta a un hospital. El indicador que se reporta no es el que importa.</p>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>Respuesta</th></tr></thead><tbody><tr><td>Problema</td><td>La priorización de reparaciones y de ayuda se hace sobre activos dañados, no sobre población que perdió acceso a un servicio esencial.</td></tr><tr><td>Usuario</td><td>Sala de situación del COE cantonal o provincial, y el ingeniero que decide dónde va la maquinaria mañana.</td></tr><tr><td>Cómo funciona</td><td>Se construye el grafo vial desde OpenStreetMap, se ubican establecimientos de salud y educación, se superpone la mancha de inundación derivada de radar Sentinel-1 y una grilla de población, y se recalcula el tiempo de viaje al servicio más cercano antes y después. La salida es una lista de segmentos ordenada por personas-minuto de acceso recuperado por intervención, es decir, dónde rinde más una hora de retroexcavadora.</td></tr><tr><td>Tecnología</td><td>OSMnx o pgRouting, procesamiento de Sentinel-1 en Google Earth Engine, grilla de población, cálculo de accesibilidad iterado por escenario.</td></tr><tr><td>Datos y su procedencia</td><td>OpenStreetMap, Sentinel-1 (gratuito, atraviesa nubes), registro de establecimientos de salud del MSP, grilla de población. Todo abierto.</td></tr><tr><td>Sin internet</td><td>Corre en la nube y produce un mapa estático y una lista imprimible. El COE cantonal suele tener conexión; la brigada recibe la lista en papel o por radio.</td></tr><tr><td>Sin electricidad</td><td>Sin hardware en territorio.</td></tr><tr><td>MVP del hackatón</td><td>Cálculo real para un cantón afectado en un evento pasado, con la lista priorizada de segmentos y la cifra de población que recuperó acceso.</td></tr><tr><td>Demo de 3 minutos</td><td>Dos mapas del mismo cantón y una cifra: tantas personas quedaron sin ruta a un hospital, y reparar estos doscientos metros devuelve el acceso a la mayoría de ellas.</td></tr><tr><td>Costos</td><td>Muy bajo. Datos abiertos y cómputo modesto.</td></tr><tr><td>Quién lo opera</td><td>Unidad de gestión de riesgos del GAD o la prefectura.</td></tr><tr><td>Quién paga</td><td>MTOP, prefecturas, GAD municipales, Banco Mundial y BID.</td></tr><tr><td>Riesgo principal</td><td>La calidad de OpenStreetMap en zonas rurales ecuatorianas es desigual, y la detección de inundación con radar falla bajo vegetación densa y en zonas urbanas.</td></tr><tr><td>Puntuación</td><td>83 / 100</td></tr></tbody></table></div>
+<h4>Red team</h4>
+<ul class="rt"><li>¿Ya existe? Sí, como método académico: Tariverdi y colegas lo publicaron con casos de Lima y Manila. Lo que no existe es como herramienta operativa en Ecuador. Nuestro aporte es implementación y adopción, no invención.</li><li>Riesgo real de adopción: exige que un COE cambie su forma de priorizar, que está atada a presión política y mediática. La mejor información no gana automáticamente contra la presión del alcalde.</li><li>Ventaja: es la propuesta más fácil de demostrar de todas. La cifra 'tres mil personas sin ruta al hospital' es inmediatamente comprensible para un jurado.</li></ul></div></details>
+<details class="card">
+<summary><span>PUNTO CIEGO — viable con reservas</span><em>79 / 100</em></summary>
+<div class="card-body"><h4>Insight</h4>
+<p>La ausencia de señal es una señal. Hoy se trata como falta de datos lo que en realidad es el dato más importante.</p>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>Respuesta</th></tr></thead><tbody><tr><td>Problema</td><td>La respuesta se asigna según los reportes que llegan, y las comunidades más afectadas son precisamente las que no pueden reportar.</td></tr><tr><td>Usuario</td><td>Sala de situación nacional del SNGRE y ECU-911.</td></tr><tr><td>Cómo funciona</td><td>Se establece una línea base de luces nocturnas por localidad con VNP46A2, se detecta caída de radiancia por debajo del umbral y se cruza con exposición y con la serie histórica de reportes de esa localidad. Sobre nodos Meshtastic ya existentes se añade un latido periódico, de modo que el silencio pase de ambiguo a inequívoco. La salida es una lista de localidades en silencio anómalo, ordenada por población expuesta.</td></tr><tr><td>Tecnología</td><td>NASA Black Marble VNP46A2, detección de anomalías en series temporales, latido sobre firmware Meshtastic existente, panel de sala de situación.</td></tr><tr><td>Datos y su procedencia</td><td>VIIRS diario gratuito, grilla de población, histórico de reportes del ECU-911, telemetría de la malla. Los datos de caída de celdas de los operadores mejorarían muchísimo el sistema pero requieren convenio con ARCOTEL y operadores.</td></tr><tr><td>Sin internet</td><td>Por diseño no depende de la conectividad de la zona afectada: el satélite observa desde fuera.</td></tr><tr><td>Sin electricidad</td><td>Los nodos de latido son solares y de bajo consumo. El componente satelital no requiere nada en territorio.</td></tr><tr><td>MVP del hackatón</td><td>Detección retrospectiva de apagones en un evento real ecuatoriano usando solo VIIRS, más dos nodos con latido demostrando la detección de silencio en vivo.</td></tr><tr><td>Demo de 3 minutos</td><td>Apagar físicamente un nodo en el escenario y ver la localidad encenderse en rojo en el panel a los pocos minutos.</td></tr><tr><td>Costos</td><td>Bajo. Nodos por debajo de veinte dólares y datos satelitales gratuitos.</td></tr><tr><td>Quién lo opera</td><td>SNGRE, con la malla mantenida por radioaficionados y voluntarios.</td></tr><tr><td>Quién paga</td><td>SNGRE, ECU-911, cooperación internacional.</td></tr><tr><td>Riesgo principal</td><td>Falla estructural grave: las luces nocturnas se bloquean con nubosidad, que es exactamente la condición dominante durante una emergencia por lluvias de El Niño. La resolución de 500 metros tampoco distingue caseríos pequeños.</td></tr><tr><td>Puntuación</td><td>79 / 100</td></tr></tbody></table></div>
+<h4>Red team</h4>
+<ul class="rt"><li>El insight es el más elegante del conjunto, pero la física está en contra. Un desastre hidrometeorológico viene con cielo cubierto y el VIIRS no ve a través de nubes. Presentarlo sin admitir esto sería deshonesto, y un jurado técnico lo detectaría.</li><li>El latido sobre Meshtastic resuelve el problema de nubes pero introduce el problema clásico: requiere nodos preinstalados y mantenidos. La Contraloría ya documentó que Ecuador no logra mantener ni sus estaciones limnimétricas.</li><li>Los datos de caída de celdas de los operadores resolverían todo, y por eso mismo son el activo más difícil de conseguir en un fin de semana.</li><li>Veredicto: insight de primer nivel, ejecución frágil. Excelente como capa complementaria, riesgoso como propuesta central.</li></ul></div></details>
+<details class="card">
+<summary><span>TRADUCTOR DE CAUDAL — viable con reservas</span><em>76 / 100</em></summary>
+<div class="card-body"><h4>Insight</h4>
+<p>El vacío no está en el pronóstico, que ya existe, es abierto e institucional. Está en la función que convierte metros cúbicos por segundo en 'a qué hora se moja tu casa'. Y esa función vive en la memoria de la comunidad, en las marcas de agua de eventos pasados, no en un modelo.</p>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>Respuesta</th></tr></thead><tbody><tr><td>Problema</td><td>GEOGLOWS pronostica caudal a 15 días en 2.300 tramos de río, pero nadie sabe qué significa un caudal para su calle.</td></tr><tr><td>Usuario</td><td>Técnico de riesgos del GAD y líder comunitario.</td></tr><tr><td>Cómo funciona</td><td>Se recogen marcas históricas de nivel de agua con fotografía georreferenciada, se ajusta una curva local entre caudal pronosticado y área inundada usando un modelo digital de elevación, y se emiten umbrales locales con acción asociada, entregados por el canal que exista: SMS, radio comunitaria, sirena o malla LoRa.</td></tr><tr><td>Tecnología</td><td>API de GEOGLOWS, modelo digital de elevación, ajuste de curvas caudal-nivel, entrega multicanal degradable.</td></tr><tr><td>Datos y su procedencia</td><td>GEOGLOWS y GloFAS abiertos, modelo digital de elevación, marcas de agua levantadas en campo, catastro y población.</td></tr><tr><td>Sin internet</td><td>El motor requiere internet en el servidor, no en la comunidad. La entrega degrada hasta radio y sirena.</td></tr><tr><td>Sin electricidad</td><td>La sirena y la radio requieren respaldo de batería, resuelto con panel pequeño.</td></tr><tr><td>MVP del hackatón</td><td>Curva calibrada para una comunidad y alerta de tres niveles entregada por SMS.</td></tr><tr><td>Demo de 3 minutos</td><td>Inyectar el pronóstico real de un evento pasado y mostrar el mensaje que habría recibido la comunidad, con cuántas horas de antelación.</td></tr><tr><td>Costos</td><td>Bajo, salvo el levantamiento de marcas de agua, que es trabajo de campo.</td></tr><tr><td>Quién lo opera</td><td>GAD municipal con comités comunitarios.</td></tr><tr><td>Quién paga</td><td>GAD, SNGRE, cooperación.</td></tr><tr><td>Riesgo principal</td><td>La calibración es intensiva en campo y no escala automáticamente: cada comunidad necesita su propia curva.</td></tr><tr><td>Puntuación</td><td>76 / 100</td></tr></tbody></table></div>
+<h4>Red team</h4>
+<ul class="rt"><li>El espacio de alertas tempranas es el más saturado del hackathon. Es casi seguro que varios equipos presenten algo parecido, y el jurado llegará saturado.</li><li>El diferenciador honesto no es tecnológico sino de humildad: no construimos un pronosticador, construimos el traductor del que ya existe. Eso es defendible pero poco espectacular.</li><li>El costo de calibración por comunidad es el asesino silencioso del modelo de negocio.</li></ul></div></details>
+<details class="card">
+<summary><span>ACTA VERDE — viable con reservas</span><em>72 / 100</em></summary>
+<div class="card-body"><h4>Insight</h4>
+<p>El cuello de botella no es evaluar el daño sino producir evidencia que una institución financiera acepte. El productor no necesita un diagnóstico, necesita un documento probatorio.</p>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>Respuesta</th></tr></thead><tbody><tr><td>Problema</td><td>El pequeño productor no puede probar el daño con evidencia verificable, así que la compensación y el alivio de crédito no llegan o llegan tarde.</td></tr><tr><td>Usuario</td><td>Técnico del MAG y promotor de la asociación de productores.</td></tr><tr><td>Cómo funciona</td><td>Captura offline con sello de tiempo, ubicación y fotografía del lote, con el polígono dibujado en campo, y corroboración automática posterior contra radar Sentinel-1 y series de índices de vegetación, produciendo un expediente firmado y trazable.</td></tr><tr><td>Tecnología</td><td>Aplicación offline-first, sello criptográfico de tiempo y ubicación, procesamiento Sentinel-1 y Sentinel-2, generación de expediente.</td></tr><tr><td>Datos y su procedencia</td><td>Sentinel-1 y Sentinel-2 gratuitos, catastro rural, registro de productores del MAG.</td></tr><tr><td>Sin internet</td><td>Diseñado para operar sin conexión y sincronizar después.</td></tr><tr><td>Sin electricidad</td><td>Solo carga de teléfono.</td></tr><tr><td>MVP del hackatón</td><td>Captura offline con expediente generado y corroboración satelital de un evento real.</td></tr><tr><td>Demo de 3 minutos</td><td>Levantar un daño simulado en modo avión y mostrar el expediente con corroboración satelital adjunta.</td></tr><tr><td>Costos</td><td>Bajo.</td></tr><tr><td>Quién lo opera</td><td>MAG y asociaciones de productores.</td></tr><tr><td>Quién paga</td><td>BanEcuador, aseguradoras, MAG, exportadoras que necesitan trazabilidad.</td></tr><tr><td>Riesgo principal</td><td>Depende de que exista un instrumento financiero al final del proceso. Sin seguro o sin línea de crédito, el expediente no sirve de nada.</td></tr><tr><td>Puntuación</td><td>72 / 100</td></tr></tbody></table></div>
+<h4>Red team</h4>
+<ul class="rt"><li>El riesgo mortal es que se construya la evidencia sin que exista el comprador de esa evidencia. Si BanEcuador o la aseguradora no cambian su procedimiento, el expediente es un PDF bonito.</li><li>El seguro agrícola indexado es un competidor directo y conceptualmente superior en un punto: no necesita evidencia de daño individual, paga contra un índice. Nuestra propuesta solo gana donde el índice tiene demasiado error de base.</li><li>La verificación satelital de daño en parcelas pequeñas y con nubosidad alta es técnicamente difícil, y la costa ecuatoriana en temporada lluviosa es el peor escenario posible.</li></ul></div></details>
+<details class="card">
+<summary><span>SIN ARREPENTIMIENTO — descartada</span><em>68 / 100</em></summary>
+<div class="card-body"><h4>Insight</h4>
+<p>La pregunta que se hacen los alcaldes no es qué tan fuerte será El Niño, sino qué gasto pueden justificar si el evento no llega. Nadie les da esa respuesta.</p>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>Respuesta</th></tr></thead><tbody><tr><td>Problema</td><td>Los pronósticos oficiales divergentes hacen que los municipios posterguen el gasto preventivo.</td></tr><tr><td>Usuario</td><td>Alcalde y director financiero de un GAD costero.</td></tr><tr><td>Cómo funciona</td><td>Catálogo de acciones preventivas con costo, tiempo de ejecución y beneficio esperado, evaluado por escenario de intensidad, para identificar las acciones cuyo beneficio esperado es positivo en todos los escenarios.</td></tr><tr><td>Tecnología</td><td>Modelo de decisión con análisis de arrepentimiento y panel comparativo.</td></tr><tr><td>Datos y su procedencia</td><td>Pronósticos probabilísticos de CPC, ERFEN y ENFEN; costos unitarios de obra; histórico de daños.</td></tr><tr><td>Sin internet</td><td>Herramienta de escritorio, se usa antes del evento.</td></tr><tr><td>Sin electricidad</td><td>Irrelevante.</td></tr><tr><td>MVP del hackatón</td><td>Catálogo para un cantón con resultados por escenario.</td></tr><tr><td>Demo de 3 minutos</td><td>Débil: es una hoja de cálculo elegante.</td></tr><tr><td>Costos</td><td>Muy bajo.</td></tr><tr><td>Quién lo opera</td><td>El propio GAD.</td></tr><tr><td>Quién paga</td><td>GAD, SNGRE, fondos de acción anticipatoria.</td></tr><tr><td>Riesgo principal</td><td>Requiere datos de costos que los municipios no tienen sistematizados, y la decisión real es política.</td></tr><tr><td>Puntuación</td><td>68 / 100</td></tr></tbody></table></div>
+<h4>Red team</h4>
+<ul class="rt"><li>Intelectualmente es quizá el problema más importante de todos, y está respaldado por Ramírez &amp; Briones con un caso peruano documentado. Pero es imposible de demostrar en tres minutos y su MVP es una planilla.</li><li>El comprador es un alcalde, con ciclo de decisión de meses. Nada de esto se valida en un hackathon.</li><li>Veredicto: gran tesis, mal producto de hackathon. Guardarlo como capa de racionalidad dentro de otra propuesta.</li></ul></div></details>
+<details class="card">
+<summary><span>MALLA DE EMERGENCIA COMUNITARIA — descartada</span><em>34 / 100</em></summary>
+<div class="card-body"><h4>Insight</h4>
+<p>Ninguno. Este problema ya tiene solución madura y gratuita.</p>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>Respuesta</th></tr></thead><tbody><tr><td>Problema</td><td>Las comunidades pierden telecomunicaciones y electricidad y no pueden pedir ayuda.</td></tr><tr><td>Usuario</td><td>Comunidades aisladas.</td></tr><tr><td>Cómo funciona</td><td>Red de nodos LoRa solares en malla con mensajería sin infraestructura.</td></tr><tr><td>Tecnología</td><td>LoRa, malla, solar.</td></tr><tr><td>Datos y su procedencia</td><td>No aplica.</td></tr><tr><td>Sin internet</td><td>Funciona sin internet por diseño.</td></tr><tr><td>Sin electricidad</td><td>Solar.</td></tr><tr><td>MVP del hackatón</td><td>Dos nodos hablando entre sí.</td></tr><tr><td>Demo de 3 minutos</td><td>Vistosa pero vacía.</td></tr><tr><td>Costos</td><td>Menos de veinte dólares por nodo.</td></tr><tr><td>Quién lo opera</td><td>Nadie definido, que es exactamente el problema.</td></tr><tr><td>Quién paga</td><td>Ninguno identificado.</td></tr><tr><td>Riesgo principal</td><td>Reinventar una rueda existente y mejor.</td></tr><tr><td>Puntuación</td><td>34 / 100</td></tr></tbody></table></div>
+<h4>Red team</h4>
+<ul class="rt"><li>Esto ya existe y se llama Meshtastic: código abierto, nodos por debajo de veinte dólares, 4 kilómetros urbanos y hasta 15 rurales, con más de 300 nodos activos en Argentina, cobertura completa de Bahía Blanca y Bariloche, gateways de alertas meteorológicas y puente a WhatsApp. Un equipo que presente esto como innovación está mostrando que no investigó.</li><li>El problema real nunca fue la radio, fue quién mantiene los nodos, quién escucha del otro lado y qué se hace con el mensaje. Nada de eso lo resuelve el hardware.</li><li>Descartada como propuesta central. Es infraestructura que se debe usar, no construir.</li></ul></div></details>
+<details class="card">
+<summary><span>APP CIUDADANA DE REPORTE DE CRIADEROS — descartada</span><em>22 / 100</em></summary>
+<div class="card-body"><h4>Insight</h4>
+<p>Ninguno, y hay evidencia contundente de que el enfoque falla.</p>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>Respuesta</th></tr></thead><tbody><tr><td>Problema</td><td>Las autoridades no saben dónde están los criaderos.</td></tr><tr><td>Usuario</td><td>Ciudadanía en general.</td></tr><tr><td>Cómo funciona</td><td>Los vecinos fotografían y reportan criaderos, se genera un mapa de calor.</td></tr><tr><td>Tecnología</td><td>App móvil, clasificación de imágenes.</td></tr><tr><td>Datos y su procedencia</td><td>Reportes ciudadanos.</td></tr><tr><td>Sin internet</td><td>Requiere conexión, contra la restricción del desafío.</td></tr><tr><td>Sin electricidad</td><td>Requiere teléfono cargado.</td></tr><tr><td>MVP del hackatón</td><td>Trivial de construir.</td></tr><tr><td>Demo de 3 minutos</td><td>Fácil y engañosamente convincente.</td></tr><tr><td>Costos</td><td>Bajo.</td></tr><tr><td>Quién lo opera</td><td>Nadie sostenible.</td></tr><tr><td>Quién paga</td><td>Ninguno dispuesto a pagar.</td></tr><tr><td>Riesgo principal</td><td>Certeza de abandono.</td></tr><tr><td>Puntuación</td><td>22 / 100</td></tr></tbody></table></div>
+<h4>Red team</h4>
+<ul class="rt"><li>Está empíricamente refutada. En Mosquito Alert Italia, con 18.000 participantes reclutados, solo 30% reportó alguna vez, la mitad de ellos una única vez, y la probabilidad de reportar cae a casi cero a los 50 días. La misma curva se observó en España.</li><li>Peor que inútil: genera una base de datos que parece cobertura y es ruido, y expone a decidir sobre datos fantasma con sesgo hacia barrios conectados.</li><li>Lo que sí funcionó fue DengueChat, y sus propios autores insisten en que el resultado vino del trabajo presencial y organizativo, no del software, y que la plataforma no puede paracaidearse en un barrio.</li><li>Es la idea que más equipos van a presentar en este hackathon. Descartarla explícitamente, con la cita del estudio, es en sí mismo un argumento de que investigamos.</li></ul></div></details>
+</section>
+<section id="top5">
+<h2>Fase 8 · Top 5</h2>
+<p class="lead">Ordenadas por puntuación total. La columna final responde a la pregunta que importa en un hackatón, que no es si la idea es buena sino por qué ganaría.</p>
+<div class="bars"><div class="bar-row">
+<span class="bar-label">VENTANA SECA</span>
+<span class="bar-track"><span class="bar-fill t-success" style="width:90%"></span></span>
+<span class="bar-value">90/100</span>
+</div><div class="bar-row">
+<span class="bar-label">QUIÉN QUEDA SOLO</span>
+<span class="bar-track"><span class="bar-fill t-info" style="width:83%"></span></span>
+<span class="bar-value">83/100</span>
+</div><div class="bar-row">
+<span class="bar-label">PUNTO CIEGO</span>
+<span class="bar-track"><span class="bar-fill t-info" style="width:79%"></span></span>
+<span class="bar-value">79/100</span>
+</div><div class="bar-row">
+<span class="bar-label">TRADUCTOR DE CAUDAL</span>
+<span class="bar-track"><span class="bar-fill t-neutral" style="width:76%"></span></span>
+<span class="bar-value">76/100</span>
+</div><div class="bar-row">
+<span class="bar-label">ACTA VERDE</span>
+<span class="bar-track"><span class="bar-fill t-neutral" style="width:72%"></span></span>
+<span class="bar-value">72/100</span>
+</div></div>
+<div class="tw"><table><thead><tr><th>Propuesta</th><th>Problema</th><th>Diferenciador</th><th>Evidencia clave</th><th>MVP</th><th>Por qué podría ganar</th><th class="a-right">/100</th></tr></thead><tbody><tr class="t-success"><td>VENTANA SECA</td><td>Las brigadas de control vectorial se despliegan tarde y en la manzana equivocada, cuando la fumigación ya no funciona.</td><td>Es el único enfoque que usa el dato operativo de la empresa de agua como predictor de criaderos, en lugar de variables meteorológicas.</td><td>Lowe 2021 (rezago de 3 a 5 meses tras sequía), Huaquillas 2021 (interrupción de agua como único factor significativo), INSPI (91,5% de resistencia).</td><td>Motor de riesgo validado retrospectivamente contra un brote real, más app de brigada funcionando sin conexión.</td><td>Tiene la mejor evidencia, un insight que nadie más va a traer, cero hardware, un usuario que no tiene que cambiar de hábito y una demo que reproduce un brote real usando un documento público.</td><td class="a-right">90</td></tr><tr class="t-info"><td>QUIÉN QUEDA SOLO</td><td>Se prioriza por activo vial dañado en lugar de por población que perdió acceso a un servicio.</td><td>Cambia la unidad de medida de kilómetros de vía a personas-minuto de acceso perdido.</td><td>Tariverdi 2023 (Lima 33 a 48 minutos, Manila 22% sin acceso), Mróz 2023 (55% a 29% de acceso materno).</td><td>Cálculo real para un cantón afectado, con lista priorizada de segmentos.</td><td>Es la demo más comprensible de todas y usa exclusivamente datos abiertos, pero el aporte es de implementación y no de invención.</td><td class="a-right">83</td></tr><tr class="t-info"><td>PUNTO CIEGO</td><td>La respuesta se asigna por reportes recibidos, y quien más necesita ayuda es quien no puede reportar.</td><td>Trata la ausencia de señal como la señal principal, en lugar de como falta de datos.</td><td>NASA Black Marble validado en Sandy, María y Uri; evidencia de inequidad en la distribución de cortes.</td><td>Detección retrospectiva de apagones con VIIRS más dos nodos con latido en vivo.</td><td>El insight más elegante del conjunto y la demo más teatral, pero la nubosidad de la temporada lluviosa ataca su fundamento físico.</td><td class="a-right">79</td></tr><tr class="t-neutral"><td>TRADUCTOR DE CAUDAL</td><td>GEOGLOWS pronostica caudal a quince días y nadie sabe qué significa para su calle.</td><td>No construye un pronóstico: construye el traductor del que ya existe, calibrado con marcas de agua de la comunidad.</td><td>INAMHI-GEOGLOWS con 40 casos validados en 38 cuencas; Trogrlić 2022 sobre vacíos en los componentes sociales de las alertas.</td><td>Curva calibrada para una comunidad con alerta de tres niveles por SMS.</td><td>Es honesto y necesario, pero compite en la categoría más saturada del hackatón y su costo de calibración por comunidad no escala.</td><td class="a-right">76</td></tr><tr class="t-neutral"><td>ACTA VERDE</td><td>El pequeño productor no puede probar el daño, así que la compensación no llega.</td><td>Produce evidencia admisible para una institución financiera, no un diagnóstico agronómico.</td><td>Nauman 2021 sobre observación terrestre para acción temprana; brecha documentada en evaluación de vulnerabilidad e impacto.</td><td>Captura offline con expediente y corroboración satelital de un evento real.</td><td>Tiene el cliente más claro y el riesgo más claro: si el banco o la aseguradora no cambian su procedimiento, el expediente no sirve.</td><td class="a-right">72</td></tr></tbody></table></div>
+</section>
+<section id="duelo">
+<h2>Duelo · Finalista A vs B</h2>
+<p class="lead">Las dos finalistas evaluadas con los mismos doce criterios de jurado, de 1 a 10. La comparación no es simétrica en un punto importante y conviene decirlo: AVAL VERDE ataca el track con más daño, y VENTANA SECA ataca el track con menos competencia.</p>
+<div class="stats"><div class="stat t-success"><b>87</b><span>VENTANA SECA · salud pública · sobre 100</span></div><div class="stat t-info"><b>74</b><span>AVAL VERDE · agrotecnología · sobre 100</span></div><div class="stat t-warning"><b>43,3%</b><span>Participación del track agro en el daño de El Niño</span></div><div class="stat t-warning"><b>0,7%</b><span>Participación del track salud en el daño de El Niño</span></div></div>
+<div class="legend"><span><i class="sw a"></i>VENTANA SECA</span><span><i class="sw b"></i>AVAL VERDE</span></div>
+<div class="bars"><div class="bar-row grouped">
+<span class="bar-label">Impacto potencial</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:90%"></span>
+  <span class="bar-fill b" style="width:90%"></span>
+</span>
+<span class="bar-value">9 · 9</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Innovación</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:90%"></span>
+  <span class="bar-fill b" style="width:70%"></span>
+</span>
+<span class="bar-value">9 · 7</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Evidencia</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:100%"></span>
+  <span class="bar-fill b" style="width:90%"></span>
+</span>
+<span class="bar-value">10 · 9</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Factibilidad técnica</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:90%"></span>
+  <span class="bar-fill b" style="width:70%"></span>
+</span>
+<span class="bar-value">9 · 7</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Claridad del problema</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:90%"></span>
+  <span class="bar-fill b" style="width:90%"></span>
+</span>
+<span class="bar-value">9 · 9</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Calidad de la demo</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:90%"></span>
+  <span class="bar-fill b" style="width:60%"></span>
+</span>
+<span class="bar-value">9 · 6</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Escalabilidad</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:90%"></span>
+  <span class="bar-fill b" style="width:80%"></span>
+</span>
+<span class="bar-value">9 · 8</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Sostenibilidad</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:90%"></span>
+  <span class="bar-fill b" style="width:80%"></span>
+</span>
+<span class="bar-value">9 · 8</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Diferenciación real</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:90%"></span>
+  <span class="bar-fill b" style="width:50%"></span>
+</span>
+<span class="bar-value">9 · 5</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Viabilidad del MVP</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:90%"></span>
+  <span class="bar-fill b" style="width:60%"></span>
+</span>
+<span class="bar-value">9 · 6</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Magnitud del track</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:50%"></span>
+  <span class="bar-fill b" style="width:100%"></span>
+</span>
+<span class="bar-value">5 · 10</span>
+</div><div class="bar-row grouped">
+<span class="bar-label">Cercanía del comprador</span>
+<span class="bar-track dual">
+  <span class="bar-fill a" style="width:80%"></span>
+  <span class="bar-fill b" style="width:50%"></span>
+</span>
+<span class="bar-value">8 · 5</span>
+</div></div>
+<p class="note">Puntuación de 1 a 10 por criterio. Fuente: valoración propia de este análisis, no una medición empírica.</p>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>VENTANA SECA</th><th>AVAL VERDE</th></tr></thead><tbody><tr class="t-neutral"><td>Track</td><td>2 · Salud pública</td><td>3 · Agrotecnología</td></tr><tr class="t-warning"><td>Daño del track en El Niño 1997-98</td><td>US$ 19 M, el 0,7% del total</td><td>US$ 1.243,7 M, el 43,3% del total</td></tr><tr class="t-neutral"><td>Insight</td><td>El calendario de suspensiones de la empresa de agua es una predicción de criaderos con tres a cinco meses de anticipación, y salud no lo lee.</td><td>El cliente del seguro agrícola nunca fue el productor sino el banco, y el prestamista puede reestructurar antes de la inundación.</td></tr><tr class="t-danger"><td>¿Ya existe algo igual?</td><td>No. Los predictores de dengue publicados usan variables meteorológicas; ninguno usa el dato operativo de la empresa de agua.</td><td>Parcialmente sí. La verificación fotográfica está publicada y evaluada por el IFPRI, y hay cuatro insurtech financiadas en la región.</td></tr><tr class="t-neutral"><td>Quién paga</td><td>MSP por vía distrital, con ruta alternativa por municipio y empresa de agua. Ciclo corto.</td><td>Prestamista, aseguradora o MAG. Ciclo de venta de meses, aversión a pilotos.</td></tr><tr class="t-neutral"><td>Hardware requerido</td><td>Ninguno. Solo un teléfono que ya se carga.</td><td>Ninguno. Solo un teléfono, más acceso a datos satelitales.</td></tr><tr class="t-neutral"><td>Qué se construye en el hackatón</td><td>Motor de riesgo validado retrospectivamente, app de brigada offline y panel distrital. Insumo principal ya publicado en la web.</td><td>Captura offline con expediente, corroboración con radar sobre un evento real y panel de exposición sobre agregados del Banco Central.</td></tr><tr class="t-neutral"><td>Fortaleza de la demo</td><td>Alta. Reproduce un brote real con un documento público y termina con el teléfono en modo avión.</td><td>Media. La parte más innovadora es financiera y por tanto más abstracta para un jurado.</td></tr><tr class="t-danger"><td>Debilidad principal</td><td>La curva de rezago de tres a cinco meses viene de Brasil y Barbados y podría no replicarse con datos ecuatorianos.</td><td>Cuatro competidores financiados y un comprador con ciclo de decisión largo.</td></tr><tr class="t-neutral"><td>Riesgo de que el jurado diga que ya existe</td><td>Bajo</td><td>Alto</td></tr><tr class="t-neutral"><td>Riesgo de que el jurado diga que el problema es menor</td><td>Medio, por el 0,7% del daño económico</td><td>Muy bajo, por el 43,3%</td></tr></tbody></table></div>
+<h4>La recomendación, y en qué caso cambiaría</h4>
+<blockquote>VENTANA SECA sigue ganando, y la razón es que un hackatón no premia atacar el problema más grande sino demostrar en tres minutos que encontraste algo que los demás no vieron y que puedes construirlo. AVAL VERDE tiene la magnitud, pero su insight ya está publicado, su espacio tiene cuatro empresas con capital y su comprador es un banco. VENTANA SECA tiene un insight que exige haber cruzado tres literaturas que no se citan entre sí, y una demo que reproduce un brote real usando un documento que el propio Estado publica.</blockquote>
+<p>Cambiaría la recomendación en dos escenarios concretos. El primero, si las bases del hackatón puntúan explícitamente la magnitud del impacto económico atendido, porque ahí el 43,3% contra el 0,7% es un argumento difícil de rebatir. El segundo, si en el equipo hay alguien con acceso real a la cartera de un prestamista o de una cooperativa con crédito agrícola en la costa, porque eso convierte la debilidad principal de AVAL VERDE en su mayor fortaleza y ninguna insurtech brasileña puede replicar ese acceso en Ecuador.</p>
+<div class="callout info"><div class="callout-title">Nota sobre la puntuación de la propuesta agro</div><div>La brecha de aseguramiento del 0,17% subió su evidencia de 6 a 9, pero el descubrimiento de cuatro competidores financiados y de la evaluación ya publicada del IFPRI bajó la falta de soluciones de 7 a 5 y la diferenciación de 7 a 5. Los dos efectos casi se cancelan y la propuesta queda alrededor de 74. VENTANA SECA se mantiene en 90.</div></div>
+</section>
+<section id="ventana-seca">
+<h2>Finalista A · VENTANA SECA</h2>
+<p class="kicker">FASE 9 · VEREDICTO · TRACK 2 · SALUD PÚBLICA</p>
+<h3 class="big">VENTANA SECA</h3>
+<p class="lead">Focalización de brigadas de control vectorial a partir del calendario de suspensiones de la empresa de agua potable.</p>
+<div class="callout success"><div class="callout-title">Por qué esta y no otra</div><div>Evaluada contra impacto, innovación, evidencia, factibilidad, claridad, demo, escalabilidad y sostenibilidad, es la única propuesta que puntúa alto en todas a la vez. Las demás sacrifican algo: PUNTO CIEGO tiene mejor insight pero su física falla bajo nubes; QUIÉN QUEDA SOLO tiene mejor demo pero su método ya está publicado; TRADUCTOR DE CAUDAL es necesario pero compite contra veinte equipos iguales.</div></div>
+<h4>1. El problema en una frase</h4>
+<p>Las brigadas de control vectorial de Ecuador, que son el único recurso que aún funciona contra el dengue porque la fumigación enfrenta 91,5% de resistencia, se despliegan con meses de retraso y en la manzana equivocada, porque se guían por casos ya notificados y por la temporada de lluvias, cuando la evidencia demuestra que el riesgo se construye tres a cinco meses antes, en los barrios donde se cortó el agua.</p>
+<h4>2. La evidencia de que el problema es real</h4>
+<div class="tw"><table><thead><tr><th>Hallazgo</th><th>Fuente</th><th>Fuerza</th></tr></thead><tbody><tr class="t-success"><td>El riesgo de dengue urbano es alto de 3 a 5 meses después de una sequía extrema, por recipientes improvisados; los autores dicen explícitamente que las intervenciones deberían programarse ahí y no solo en la temporada lluviosa.</td><td>Lowe et al., Lancet Planetary Health (2021), Brasil; confirma Barbados (PLOS Medicine 2018)</td><td>Fuerte</td></tr><tr class="t-success"><td>En Huaquillas (Ecuador), la interrupción del suministro de agua fue el ÚNICO factor de riesgo estadísticamente significativo para presencia de Ae. aegypti a nivel de hogar. Igual vínculo documentado en Machala.</td><td>PLOS Neglected Tropical Diseases (2021)</td><td>Fuerte</td></tr><tr class="t-success"><td>En Machala, los mejores predictores de pupas fueron almacenamiento de agua, acceso a agua entubada y condición de casa y patio; el efecto de la lluvia varió según el tipo de recipiente.</td><td>Stewart-Ibarra et al., PLOS ONE (2013)</td><td>Fuerte</td></tr><tr class="t-success"><td>Existe una banda crítica de densidad de 3.000 a 7.000 hab/km²; las zonas con suministro adecuado no tuvieron brotes severos y el riesgo rural superó al urbano por falta de agua entubada.</td><td>PLOS Medicine, cohorte de 75.000 hogares, Vietnam</td><td>Fuerte</td></tr><tr class="t-success"><td>91,5% de resistencia a deltametrina y 62% a temefos; los investigadores concluyen que no se resuelve fumigando y hay que combinar con reducción de criaderos.</td><td>Gaceta INSPI, Ecuador, hasta junio 2025</td><td>Fuerte</td></tr><tr class="t-success"><td>28.652 casos y 35 muertes hasta mediados de agosto de 2026, con 11 semanas consecutivas sobre 2025, antes de la temporada lluviosa de El Niño.</td><td>MSP Ecuador; OPS SE29</td><td>Fuerte</td></tr><tr class="t-success"><td>EPMAPS publica Mapa de Suspensiones y Calendario de racionamientos por barrio; en nov-2024 hubo cortes de hasta 10 horas en 95 barrios. Interagua declaró que los tanqueros no abastecerían viviendas y que era crucial el abastecimiento previo.</td><td>Portales y comunicados de EPMAPS e Interagua</td><td>Fuerte (documental)</td></tr><tr class="t-info"><td>La reducción de criaderos con brigadas y organización comunitaria llevó los índices entomológicos por debajo del umbral de transmisión, frente a controles en nivel de alarma.</td><td>Holston et al., AJTMH (2021), DengueChat; piloto pequeño, no aleatorizado</td><td>Moderada</td></tr><tr class="t-success"><td>El reporte ciudadano voluntario cae a casi cero a los 50 días: solo 30% de 18.000 participantes reportó alguna vez y la mitad una sola vez.</td><td>Mosquito Alert Italia, Science of the Total Environment (2024)</td><td>Fuerte (negativa)</td></tr><tr class="t-warning"><td>El Niño incrementa la frecuencia de interrupciones del servicio de agua por turbiedad, daño a captaciones y fallas eléctricas.</td><td>Inferencia propia a partir del caso Interagua-CELEC; NO verificada con datos operativos</td><td>Hipótesis</td></tr><tr class="t-warning"><td>La curva de rezago de 3 a 5 meses medida en Brasil y Barbados se replica con datos ecuatorianos.</td><td>Pendiente de validación; es el primer entregable del piloto</td><td>Hipótesis</td></tr></tbody></table></div>
+<p class="note">Las dos últimas filas están marcadas como hipótesis a propósito. Son inferencias nuestras, no hallazgos publicados, y presentarlas como hechos sería el error más fácil de detectar por un jurado técnico.</p>
+<h4>3. El insight</h4>
+<blockquote>El mejor predictor de dónde habrá dengue no está en los datos meteorológicos. Está en el calendario de suspensiones de la empresa de agua potable. El Estado publica, con días de anticipación y con resolución de barrio, el mapa exacto de dónde miles de hogares van a llenar recipientes destapados. En Guayaquil incluso lo ordena: los tanqueros no abastecen viviendas, así que abastézcase previamente. Ese documento administrativo es una predicción de criaderos con tres a cinco meses de anticipación, y el sector salud no lo lee.</blockquote>
+<p>El corolario es más fuerte que el insight: el sector que genera el riesgo vectorial no es el sanitario ni el climático, es el de infraestructura. Y cuando la causa raíz de una suspensión es un mantenimiento eléctrico en una subestación, como en el caso La Toma, resulta que el sector eléctrico está produciendo dengue sin que nadie lo contabilice.</p>
+<h4>4. La solución en una frase</h4>
+<p>Un motor que convierte los calendarios de racionamiento y las órdenes de trabajo de las empresas de agua en una cola priorizada de manzanas para las brigadas de control vectorial, entregada en una aplicación que funciona sin conexión, y que se recalibra con lo que las brigadas encuentran en cada predio.</p>
+<h4>5. Cómo funciona, paso a paso</h4>
+<div class="tw"><table><thead><tr><th class="a-center">Paso</th><th class="a-left">Qué ocurre</th></tr></thead><tbody><tr><td class="a-center">1</td><td class="a-left">El sistema ingiere diariamente el mapa y el calendario de suspensiones publicados por la empresa de agua, junto con órdenes de trabajo y despachos de tanqueros cuando hay convenio.</td></tr><tr><td class="a-center">2</td><td class="a-left">Cada barrio afectado se convierte en polígono y se cruza con la grilla de población para aislar la banda crítica de 3.000 a 7.000 habitantes por kilómetro cuadrado.</td></tr><tr><td class="a-center">3</td><td class="a-left">Se añaden temperatura de superficie y precipitación satelital, y un modelo de rezagos distribuidos calcula por manzana la probabilidad de acumulación de recipientes, con dos mecanismos: exceso de lluvia con rezago de cero a tres meses e interrupción de servicio con rezago de tres a cinco meses.</td></tr><tr><td class="a-center">4</td><td class="a-left">El riesgo no se publica como mapa de calor. Se convierte en una cola de trabajo ordenada, dimensionada al número real de brigadas y a la duración de la jornada, con ruta sugerida.</td></tr><tr><td class="a-center">5</td><td class="a-left">El brigadista descarga la cola en el centro de salud y trabaja el día entero sin conexión, registrando por predio el número y tipo de recipientes y su positividad.</td></tr><tr><td class="a-center">6</td><td class="a-left">Al volver, la app sincroniza. Los hallazgos alimentan el índice entomológico oficial y recalibran el modelo, que aprende qué tipo de sector responde a qué mecanismo.</td></tr><tr><td class="a-center">7</td><td class="a-left">La dirección distrital ve en un panel la cobertura de manzanas de alto riesgo visitadas antes del pico previsto, y exporta un respaldo imprimible.</td></tr></tbody></table></div>
+<h4>6. Arquitectura tecnológica</h4>
+<div class="tw"><table><thead><tr><th>Capa</th><th>Función</th><th>Implementación</th></tr></thead><tbody><tr><td>Ingesta</td><td>Raspadores programados de portales de empresas de agua; conectores a MSP, satélite y grilla poblacional</td><td>Python, scheduler, almacenamiento de versiones para auditar cambios de portal</td></tr><tr><td>Normalización espacial</td><td>Geocodificación de nombres de barrio a polígonos; unificación en grilla común</td><td>PostGIS, diccionario de topónimos con revisión humana</td></tr><tr><td>Motor de riesgo</td><td>Modelo de rezagos distribuidos por manzana, con mecanismo húmedo (0-3 meses) y mecanismo de interrupción (3-5 meses)</td><td>Regresión con rezagos distribuidos no lineales, validación retrospectiva</td></tr><tr><td>Priorización</td><td>Conversión del riesgo en cola de trabajo con ruta, ajustada al tamaño real de brigada</td><td>Optimización de recorrido con restricción de jornada</td></tr><tr><td>Entrega en campo</td><td>Aplicación web progresiva offline-first, con cola descargable y captura de hallazgos</td><td>PWA, IndexedDB, sincronización oportunista con resolución de conflictos</td></tr><tr><td>Retroalimentación</td><td>Los hallazgos de brigada recalibran el modelo y alimentan el índice entomológico</td><td>Reentrenamiento periódico, seguimiento de deriva del modelo</td></tr><tr><td>Salida institucional</td><td>Panel distrital y reporte imprimible como respaldo sin conexión</td><td>Panel web, exportación a PDF</td></tr></tbody></table></div>
+<h4>7. Fuentes de datos</h4>
+<div class="tw"><table><thead><tr><th>Dato</th><th>Origen</th><th>Acceso</th></tr></thead><tbody><tr><td>Mapa y calendario de suspensiones</td><td>EPMAPS, Interagua y pares municipales</td><td>Público, sin API: requiere raspado</td></tr><tr><td>Órdenes de trabajo y tanqueros</td><td>Empresas de agua</td><td>Requiere convenio; mejora mucho el modelo</td></tr><tr><td>Casos de dengue por parroquia</td><td>MSP, vigilancia epidemiológica</td><td>Público agregado; el detalle requiere convenio</td></tr><tr><td>Índices entomológicos históricos</td><td>MSP</td><td>Requiere convenio; es la variable de calibración</td></tr><tr><td>Grilla de población</td><td>INEC, WorldPop, HRSL</td><td>Abierto</td></tr><tr><td>Temperatura de superficie y precipitación</td><td>MODIS, VIIRS, CHIRPS, GPM</td><td>Abierto</td></tr><tr><td>Calendario de mantenimiento eléctrico</td><td>CELEC y distribuidoras</td><td>Parcialmente público; habilita la cascada</td></tr></tbody></table></div>
+<h4>8. Qué se construye realmente durante el hackatón</h4>
+<p>Tres piezas, ninguna de ellas hardware. Primero, el motor de riesgo entrenado con el histórico real de suspensiones de un cantón y la curva de casos del MSP, con validación retrospectiva. Segundo, la aplicación de brigada como web progresiva, con la cola descargable, la captura de hallazgos por predio y la sincronización oportunista, demostrable en modo avión. Tercero, el panel distrital con la cobertura de manzanas de alto riesgo y la exportación imprimible. Es alcanzable porque no hay que desplegar nada en territorio ni conseguir permisos: el insumo principal ya está publicado en la web de la empresa de agua.</p>
+<h4>9. La demo de tres minutos</h4>
+<div class="tw"><table><thead><tr><th class="a-center">Tiempo</th><th class="a-left">Qué se muestra en pantalla</th><th class="a-left">Qué se dice</th></tr></thead><tbody><tr><td class="a-center">0:00–0:30</td><td class="a-left">El calendario de racionamiento real publicado por la empresa de agua, y el comunicado que dice que los tanqueros no abastecerán viviendas y es crucial abastecerse previamente.</td><td class="a-left">Este es un documento público. Es también una predicción de criaderos con cinco meses de anticipación, y nadie en salud lo está leyendo.</td></tr><tr><td class="a-center">0:30–1:15</td><td class="a-left">Se superpone la curva real de casos de dengue del cantón sobre las fechas de corte, mostrando el pico en la ventana predicha.</td><td class="a-left">El brote no llegó con la lluvia. Llegó con el rezago que Lowe midió en Brasil y Barbados, contado desde el corte de agua.</td></tr><tr><td class="a-center">1:15–2:00</td><td class="a-left">El mapa de dónde estuvieron realmente las brigadas frente al mapa de la cola priorizada por el motor, con la cifra de discrepancia.</td><td class="a-left">Las brigadas hicieron su trabajo. Lo hicieron en el lugar y el momento que el sistema les indicó, y el sistema estaba mirando el reloj equivocado.</td></tr><tr><td class="a-center">2:00–2:40</td><td class="a-left">Se pone el teléfono en modo avión, se recorre la cola, se registran recipientes en dos predios y se sincroniza al reconectar.</td><td class="a-left">El brigadista no necesita señal, no necesita aprender nada nuevo y no camina un metro más. Solo cambia el orden en que camina.</td></tr><tr><td class="a-center">2:40–3:00</td><td class="a-left">El panel distrital con el porcentaje de manzanas de alto riesgo cubiertas antes del pico.</td><td class="a-left">No pedimos presupuesto nuevo ni hardware. Pedimos leer un documento que el propio Estado ya publica.</td></tr></tbody></table></div>
+<h4>10. Métricas de éxito</h4>
+<div class="tw"><table><thead><tr><th>Métrica</th><th>Por qué es la correcta</th><th>Cómo se mide</th></tr></thead><tbody><tr><td>Recipientes positivos hallados por jornada de brigada</td><td>Mide directamente si la focalización rinde más que la programación actual</td><td>Registro de la propia app, comparado contra brigadas control</td></tr><tr><td>Índice de recipiente e índice de vivienda en zona intervenida frente a control</td><td>Es el indicador entomológico estándar y el que movió DengueChat</td><td>Encuestas entomológicas del MSP</td></tr><tr><td>Días de anticipación entre la señal del modelo y el pico de casos</td><td>Cuantifica la ventana ganada respecto a la práctica reactiva actual</td><td>Cruce del modelo con la curva epidémica del MSP</td></tr><tr><td>Cobertura de manzanas de alto riesgo visitadas antes del pico</td><td>Mide si la ventana se aprovechó o solo se detectó</td><td>Registro de la app</td></tr><tr><td>Incidencia de dengue en parroquias intervenidas frente a comparables</td><td>Resultado final, con la advertencia de que es el más difícil de atribuir</td><td>Vigilancia epidemiológica del MSP</td></tr></tbody></table></div>
+<p class="note">Deliberadamente no se mide descargas, usuarios registrados ni reportes recibidos. Esas son las métricas que hicieron parecer exitosas a las apps de reporte ciudadano antes de que cayeran a cero.</p>
+<h4>11. Primer usuario</h4>
+<p>El jefe de control vectorial de un distrito de salud de Manabí, Guayas o Los Ríos, que hoy programa brigadas con una hoja de cálculo y la curva de casos de la semana pasada. Y el brigadista, que recibe la cola en el teléfono y trabaja sin señal.</p>
+<h4>12. Primer cliente</h4>
+<p>El Ministerio de Salud Pública por la vía distrital, con ruta alternativa por el municipio y la empresa de agua, que gana un argumento de gestión social para sus propios cortes. Los fondos de acción anticipatoria activos para El Niño en Ecuador son el tercer comprador, y buscan exactamente disparadores locales verificables.</p>
+<h4>13. Sostenibilidad</h4>
+<p>No crea una operación nueva ni un costo recurrente en territorio: se inserta en un proceso que ya existe y ya está presupuestado. Eso es lo que lo distingue de una estación azolvada o de una app abandonada. El costo de servidor es marginal y el mantenimiento crítico es el de los raspadores.</p>
+<h4>14. Plan de implementación</h4>
+<div class="tw"><table><thead><tr><th>Horizonte</th><th>Actividad</th><th>Criterio de avance</th></tr></thead><tbody><tr><td>Semanas 1-4</td><td>Convenio de datos con una empresa de agua y un distrito de salud; validación retrospectiva con datos ecuatorianos reales</td><td>Curva de rezago replicada o refutada con datos locales</td></tr><tr><td>Semanas 5-12</td><td>Piloto en un distrito: la mitad de las brigadas usa la cola priorizada, la otra mitad su programación habitual</td><td>Diferencia en recipientes positivos hallados por jornada de brigada</td></tr><tr><td>Meses 4-6</td><td>Ajuste del modelo con los hallazgos del piloto y extensión a los cantones vecinos de la misma empresa de agua</td><td>Reducción de índices entomológicos en zona intervenida frente a control</td></tr><tr><td>Meses 7-12</td><td>Institucionalización en la programación oficial de brigadas y postulación a fondos de acción anticipatoria</td><td>Adopción como procedimiento y financiamiento asegurado</td></tr></tbody></table></div>
+<h4>15. Escalabilidad</h4>
+<p>Escala por empresa de agua, no por comunidad, y esa es la diferencia decisiva frente a las alternativas. Un traductor de caudal necesita calibrar una curva por cada comunidad; aquí, incorporar una empresa de agua nueva incorpora de golpe todos sus cantones. El mecanismo causal es genérico y aplica a cualquier ciudad latinoamericana con servicio de agua intermitente, que es la norma y no la excepción en la región.</p>
+<h4>16. Ventaja competitiva</h4>
+<p>No es el código, que es copiable en una semana. Es la relación de datos con la empresa de agua, el diccionario de topónimos de barrio a polígono construido con revisión humana, y el volante de inercia de los hallazgos de brigada: cada jornada mejora el modelo y ningún competidor tiene ese histórico. Y el insight en sí ya es una barrera, porque exige haber leído literatura de tres campos que no se citan entre sí.</p>
+<h4>17. Los riesgos, sin maquillaje</h4>
+<div class="tw"><table><thead><tr><th>Riesgo</th><th>Severidad</th><th>Mitigación honesta</th></tr></thead><tbody><tr class="t-danger"><td>La curva de rezago de 3 a 5 meses viene de Brasil y Barbados y puede no replicarse con datos ecuatorianos.</td><td>Alta</td><td>Es el primer entregable del piloto, no un supuesto. Si no se replica, el producto se reduce a focalización espacial, que sigue teniendo valor por la evidencia de Huaquillas y Machala.</td></tr><tr class="t-danger"><td>El dato de la empresa de agua puede ser de mala calidad, y las interrupciones no programadas quizá no queden registradas.</td><td>Alta</td><td>Versionado de los raspados para detectar degradación, y convenio para acceder a órdenes de trabajo, que sí registran lo no programado.</td></tr><tr class="t-warning"><td>El MSP puede no adoptar el cambio en su programación de brigadas.</td><td>Media</td><td>Ruta alternativa por municipio y empresa de agua. El motor tiene valor independiente como disparador de acción anticipatoria.</td></tr><tr class="t-warning"><td>En la costa durante El Niño el mecanismo dominante puede ser el húmedo y no el de almacenamiento, reduciendo la ventaja del insight.</td><td>Media</td><td>El modelo incluye ambos mecanismos por diseño. La ventaja se reduce pero no desaparece, y el mecanismo de almacenamiento sigue operando por daño a la red.</td></tr><tr class="t-info"><td>La reducción de criaderos podría no bastar para bajar la incidencia, dado el serotipo DENV-3 circulante y la inmunidad poblacional.</td><td>Media</td><td>Por eso la métrica principal son los índices entomológicos y no la incidencia: es lo que la intervención puede mover y lo que DengueChat efectivamente movió.</td></tr><tr class="t-info"><td>Alguien puede copiar el enfoque.</td><td>Baja</td><td>Que lo copien es el mejor resultado posible para el problema. La ventaja defendible es el histórico de brigada y la relación institucional.</td></tr></tbody></table></div>
+<h4>18. Por qué debería ganar el hackatón</h4>
+<p>Porque no propone construir un sistema que ya existe. Ecuador ya tiene pronóstico hidrológico nacional a quince días sobre 2.300 tramos de río, la malla de comunicación offline ya está resuelta por debajo de veinte dólares por nodo, y las apps de reporte ciudadano ya se probaron y se sabe que mueren a los cincuenta días. La mayoría de las propuestas de este hackatón van a reconstruir una de esas tres cosas.</p>
+<p>Porque el insight no se obtiene por lluvia de ideas. Requiere haber leído que en Huaquillas la interrupción del suministro de agua fue el único factor de riesgo significativo, que Lowe midió un rezago de tres a cinco meses después de la sequía, y que la empresa de agua publica ese calendario por barrio e incluso ordena a la gente almacenar. Son tres literaturas que no se citan entre sí y una fuente administrativa que nadie considera un dato científico.</p>
+<p>Porque responde bien a las preguntas incómodas. No asume internet, no asume electricidad, no asume smartphones en manos de la comunidad, no asume alfabetización digital, no despliega hardware que nadie mantendrá, no pide presupuesto nuevo y no requiere que el usuario cambie de hábito. El brigadista camina las mismas manzanas que hoy, en otro orden.</p>
+<p>Y porque el momento es exacto. El CPC estima más del 90% de probabilidad de un evento muy fuerte para fin de 2026, el ERFEN ubica la mayor expresión entre noviembre y diciembre, el dengue ya lleva once semanas consecutivas por encima de 2025 con 91,5% de resistencia a la deltametrina, y hay fondos de acción anticipatoria buscando disparadores accionables antes de noviembre. La ventana de tres a cinco meses que este sistema explota se está abriendo mientras se presenta el proyecto.</p>
+</section>
+<section id="aval-verde">
+<h2>Finalista B · AVAL VERDE</h2>
+<p class="kicker">FINALISTA B · TRACK 3 · AGROTECNOLOGÍA</p>
+<h3 class="big">AVAL VERDE</h3>
+<p class="lead">Verificación remota de pérdida agrícola y reestructuración anticipatoria de crédito, vendida al prestamista y no al productor.</p>
+<div class="callout warning"><div class="callout-title">Esta propuesta cambió de forma durante la investigación</div><div>La versión original, ACTA VERDE, proponía capturar evidencia de daño para que el productor pudiera reclamar. Dos hallazgos la obligaron a pivotar. Primero, esa idea ya existe, está publicada y evaluada: se llama Picture-Based Insurance y el IFPRI la probó con 750 productores en India. Segundo, y más decisivo, la literatura demuestra que el productor pequeño no compra seguro casi en ninguna parte del mundo, y en Ecuador solo lo hace cuando el banco se lo exige. Si el productor no es el comprador, el producto no puede estar diseñado para él.</div></div>
+<h4>1. El problema en una frase</h4>
+<p>La agricultura concentra el 43% del daño económico de El Niño en Ecuador, pero solo el 0,17% de la superficie agropecuaria está asegurada, porque peritar la pérdida de una parcela de dos hectáreas cuesta más que la indemnización, y el seguro por índice que resuelve ese costo falla justamente cuando el productor sí perdió la cosecha.</p>
+<h4>2. La evidencia de que el problema es real</h4>
+<div class="tw"><table><thead><tr><th>Hallazgo</th><th>Fuente</th><th>Fuerza</th></tr></thead><tbody><tr class="t-success"><td>En El Niño 1997-98 el sector agropecuario y pesca perdió US$ 1.243,7 M, el 43,3% del daño nacional total de US$ 2.869,3 M. El plan de acción de la SGR proyectó para 2023-24 unas 945.504 hectáreas afectadas, el 44% de la superficie agrícola del país, con US$ 1.800 M de pérdidas.</td><td>CEPAL, El Niño 1997-1998 en Ecuador; Plan de Acción Fenómeno El Niño, SGR</td><td>Fuerte</td></tr><tr class="t-success"><td>Hasta abril de 2023 había 15.247 hectáreas con pérdida total y 10.942 con pérdida parcial, pero solo 8.735 hectáreas aseguradas frente a los 5,2 millones de hectáreas de superficie agropecuaria: cerca del 0,17%. Según el IICA, los productores contratan el seguro únicamente cuando la entidad financiera lo exige para otorgar crédito.</td><td>Ministerio de Agricultura y Ganadería; análisis del IICA sobre seguros agrícolas en Ecuador</td><td>Fuerte</td></tr><tr class="t-success"><td>El seguro por índice arrastra riesgo de base, que es su talón de Aquiles: cuando el índice no se activa pero el productor sí perdió, queda peor que si nunca hubiera comprado el seguro. Un productor muy averso al riesgo rechaza racionalmente ese contrato, y la adopción ha sido en general decepcionante.</td><td>Carter, de Janvry, Sadoulet &amp; Sarris, revisión de evidencia; Clarke (2016)</td><td>Fuerte</td></tr><tr class="t-success"><td>En parcelas pequeñas el problema no se arregla con mejores índices. Descomponiendo el riesgo de base, la heterogeneidad interna de la zona domina sobre la precisión del índice, de modo que la búsqueda del mejor índice es más bien fútil y el esfuerzo debería ir a definir zonas más homogéneas y pequeñas.</td><td>Optimal index insurance and basis risk decomposition, aplicación a Kenia (arXiv); NBER WP 32618, Carter e Iglesias</td><td>Fuerte</td></tr><tr class="t-success"><td>La verificación por fotografía de teléfono funciona: identificó el 71,4% de los sitios con pérdida severa, frente al 34,4% de un índice simulado de rendimiento por área. El 63% de los productores capacitados subió al menos cuatro fotos por temporada. No se encontró evidencia de riesgo moral ni de selección adversa, y la disposición a pagar fue mayor que por el seguro por índice.</td><td>Ceballos, Kramer &amp; Robles, Development Engineering; evaluación 3ie con 750 productores en Haryana y Punjab, India</td><td>Fuerte</td></tr><tr class="t-info"><td>En 1998 la región costera absorbía el 63% del crédito bancario; la cartera vencida creció 76,7% y la morosidad llegó a 9,3% en diciembre de 1998. Hoy la banca pública registra 16,2% de morosidad general y 26% en su cartera productiva. Manabí destina el 19% de su cartera a agricultura y pesca, y Guayas el 12% de US$ 12.055 M.</td><td>Banco Central del Ecuador, Apuntes de Economía No. 75 (2024), sobre cartera a junio de 2023</td><td>Fuerte</td></tr><tr class="t-warning"><td>La verificación fotográfica solo detecta daño severo: en el piloto de India no logró identificar los sitios con daño moderado. Y aunque la disposición a pagar superó la del seguro por índice, en términos absolutos siguió siendo baja.</td><td>Mismo estudio del IFPRI; es la limitación reconocida por los propios autores</td><td>Limitación documentada</td></tr></tbody></table></div>
+<h4>3. El insight</h4>
+<blockquote>El cliente del seguro agrícola en Ecuador nunca fue el productor: es el banco. El productor solo se asegura cuando la entidad financiera lo exige como condición del crédito, y es el prestamista quien carga con la pérdida cuando la cosecha se inunda. Todas las insurtech de la región están corriendo a perfeccionar el índice climático, cuando la literatura dice que en parcelas pequeñas el índice no es la restricción que manda. La oportunidad no está en vender un seguro mejor al agricultor, está en darle al prestamista la capacidad de reestructurar el crédito antes de que llegue la inundación.</blockquote>
+<p>El corolario es que el producto cambia de categoría. No es un seguro ni una app para agricultores: es infraestructura de riesgo crediticio climático. Y eso resuelve de un golpe las dos preguntas que hundían la versión anterior, que eran quién paga y quién sostiene el uso, porque el oficial de crédito ya visita la parcela al originar el préstamo.</p>
+<h4>4. La solución en una frase</h4>
+<p>Una capa de verificación remota de pérdida que se instala en el flujo de originación de crédito agrícola, combinando el polígono y las fotos de línea base que el oficial ya levanta con corroboración satelital, y que usa el pronóstico de GEOGLOWS para decirle al prestamista qué créditos reestructurar antes de que se inunde la parcela.</p>
+<h4>5. Cómo funciona, paso a paso</h4>
+<div class="tw"><table><thead><tr><th class="a-center">Paso</th><th class="a-left">Qué ocurre</th></tr></thead><tbody><tr><td class="a-center">1</td><td class="a-left">Al originar el crédito, el oficial dibuja el polígono de la parcela y toma fotos de línea base desde puntos fijos georreferenciados. Es trabajo que ya hace en su visita de verificación, sin jornada adicional.</td></tr><tr><td class="a-center">2</td><td class="a-left">Durante la campaña, el productor sube fotos desde los mismos puntos en los hitos fenológicos. Si no lo hace, el sistema no se cae: recurre a la serie de radar Sentinel-1, que atraviesa nubes, y a índices de vegetación.</td></tr><tr><td class="a-center">3</td><td class="a-left">El motor mantiene por parcela una estimación de estado del cultivo y, agregando por zona, arma zonas de riesgo homogéneas y pequeñas en lugar de perseguir un índice más preciso, que es lo que la literatura señala como el error de diseño dominante.</td></tr><tr><td class="a-center">4</td><td class="a-left">Con el pronóstico de caudal a quince días de GEOGLOWS y las manchas históricas de inundación, el sistema calcula qué parcelas de la cartera van a inundarse y produce una lista de créditos candidatos a reestructuración preventiva.</td></tr><tr><td class="a-center">5</td><td class="a-left">Cuando ocurre el evento, la comparación entre línea base y estado posterior genera automáticamente un expediente de verificación de pérdida, con sello de tiempo y ubicación, apto para el reclamo de seguro o para la refinanciación.</td></tr><tr><td class="a-center">6</td><td class="a-left">El prestamista ve un panel de exposición de cartera por parroquia, con pérdida esperada, y puede provisionar con anticipación en lugar de descubrir la mora tres meses después.</td></tr></tbody></table></div>
+<h4>6. Arquitectura y fuentes de datos</h4>
+<div class="tw"><table><thead><tr><th>Componente</th><th>Origen y acceso</th></tr></thead><tbody><tr><td>Captura de campo</td><td>App offline-first para el oficial de crédito y el productor, con puntos fijos y sello de tiempo y ubicación</td></tr><tr><td>Corroboración satelital</td><td>Sentinel-1 y Sentinel-2, gratuitos; el radar atraviesa la nubosidad de la temporada lluviosa</td></tr><tr><td>Pronóstico de inundación</td><td>API de INAMHI-GEOGLOWS, abierta, 2.300 tramos de río a quince días</td></tr><tr><td>Geografía de cartera</td><td>Distribución de crédito por parroquia y actividad del Banco Central; el detalle de la cartera real requiere convenio con el prestamista</td></tr><tr><td>Superficie y cultivos</td><td>Sistema de Información Pública Agropecuaria del MAG y registro de productores</td></tr><tr><td>Histórico de daño</td><td>Reportes de afectación del MAG y siniestros del seguro agrícola subvencionado</td></tr><tr><td>Motor de zonificación</td><td>Agrupamiento por homogeneidad de rendimiento para minimizar riesgo de base</td></tr></tbody></table></div>
+<h4>7. MVP y demo de tres minutos</h4>
+<p>El MVP tiene tres piezas: la captura offline con puntos fijos y generación de expediente; la corroboración con Sentinel-1 sobre un evento real de inundación en Guayas o Los Ríos; y el panel de exposición de cartera alimentado con la distribución de crédito agrícola por parroquia del Banco Central más el pronóstico de GEOGLOWS.</p>
+<p>La demo abre con el dato del 0,17% de superficie asegurada y la cifra de 24.983 hectáreas afectadas en dos meses de 2024. Luego muestra el expediente generado en modo avión y su corroboración satelital. Cierra con el panel: esta parroquia concentra tantos millones en crédito agrícola, GEOGLOWS dice que esta cuenca se desborda en doce días, y en 1998 la morosidad de la costa pasó de 7,3% a 9,3%. Aquí están los créditos que conviene reestructurar esta semana.</p>
+<h4>8. Métricas, usuario, cliente y sostenibilidad</h4>
+<div class="tw"><table><thead><tr><th>Dimensión</th><th>Respuesta</th></tr></thead><tbody><tr><td>Métricas</td><td>Tiempo entre evento y liquidación del reclamo; costo de verificación por hectárea frente al peritaje presencial; reducción del riesgo de base medido como porcentaje de pérdidas severas correctamente identificadas, con el 71,4% del IFPRI como referencia; y morosidad de la cartera intervenida frente a la comparable.</td></tr><tr><td>Usuario</td><td>El oficial de crédito agrícola y, secundariamente, el productor.</td></tr><tr><td>Cliente que paga</td><td>El prestamista: BanEcuador, la Corporación Financiera Nacional y las cooperativas del segmento 1 con cartera agrícola en la costa. Las aseguradoras son el segundo comprador y el MAG, que subvenciona la prima, el tercero.</td></tr><tr><td>Sostenibilidad</td><td>Se cobra por hectárea verificada o por punto básico de cartera monitoreada, un modelo recurrente y atado a un presupuesto que ya existe: el costo de peritaje y provisiones que el prestamista paga hoy de forma más cara y más lenta.</td></tr><tr><td>Implementación y escala</td><td>Convenio con un prestamista para una campaña de arroz en Guayas o Los Ríos, y validación retrospectiva contra siniestros ya pagados. Escala por cartera de prestamista, no por productor. Argentina incorporó los seguros paramétricos a su reglamento de actividad aseguradora en julio de 2026 (Resolución 315/2026), lo que abre un canal formal regional.</td></tr></tbody></table></div>
+<h4>9. Ventaja competitiva y riesgos, sin maquillaje</h4>
+<div class="callout danger"><div class="callout-title">El track agro está lleno de competidores financiados</div><div>Guarda, en Brasil, levantó US$ 806 mil pre-semilla para seguros paramétricos satelitales y apunta a 10.000 hectáreas en 2026, con indemnización en treinta días y sin inspección de campo. TRAG, también brasileña, levantó R$ 2 millones y usa datos satelitales de programas de la NASA a nivel de lote con cuarenta años de histórico. YielData, de Argentina, convierte 42 años de datos climáticos en un índice de rendimiento en kilos por hectárea, ya cubrió productores una campaña y fue convocada por la NASA. Howden opera microseguros paramétricos en Colombia, México, Guatemala, Honduras, Costa Rica y El Salvador, y va hacia Perú. A esto se suma que el Banco Central del Ecuador ya publicó el mapeo de parroquias en riesgo y la pérdida esperada de la cartera de crédito.</div></div>
+<p>La ventaja defendible frente a ellos es estrecha pero real: todos resuelven el costo de peritaje eliminando la verificación de campo, y por eso todos cargan con riesgo de base, que es exactamente lo que la literatura identifica como la causa de la baja adopción. Nosotros verificamos, a costo casi nulo, aprovechando una visita que el oficial de crédito ya hace. Y ninguno de ellos está en el negocio del crédito, así que ninguno puede ofrecer reestructuración anticipada.</p>
+<div class="tw"><table><thead><tr><th>Riesgo</th><th>Severidad</th><th>Mitigación honesta</th></tr></thead><tbody><tr class="t-danger"><td>El comprador es un banco, con ciclo de venta de meses o años y aversión a pilotos. Nada de esto se valida en un fin de semana.</td><td>Alta</td><td>Ninguna satisfactoria en el horizonte del hackatón. Es la debilidad estructural de la propuesta.</td></tr><tr class="t-danger"><td>Cuatro competidores financiados, uno con relación con la NASA y viento regulatorio a favor en Argentina.</td><td>Alta</td><td>Diferenciarse por verificación real en lugar de índice, y por el ángulo crediticio. Pero es una carrera contra equipos con capital.</td></tr><tr class="t-warning"><td>La verificación fotográfica solo detecta daño severo, no moderado, según el propio piloto del IFPRI.</td><td>Media</td><td>Posicionar el producto como cobertura catastrófica, no como seguro integral. Es honesto y sigue siendo útil.</td></tr><tr class="t-warning"><td>Sin la cartera real del prestamista, el panel de exposición se construye sobre agregados por parroquia del Banco Central.</td><td>Media</td><td>Suficiente para demostrar el concepto, insuficiente para operar. Requiere el convenio.</td></tr><tr class="t-info"><td>La disposición a pagar del productor es baja incluso cuando percibe menor riesgo de base.</td><td>Baja</td><td>Es precisamente la razón del pivote: no le vendemos al productor.</td></tr></tbody></table></div>
+<h4>10. Por qué podría ganar y por qué podría perder</h4>
+<p>Podría ganar porque ataca el track que concentra el 43% del daño, con la cifra más contundente de todo el análisis: el 0,17% de la superficie agropecuaria asegurada. Porque el mecanismo de verificación no es una apuesta, está validado con números publicados de 71,4% contra 34,4%. Y porque el pivote al prestamista responde con precisión la pregunta que hunde a la mayoría de los proyectos de hackatón, que es quién paga.</p>
+<p>Podría perder porque compite contra cuatro empresas financiadas en el mismo espacio, porque su comprador tiene un ciclo de decisión de meses, y porque la parte más innovadora —la reestructuración anticipada de crédito— es también la más difícil de demostrar en tres minutos frente a un jurado.</p>
+</section>
+<footer>
+  <p><strong>Sobre las fuentes.</strong> Las cifras cuantitativas provienen de fuentes oficiales (CEPAL, Banco Central del Ecuador, Ministerio de Salud Pública, Ministerio de Agricultura y Ganadería, Secretaría de Gestión de Riesgos, INAMHI, INSPI, CPC/NOAA, ENFEN, OPS) y de literatura revisada por pares. Las puntuaciones de las matrices de priorización son juicio analítico propio, explícitamente subjetivo, y se muestran desagregadas por criterio para que puedan ser discutidas y modificadas.</p>
+  <p>Para convertir este documento a PDF: abrirlo en el navegador e imprimir con destino "Guardar como PDF". Las secciones plegables se imprimen desplegadas.</p>
+</footer>
+</main>
+</div>
+</body>
+</html>

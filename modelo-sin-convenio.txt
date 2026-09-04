@@ -1,0 +1,178 @@
+MODELO SIN CONVENIO
+Qué construir mañana (MVP) y cómo hablarlo
+Hackatón Quito — VENTANA SECA
+------------------------------------------------------------------------
+
+SIN CONVENIO NO ENTRENAS UN MODELO EPIDEMIOLÓGICO.
+
+Entrenar un modelo “de verdad” con lo que hay en la web sería fingir
+precisión que no tienes. Lo que sí puedes entregar es un MOTOR DE
+REGLAS + UN CASO RETROSPECTIVO, usando solo lo que el Estado ya publica.
+
+
+1. QUÉ NO INTENTES
+------------------------------------------------------------------------
+
+- No pidas a Interagua ni al MSP un Excel “para el hackatón”. No va
+  a llegar.
+- No armes un DLNM ni una red neuronal. Sin casos por manzana, sin
+  LIRAa y sin órdenes de trabajo, el modelo queda mal especificado
+  y un jurado técnico lo ve en la primera pregunta.
+- No prometas “predicción a 4–8 semanas por barrio”. Con gacetas
+  semanales a escala de cantón, eso es teatro.
+
+
+2. QUÉ SÍ PUEDES USAR HOY, SIN PEDIR PERMISO
+------------------------------------------------------------------------
+
+Dato                         Dónde                              Resolución              Sirve para
+---------------------------  ---------------------------------  ----------------------  --------------------------
+Calendario y mapa de         agua.quito.gob.ec                  Barrio y horario        La señal de entrada
+suspensiones                 → Mapa de Suspensiones
+
+Comunicados de Interagua     Web, X/Twitter, Primicias,         Lista de sectores +     El caso de Guayaquil
+                             El Diario                          horas + “almacene agua”
+
+Casos de dengue              Gacetas MSP / SIVE-Alerta          Cantón, a veces         La curva que se
+                             (PDF semanal)                      parroquia               superpone
+
+Lluvia                       CHIRPS / GPM (gratis)              ~5 km                   El mecanismo húmedo
+                                                                                        (llantas)
+
+Población                    WorldPop / INEC                    Manzana o grilla        Filtrar banda
+                                                                                        3.000–7.000 hab/km²
+
+
+LO QUE SÍ EXIGE CONVENIO (y por eso NO entra al MVP):
+- órdenes de trabajo
+- despacho de tanqueros
+- cortes no anunciados
+- índices entomológicos (LIRAa)
+- casos por manzana
+
+
+3. QUÉ CONSTRUIR EN LAS HORAS QUE QUEDAN
+------------------------------------------------------------------------
+
+Un PUNTAJE POR BARRIO, no un modelo entrenado.
+
+Tres ingredientes públicos:
+
+  1. Días desde el último corte publicado
+     (y si duró ≥ 8 h, y si la empresa pidió almacenar).
+
+  2. Ventana de lluvia reciente
+     (CHIRPS o, si no da tiempo, “temporada invernal sí/no”).
+
+  3. Tendencia de casos del cantón en las últimas 4 gacetas
+     (sube / estable / baja).
+
+
+REGLA (escribible en una hoja y luego en código):
+
+  A) Corte ≥ 8 h hace 0–14 días + la empresa pidió almacenar
+     → COLA DE BRIGADA ESTA SEMANA
+     Acción: barriles y tinas.
+
+  B) Corte hace 12–20 semanas (aprox. 3–5 meses)
+     → ALERTA DE BROTE TARDÍO
+     Es el rezago de Lowe. Márcalo como HIPÓTESIS, no como
+     hecho ecuatoriano.
+
+  C) Lluvia fuerte hace 0–8 semanas, sin corte
+     → MINGA DE LLANTAS Y ABANDONADOS
+     Lo que midió Machala en invierno.
+
+  D) Cantón con casos subiendo
+     → sube prioridad, NO define la manzana.
+
+
+Esto es defendible: priorizas con un documento público, no finges
+que aprendiste la epidemiología de Guayaquil en una noche.
+
+
+4. EL CASO QUE CARGA LA DEMO (HAZLO A MANO)
+------------------------------------------------------------------------
+
+No raspés portales esta noche. Arma una tablita de 8 a 12 cortes
+reales ya publicados.
+
+Uno solo basta para el “wow”:
+
+  8 DE FEBRERO DE 2026 — INTERAGUA
+  - 11 h en norte / centro / Durán / Nobol
+  - 16 h en el sur (Guasmo, Isla Trinitaria, Cristo del Consuelo)
+  - Motivo: planta La Toma
+  - La empresa pidió RESERVAS DE AGUA
+  - Lista de sectores: Primicias y Vistazo
+
+Cruza eso con la gaceta de dengue de Guayaquil de las semanas
+siguientes (PDF del MSP). Aunque sea a escala de cantón, en la
+demo dices:
+
+  “Este es el documento. Esta es la lista de barrios. Según la
+   evidencia de Machala y Huaquillas, aquí es donde aparecen los
+   barriles. El MSP, el mismo mes, inspeccionaba por el mapa de
+   2025. Nosotros les daríamos esta cola.”
+
+SI LA CURVA CANTONAL NO MUESTRA EL REZAGO, NO LO INVENTES.
+Muestra el cruce espacial (dónde se cortó vs dónde el plan
+nacional había priorizado) y di que validar el rezago de
+3–5 meses con datos locales es el primer entregable del piloto.
+Eso es más creíble que una gráfica maquillada.
+
+
+5. CÓMO HABLARLO EN EL PITCH
+------------------------------------------------------------------------
+
+Una frase, y no más:
+
+  “No tenemos convenio, y no lo necesitamos para el MVP. El
+   predictor ya está en la web de la empresa de agua. El convenio
+   sirve para las órdenes de trabajo y el LIRAa, que mejoran el
+   modelo; no para demostrar que el cruce existe.”
+
+Si preguntan “¿y si el portal cambia?”
+  → versionamos el PDF / la captura.
+
+Si preguntan “¿y los cortes no programados?”
+  → esos sí piden convenio. El MVP cubre los programados, que
+    son los que la empresa anuncia y con los que ordena almacenar.
+
+
+6. ORDEN DE TRABAJO PARA MAÑANA
+------------------------------------------------------------------------
+
+  1. Tabla de cortes (Guayaquil 2024–2026 + uno de Quito si sale
+     fácil). Columnas: fecha, horas, sectores, ¿pidieron almacenar?,
+     fuente URL.
+
+  2. 10–15 números de dengue semanal de Guayas / Guayaquil sacados
+     de gacetas MSP.
+
+  3. Motor de reglas en el backend o en una hoja que la app lea.
+
+  4. Pantalla de cola de brigada alimentada por esa regla, en modo
+     avión.
+
+  5. WhatsApp del barrio cortado (complemento ciudadano: receptor,
+     NO sensor), disparado por la misma regla.
+
+
+7. RECUERDO: QUÉ NO ES EL CIUDADANO
+------------------------------------------------------------------------
+
+El ciudadano NO es el radar (Mosquito Alert se cae a los ~50 días).
+El ciudadano es quien tapa el tanque el día del corte.
+
+El radar es un PDF que el municipio ya publica.
+La brigada verifica si lo taparon.
+El convenio se pide DESPUÉS, como mes 1 del piloto
+(Interagua o EPMAPS + un distrito).
+
+En el hackatón, pedirlo es perder el día.
+
+El producto que se demuestra es:
+
+  Leímos un documento que ustedes ya publican,
+  y lo convertimos en orden de trabajo.

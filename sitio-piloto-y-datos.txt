@@ -1,0 +1,125 @@
+SITIO PILOTO Y DISPONIBILIDAD DE DATOS
+VENTANA SECA — Hackaton Quito
+========================================================================
+
+RECOMENDACION: EMPEZAR EN GUAYAQUIL (GUAYAS)
+------------------------------------------------------------------------
+
+El sitio piloto necesita LAS DOS COSAS a la vez:
+  (1) que la empresa de agua publique los cortes  -> senal de entrada
+  (2) que haya dengue real                        -> el blanco
+
+Casi ningun sitio de Ecuador tiene ambas. Ese es el punto.
+
+
+TABLA DE DECISION
+------------------------------------------------------------------------
+
+Sitio            Datos de cortes        Dengue 2026         Evidencia        Veredicto
+                 (ENTRADA)              (BLANCO)            cientifica local
+---------------  ---------------------  ------------------  ---------------  --------------------------
+Guayaquil        FUERTE (Interagua      ALTA (Guayas        Media            EMPEZAR AQUI
+(Guayas)         publica cronograma     5.909 casos, 2o
+                 semanal por sector     del pais)
+                 en web + X + volantes)
+
+Quito            LA MEJOR del pais      CASI CERO (2.850 m  --               DESCARTADO: datos
+(EPMAPS)         (Mapa de Suspensiones) sin transmision                      perfectos, enfermedad
+                                        sostenida)                           ausente
+
+Machala          Debil / poco publica   BAJA en 2026        LA MAS FUERTE    Respaldo cientifico
+(El Oro)                                (El Oro 553,        (Stewart-Ibarra: y fase 2
+                                        'zona seguridad')   barriles = 63-69%
+                                                            de las pupas)
+
+Huaquillas       Escasez cronica, no    Endemica, ciudad    LA PRUEBA CAUSAL Cita, no piloto
+(El Oro)         cortes programados     chica (~57 mil)     (corte de agua =
+                                                            unico factor
+                                                            significativo)
+
+Manabi           Menos sistematica      LA MAS ALTA         --               Mayor premio, pero
+(Portoviejo/                            (6.454 casos, 1o)                    falta el feed de cortes
+Manta)
+
+
+LA FRASE PARA EL PITCH
+------------------------------------------------------------------------
+"Quito tiene los mejores datos de cortes y no sirve, porque no hay
+ dengue. Machala tiene la mejor evidencia y bajo su carga este ano.
+ Solo Guayaquil junta la senal y la enfermedad."
+
+Eso demuestra que elegimos el sitio con criterio, no por comodidad.
+
+
+HAY DATOS PARA EL MODELO?
+------------------------------------------------------------------------
+
+MODELO RETROSPECTIVO DE REGLAS (el del MVP): SI.
+Todo publico hoy, sin convenio:
+  - Cortes de Interagua (fechas, sectores, horas, "almacene agua")
+  - Dengue semanal por canton (gacetas MSP / SIVE-Alerta, PDF)
+  - Lluvia (CHIRPS / GPM)
+  - Poblacion (WorldPop / INEC)
+
+MODELO EPIDEMIOLOGICO ENTRENADO: NO sin convenio.
+Falta: dengue por manzana, LIRAa, ordenes de trabajo.
+
+
+DATOS YA EXTRAIDOS (archivos adjuntos)
+------------------------------------------------------------------------
+
+1. datos_cortes_interagua.csv
+   7 cortes reales de Guayaquil (2023-2026) con fecha, duracion,
+   zona, sectores, motivo, si pidieron almacenar, y URL fuente.
+   Sirve como tabla de ENTRADA del motor de reglas.
+
+   Dato estrella para la demo:
+   8-FEB-2026, planta La Toma. 11 h norte/centro/Duran/Nobol,
+   16 h sur (Guasmo, Isla Trinitaria, Cristo del Consuelo).
+   Interagua pidio "mantener reservas de agua".
+
+2. datos_dengue_provincia_2026.csv
+   Dengue por provincia hasta SE28 2026 (corte 18-jul), con
+   incidencia por 100k y notas. Total nacional 23.306 y 25
+   fallecidos; a mediados de agosto subio a 28.652 y 35 muertes.
+
+
+FUENTES PRINCIPALES (todas publicas)
+------------------------------------------------------------------------
+
+Cortes Interagua:
+  - Web oficial (seccion interrupciones) + cuenta X @interagua
+  - Prensa: Primicias, El Universo, Vistazo, Ecuavisa, El Diario
+    (ver URLs en datos_cortes_interagua.csv)
+
+Cortes Quito (para expansion, NO dengue):
+  - agua.quito.gob.ec -> Mapa de Suspensiones
+
+Dengue:
+  - Gacetas Epidemiologicas MSP / SIVE-Alerta (PDF semanal)
+    ej: salud.gob.ec/.../Indicadores-gaceta-2025-SE-38.pdf
+  - Resumen SE28 2026: El Universo, El Oriente, Atlas Visual Dengue
+
+Lluvia: CHIRPS (UCSB) / GPM (NASA), gratis
+Poblacion: WorldPop / INEC (censo)
+
+Evidencia cientifica del mecanismo (para respaldar, no para el MVP):
+  - Stewart-Ibarra et al., PLOS ONE 2013 (Machala): barriles = 63-69%
+    de las pupas; recipientes domesticos en epoca seca, abandonados
+    (llantas) en epoca lluviosa.
+  - Household and climate factors... Huaquillas, PLOS NTD 2021:
+    interrupcion de agua = UNICO factor de riesgo significativo.
+  - Lowe et al., Lancet Planetary Health 2021: rezago de 3-5 meses
+    tras sequia (Brasil/Barbados) -> marcar como HIPOTESIS a validar
+    con datos ecuatorianos.
+
+
+PROXIMO PASO SUGERIDO
+------------------------------------------------------------------------
+Con Guayaquil elegido, el MVP corre asi:
+  1. Cargar datos_cortes_interagua.csv como entrada.
+  2. Aplicar la regla por barrio (ver modelo-sin-convenio.txt).
+  3. Superponer la curva de dengue de Guayas de las gacetas.
+  4. Generar la cola de brigada por sector y mostrarla en modo avion.
+  5. El convenio (Interagua/EPMAPS + un distrito) es el mes 1 del
+     plan, NO parte del hackaton.
