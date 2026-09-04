@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VENTANA SECA · Brigada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F172A;
+    --primary:#1E3A8A;
+    --primary-dark:#16296B;
+    --accent:#A16207;
+    --accent-dark:#7C4A05;
+    --ink-soft:#475569;
+    --bg:#F8FAFC;
+    --card:#FFFFFF;
+    --muted:#E8ECF1;
+    --line:#E2E8F0;
+    --risk-alto:#DC2626;   --risk-alto-bg:#FCE8E7;
+    --risk-medio:#C2410C;  --risk-medio-bg:#FCE9DD;
+    --risk-bajo:#16A34A;   --risk-bajo-bg:#E4F6EA;
+    --ec-yellow:#FFD100; --ec-blue:#00247D; --ec-red:#EF3340;
+    --font-heading:'Lexend',sans-serif;
+    --font-body:'Source Sans 3',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#E2E8F0;
+    font-family:var(--font-body);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:32px 12px;
+  }
+
+  .frame{
+    width:390px; min-height:844px;
+    display:flex; flex-direction:column;
+    background:var(--bg);
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,.18);
+    position:relative;
+  }
+
+  .ribbon{ flex:0 0 auto; height:5px; background:linear-gradient(90deg,var(--ec-yellow),var(--ec-blue),var(--ec-red)); }
+
+  .topbar{
+    flex:0 0 auto; background:rgba(255,255,255,.85);
+    -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+    padding:16px 18px 10px;
+    display:flex; align-items:flex-start; justify-content:space-between;
+    border-bottom:1px solid var(--line);
+  }
+  .topbar .loc-label{ font-size:11px; color:var(--ink-soft); font-weight:600; }
+  .topbar h1{ font-family:var(--font-heading); font-size:17px; font-weight:700; margin:2px 0 0; display:flex; align-items:center; gap:4px; }
+  .topbar h1 .chev{ font-size:12px; color:var(--ink-soft); font-weight:600; }
+  .bell{
+    position:relative; width:38px; height:38px; border-radius:50%; background:var(--muted);
+    display:flex; align-items:center; justify-content:center; border:0; flex-shrink:0; cursor:pointer;
+  }
+  .bell svg{ width:18px; height:18px; stroke:var(--ink); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .bell .dot{ position:absolute; top:7px; right:8px; width:8px; height:8px; border-radius:50%; background:var(--accent); border:2px solid var(--card); }
+
+  .offline{
+    flex:0 0 auto; max-height:0; overflow:hidden;
+    background:var(--risk-alto); color:#fff; font-size:11.5px; font-weight:500;
+    display:flex; align-items:center; justify-content:center;
+    transition:max-height .2s ease;
+  }
+  .offline.show{ max-height:30px; padding:6px; }
+
+  .content{ position:relative; flex:1 1 auto; overflow:hidden; }
+  .scroll-area{ position:absolute; inset:0; overflow-y:auto; padding-bottom:92px; }
+
+  .search{
+    margin:14px 18px 0; background:var(--muted); border-radius:14px;
+    display:flex; align-items:center; gap:8px; padding:11px 14px;
+  }
+  .search svg{ width:16px; height:16px; stroke:var(--ink-soft); fill:none; stroke-width:2; stroke-linecap:round; flex-shrink:0; }
+  .search input{
+    border:0; background:none; outline:0; font:inherit; font-size:13px; color:var(--ink); width:100%;
+  }
+  .search input::placeholder{ color:var(--ink-soft); }
+
+  .chiprow{ display:flex; gap:8px; padding:14px 18px 0; overflow-x:auto; }
+  .chiprow::-webkit-scrollbar{ display:none; }
+  .fchip{
+    flex-shrink:0; font:inherit; font-size:12.5px; font-weight:600; padding:8px 15px;
+    border-radius:20px; border:1.5px solid var(--line); background:var(--card);
+    color:var(--ink-soft); cursor:pointer; white-space:nowrap;
+  }
+  .fchip.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
+
+  .banner{
+    margin:16px 18px 0; padding:13px 15px; border-radius:16px;
+    background:var(--primary);
+    color:#fff; font-family:var(--font-body); font-size:12.5px; font-weight:500; line-height:1.4;
+    display:flex; align-items:center; gap:10px;
+  }
+  .banner strong{ font-weight:700; }
+
+  .route-card{
+    margin:14px 18px 0; padding:14px 16px; background:var(--card);
+    border-radius:16px; border:1px solid var(--line);
+    box-shadow:0 10px 26px rgba(15,23,42,.09);
+  }
+  .route-card .rc-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .route-card .rc-title{ font-family:var(--font-heading); font-size:14px; font-weight:700; color:var(--ink); }
+  .route-card .rc-count{ font-family:var(--font-heading); font-size:20px; font-weight:700; color:var(--primary); }
+  .progress-track{ height:8px; background:var(--muted); border-radius:6px; overflow:hidden; }
+  .progress-fill{ height:100%; background:linear-gradient(90deg,var(--ec-yellow),var(--ec-blue),var(--ec-red)); border-radius:6px; transition:width .3s ease; }
+
+  .list-section{ padding:16px 18px 4px; }
+  .list-section h2{ font-family:var(--font-heading); font-size:13px; font-weight:700; margin:0 0 10px; }
+  .zrow{
+    display:flex; align-items:center; gap:12px; padding:13px;
+    background:var(--card); border-radius:16px; margin-bottom:10px; cursor:pointer;
+    box-shadow:0 2px 8px rgba(15,23,42,.06);
+  }
+  .zrow.dim{ display:none; }
+  .avatar{
+    position:relative; width:46px; height:46px; border-radius:14px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-heading); font-weight:600; font-size:16px;
+    box-shadow:inset 0 0 0 1.5px rgba(15,23,42,.06);
+  }
+  .avatar .check{
+    position:absolute; bottom:-4px; right:-4px; width:18px; height:18px; border-radius:50%;
+    background:var(--risk-bajo); border:2px solid var(--card); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;
+  }
+  .zrow .info{ flex:1; min-width:0; }
+  .zrow .name{ font-size:14px; font-weight:600; }
+  .zrow .badges{ display:flex; align-items:center; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .tag{ font-size:10px; font-weight:500; padding:3px 8px; border-radius:8px; white-space:nowrap; }
+  .tag.time{ background:#DDE6EE; color:#1E293B; }
+  .tag.alto{ background:#E5352B; color:#fff; }
+  .tag.medio{ background:#EAB308; color:#1A1200; }
+  .tag.bajo{ background:#16A34A; color:#fff; }
+  .zrow .chev{ color:#CBD5E1; font-size:20px; font-weight:500; }
+
+  /* ---------- detail as sliding panel ---------- */
+  .detail{
+    position:absolute; inset:0; overflow-y:auto; background:var(--bg);
+    transform:translateX(100%); pointer-events:none;
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  .detail.show{ transform:translateX(0); pointer-events:auto; }
+  .d-hero{ background:linear-gradient(135deg,var(--ink),var(--primary)); color:#fff; padding:16px 18px 22px; position:relative; }
+  .d-hero .back{
+    width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.22); border:0;
+    color:#fff; font-size:18px; font-weight:600; cursor:pointer; margin-bottom:16px;
+  }
+  .d-hero .d-avatar{
+    width:56px; height:56px; border-radius:16px; background:rgba(255,255,255,.18);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-heading); font-size:22px; font-weight:600; margin-bottom:10px;
+  }
+  .d-hero .d-name{ font-family:var(--font-heading); font-size:21px; font-weight:700; }
+  .d-accent-line{ width:40px; height:4px; border-radius:2px; margin-top:9px;
+    background:linear-gradient(90deg,var(--ec-yellow),var(--ec-blue),var(--ec-red)); }
+  .d-hero .d-badges{ display:flex; gap:6px; margin-top:8px; }
+  .d-hero .tag{ background:rgba(255,255,255,.2); color:#fff; }
+
+  .detail-body{ padding:16px 18px 110px; }
+  .just{
+    font-size:12.5px; color:var(--ink-soft); line-height:1.5;
+    padding:12px 14px; background:var(--card); border:1px solid var(--line); border-radius:14px;
+  }
+  .field-label{ display:block; font-size:12px; font-weight:600; margin:18px 0 8px; }
+  .detail input[type=text]{
+    width:100%; padding:12px 14px; border-radius:12px; border:1.5px solid var(--line);
+    background:var(--card); color:var(--ink); font:inherit; font-size:13.5px;
+  }
+  .detail input:focus{ outline:2px solid var(--primary); outline-offset:0; border-color:var(--primary); }
+
+  .stepper{ display:flex; align-items:center; gap:16px; background:var(--card); border:1.5px solid var(--line); border-radius:14px; padding:8px 16px; width:fit-content; }
+  .stepper button{
+    width:30px; height:30px; border-radius:50%; border:0; background:var(--primary); color:#fff;
+    font-size:17px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .stepper button:active{ background:var(--primary-dark); }
+  .stepper span{ font-family:var(--font-heading); font-size:15px; font-weight:600; min-width:16px; text-align:center; }
+
+  .pills, .sino{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pills button, .sino button{
+    border:1.5px solid var(--line); background:var(--card); color:var(--ink);
+    padding:9px 15px; border-radius:12px; font:inherit; font-size:12.5px; font-weight:500; cursor:pointer;
+  }
+  .pills button[aria-pressed="true"], .sino button[aria-pressed="true"]{
+    background:var(--primary); color:#fff; border-color:var(--primary); font-weight:600;
+  }
+  .sino button{ flex:1; }
+
+  .guardar-bar{
+    position:absolute; left:0; right:0; bottom:0; padding:14px 18px 20px;
+    background:linear-gradient(180deg, rgba(248,250,252,0) 0%, var(--bg) 30%);
+  }
+  .guardar{
+    width:100%; padding:15px; border-radius:16px; border:0;
+    background:linear-gradient(135deg,var(--ink),var(--primary)); color:#fff;
+    font-family:var(--font-heading); font-size:14.5px; font-weight:600; cursor:pointer;
+    box-shadow:0 10px 24px rgba(30,58,138,.35);
+  }
+  .guardar:active{ background:linear-gradient(135deg,var(--ink),var(--primary-dark)); }
+
+  .visitados{ margin-top:20px; padding-top:16px; border-top:1px solid var(--line); }
+  .visitados b{ font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--ink-soft); }
+  .visitados ul{ list-style:none; padding:0; margin:10px 0 0; }
+  .visitados li{
+    font-size:12.5px; color:var(--ink); padding:10px 12px; margin-bottom:6px;
+    background:var(--card); border-radius:10px; border:1px solid var(--line);
+  }
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:absolute; left:50%; bottom:90px; transform:translate(-50%,10px);
+    background:var(--ink); color:#fff; font-size:12.5px; font-weight:500;
+    padding:12px 20px; border-radius:30px;
+    opacity:0; pointer-events:none; transition:opacity .18s, transform .18s;
+    z-index:40; white-space:nowrap; box-shadow:0 10px 20px rgba(0,0,0,.25);
+  }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+
+  /* ---------- floating tab bar ---------- */
+  .tabbar{
+    position:absolute; left:14px; right:14px; bottom:14px; z-index:35;
+    display:flex; gap:2px; padding:6px; border-radius:22px;
+    background:rgba(255,255,255,.9);
+    -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+    box-shadow:0 14px 30px rgba(15,23,42,.18);
+    border:1px solid rgba(255,255,255,.6);
+  }
+  .tab{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:none; border:0; border-radius:16px; color:#94A3B8; font:inherit; font-size:10px; font-weight:500;
+    padding:8px 0; cursor:pointer; text-decoration:none; transition:background .15s, color .15s;
+  }
+  .tab.active{ background:var(--muted); color:var(--primary); }
+  .tab svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6.5H4c.5-1 2-2.5 2-6.5z"/><path d="M9.5 18a2.5 2.5 0 0 0 5 0"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
+  </defs>
+</svg>
+
+<div class="frame">
+  <div class="ribbon"></div>
+  <div class="topbar">
+    <div>
+      <div class="loc-label">RUTA DE HOY</div>
+      <h1>Guayaquil <span class="chev">⌄</span></h1>
+    </div>
+    <button class="bell" id="bell" type="button"><svg><use href="#i-bell"/></svg><span class="dot"></span></button>
+  </div>
+
+  <div class="offline" id="offlineBanner">SIN CONEXIÓN · se guarda en el teléfono</div>
+
+  <div class="content">
+    <div class="scroll-area" id="scrollArea">
+      <div class="search">
+        <svg><use href="#i-search"/></svg>
+        <input id="buscar" type="text" placeholder="Buscar barrio...">
+      </div>
+
+      <div class="chiprow" id="segmented">
+        <button class="fchip active" data-estado="pendientes" type="button">Pendientes</button>
+        <button class="fchip" data-estado="todos" type="button">Todos</button>
+        <button class="fchip" data-estado="visitados" type="button">Visitados</button>
+      </div>
+
+      <div class="banner" id="banner">⚠️ <span></span></div>
+
+      <div class="route-card">
+        <div class="rc-top">
+          <span class="rc-title">Progreso de la ruta</span>
+          <span class="rc-count" id="rc-count">0 / 7</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="list-section">
+        <h2>Barrios por prioridad</h2>
+        <div id="list"></div>
+      </div>
+    </div>
+
+    <div class="detail" id="detail">
+      <div class="d-hero">
+        <button class="back" id="volver" type="button">‹</button>
+        <div class="d-avatar" id="d-avatar">—</div>
+        <div class="d-name" id="d-name">—</div>
+        <div class="d-accent-line"></div>
+        <div class="d-badges">
+          <span class="tag" id="d-tag-time">— h</span>
+          <span class="tag" id="d-tag-urg">—</span>
+        </div>
+      </div>
+      <div class="detail-body">
+        <div class="just" id="d-just">—</div>
+
+        <label class="field-label" for="casa">Casa o dirección</label>
+        <input id="casa" type="text" placeholder="Calle 3, casa 18">
+
+        <div class="field-label">Nº de recipientes</div>
+        <div class="stepper">
+          <button type="button" id="nrec-minus">−</button>
+          <span id="nrecVal">1</span>
+          <button type="button" id="nrec-plus">+</button>
+        </div>
+
+        <div class="field-label">Tipo</div>
+        <div class="pills" id="tipos">
+          <button type="button" aria-pressed="true">Tina</button>
+          <button type="button" aria-pressed="false">Tanque</button>
+          <button type="button" aria-pressed="false">Llanta</button>
+          <button type="button" aria-pressed="false">Otro</button>
+        </div>
+
+        <div class="field-label">¿Larva a simple vista?</div>
+        <div class="sino" id="larva">
+          <button type="button" aria-pressed="false">Sí</button>
+          <button type="button" aria-pressed="true">No</button>
+        </div>
+
+        <div class="visitados">
+          <b>Ya visitados en este barrio</b>
+          <ul id="visitadosList"></ul>
+        </div>
+      </div>
+      <div class="guardar-bar">
+        <button class="guardar" type="button" id="guardar">Guardar predio</button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">Predio guardado</div>
+
+    <div class="tabbar">
+      <button class="tab active" type="button"><svg><use href="#i-list"/></svg>Cola</button>
+      <a class="tab" href="rereferencia.html"><svg><use href="#i-map"/></svg>Mapa</a>
+      <button class="tab" type="button"><svg><use href="#i-user"/></svg>Perfil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Mismo array/contrato que panel-distrital.html (data/cola.json). "visitadoHoy" y "predios"
+// se actualizan en vivo al guardar un predio, para simular la sincronización con IndexedDB.
+const barrios = [
+  { id:"guasmo", nombre:"Guasmo", zona:"Sur", prioridad:1, corteHoras:16, regla:"A", urgencia:"bajo",
+    justificacion:"Corte de 16 h hace 7 días. Interagua pidió reservas de agua.",
+    predios:2, visitadoHoy:true, registros:["Casa 12 · 4 tinas · sin larva", "Casa 14 · 2 tanques · sin larva"] },
+  { id:"isla-trinitaria", nombre:"Isla Trinitaria", zona:"Sur", prioridad:2, corteHoras:16, regla:"A", urgencia:"alto",
+    justificacion:"Corte de 16 h hace 7 días. Interagua pidió reservas de agua.",
+    predios:0, visitadoHoy:false, registros:[] },
+  { id:"cristo-del-consuelo", nombre:"Cristo del Consuelo", zona:"Sur", prioridad:3, corteHoras:16, regla:"A", urgencia:"alto",
+    justificacion:"Corte de 16 h hace 7 días. Interagua pidió reservas de agua.",
+    predios:0, visitadoHoy:false, registros:[] },
+  { id:"bastion-popular", nombre:"Bastión Popular", zona:"Norte", prioridad:4, corteHoras:11, regla:"A", urgencia:"medio",
+    justificacion:"Corte de 11 h hace 7 días. Interagua pidió reservas de agua.",
+    predios:0, visitadoHoy:false, registros:[] },
+  { id:"pascuales", nombre:"Pascuales", zona:"Norte", prioridad:5, corteHoras:11, regla:"A", urgencia:"medio",
+    justificacion:"Corte de 11 h hace 7 días. Interagua pidió reservas de agua.",
+    predios:0, visitadoHoy:false, registros:[] },
+  { id:"alborada", nombre:"Alborada", zona:"Norte", prioridad:6, corteHoras:11, regla:"A", urgencia:"medio",
+    justificacion:"Corte de 11 h hace 7 días. Interagua pidió reservas de agua.",
+    predios:0, visitadoHoy:false, registros:[] },
+  { id:"sauces", nombre:"Sauces", zona:"Norte", prioridad:7, corteHoras:11, regla:"A", urgencia:"medio",
+    justificacion:"Corte de 11 h hace 7 días. Interagua pidió reservas de agua.",
+    predios:0, visitadoHoy:false, registros:[] }
+];
+
+const riskLabel = { alto:"ALTO", medio:"MEDIO", bajo:"BAJO" };
+
+let estadoFilter = "pendientes";
+let searchTerm = "";
+let selectedId = null;
+let nrecValue = 1;
+
+function renderTop(){
+  const total = barrios.length;
+  const visitados = barrios.filter(b=>b.visitadoHoy).length;
+
+  document.getElementById("rc-count").textContent = `${visitados} / ${total}`;
+  document.getElementById("progressFill").style.width = (visitados/total*100) + "%";
+
+  const criticos = barrios.filter(b=>b.corteHoras>=16 && !b.visitadoHoy).length;
+  document.getElementById("banner").querySelector("span").textContent = criticos > 0
+    ? `Corte de 16h afecta ${criticos} barrio${criticos===1?"":"s"} sin visitar hoy`
+    : "Todos los barrios de corte crítico ya fueron visitados hoy";
+}
+
+function matchesFilters(b){
+  if(estadoFilter === "pendientes" && b.visitadoHoy) return false;
+  if(estadoFilter === "visitados" && !b.visitadoHoy) return false;
+  if(searchTerm && !b.nombre.toLowerCase().includes(searchTerm)) return false;
+  return true;
+}
+
+function avatarStyle(b){
+  const map = {
+    alto:["var(--risk-alto-bg)","var(--risk-alto)"],
+    medio:["var(--risk-medio-bg)","var(--risk-medio)"],
+    bajo:["var(--risk-bajo-bg)","var(--risk-bajo)"]
+  };
+  const [bg,fg] = map[b.urgencia];
+  return `background:${bg};color:${fg}`;
+}
+
+function renderList(){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  const sorted = [...barrios].sort((a,b)=>a.prioridad-b.prioridad);
+  sorted.forEach(b=>{
+    if(!matchesFilters(b)) return;
+    const row = document.createElement("div");
+    row.className = "zrow";
+    row.dataset.id = b.id;
+    row.innerHTML = `<span class="avatar" style="${avatarStyle(b)}">${b.nombre[0]}${b.visitadoHoy ? '<span class="check">✓</span>' : ''}</span>
+      <span class="info">
+        <span class="name">${b.nombre}</span>
+        <span class="badges">
+          <span class="tag time">${b.corteHoras} h · ${b.zona}</span>
+          <span class="tag ${b.urgencia}">${riskLabel[b.urgencia]}</span>
+        </span>
+      </span>
+      <span class="chev">›</span>`;
+    row.addEventListener("click", ()=>openBarrio(b.id));
+    list.appendChild(row);
+  });
+}
+
+function openBarrio(id){
+  selectedId = id;
+  nrecValue = 1;
+  document.getElementById("nrecVal").textContent = nrecValue;
+  const b = barrios.find(x=>x.id===id);
+  document.getElementById("d-avatar").textContent = b.nombre[0];
+  document.getElementById("d-name").textContent = b.nombre;
+  document.getElementById("d-tag-time").textContent = `${b.corteHoras} h · ${b.zona}`;
+  document.getElementById("d-tag-urg").textContent = "Riesgo " + riskLabel[b.urgencia].toLowerCase();
+  document.getElementById("d-just").textContent = b.justificacion;
+  renderVisitados(b);
+  document.getElementById("detail").classList.add("show");
+}
+
+function renderVisitados(b){
+  const ul = document.getElementById("visitadosList");
+  ul.innerHTML = b.registros.map(r=>`<li>${r}</li>`).join("") || "<li>Ningún predio registrado aún</li>";
+}
+
+document.getElementById("volver").addEventListener("click", ()=>{
+  document.getElementById("detail").classList.remove("show");
+  renderList();
+});
+
+document.getElementById("buscar").addEventListener("input", (e)=>{
+  searchTerm = e.target.value.trim().toLowerCase();
+  renderList();
+});
+
+document.querySelectorAll("#segmented .fchip").forEach(c=>{
+  c.addEventListener("click", ()=>{
+    document.querySelectorAll("#segmented .fchip").forEach(x=>x.classList.remove("active"));
+    c.classList.add("active");
+    estadoFilter = c.dataset.estado;
+    renderList();
+  });
+});
+
+
+document.getElementById("nrec-minus").addEventListener("click", ()=>{
+  nrecValue = Math.max(0, nrecValue - 1);
+  document.getElementById("nrecVal").textContent = nrecValue;
+});
+document.getElementById("nrec-plus").addEventListener("click", ()=>{
+  nrecValue += 1;
+  document.getElementById("nrecVal").textContent = nrecValue;
+});
+
+document.getElementById("tipos").addEventListener("click", (e)=>{
+  if(e.target.tagName !== "BUTTON") return;
+  [...e.currentTarget.children].forEach(b=>b.setAttribute("aria-pressed", b===e.target));
+});
+document.getElementById("larva").addEventListener("click", (e)=>{
+  if(e.target.tagName !== "BUTTON") return;
+  [...e.currentTarget.children].forEach(b=>b.setAttribute("aria-pressed", b===e.target));
+});
+
+let toastTimer = null;
+function showToast(){
+  const toast = document.getElementById("toast");
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toast.classList.remove("show"), 1800);
+}
+
+document.getElementById("guardar").addEventListener("click", ()=>{
+  const b = barrios.find(x=>x.id===selectedId);
+  const casa = document.getElementById("casa").value || "Predio sin dirección";
+  const tipo = [...document.getElementById("tipos").querySelectorAll("button")]
+    .find(bt=>bt.getAttribute("aria-pressed")==="true").textContent.toLowerCase();
+  const larva = document.getElementById("larva").querySelectorAll("button")[0].getAttribute("aria-pressed")==="true";
+
+  b.registros.unshift(`${casa} · ${nrecValue} ${tipo} · ${larva ? "con larva" : "sin larva"}`);
+  b.predios += 1;
+  b.visitadoHoy = true;
+
+  renderVisitados(b);
+  renderTop();
+  showToast();
+  document.getElementById("casa").value = "";
+  nrecValue = 1;
+  document.getElementById("nrecVal").textContent = nrecValue;
+});
+
+// Simulación de modo avión: togglea la barra "SIN CONEXIÓN" para la demo.
+document.getElementById("bell").addEventListener("click", ()=>{
+  document.getElementById("offlineBanner").classList.toggle("show");
+});
+
+renderTop();
+renderList();
+</script>
+</body>
+</html>
