@@ -1,0 +1,258 @@
+INFORME CONSOLIDADO — DATOS REALES DE CORTES DE AGUA
+Insumo de entrada del proyecto VENTANA SECA
+Investigación de 3 agentes en paralelo · verificación independiente
+========================================================================
+
+VEREDICTO EN UNA LÍNEA
+------------------------------------------------------------------------
+SÍ se puede construir HOY, con fuentes públicas, un dataset histórico de
+cortes de agua de Guayaquil suficiente para demostrar VENTANA SECA.
+Los 5 eventos ancla del proyecto están CONFIRMADOS con fuente primaria
+(Interagua) + prensa. El único dato crítico que falta es la
+georreferenciación fina barrio->polígono, que se resuelve con un
+diccionario propio (no requiere convenio).
+
+
+========================================================================
+A. FUENTES DE DATOS REALMENTE UTILIZABLES
+========================================================================
+
+Fuente                     | Empresa/Ciudad | Periodo     | Resolución esp.        | Duración | Motivo | Formato        | Automatizable | Calidad
+---------------------------|----------------|-------------|------------------------|----------|--------|----------------|---------------|--------
+interagua.com.ec/          | Interagua      | 2023->2026  | barrio/coop/ciudadela  | Sí       | Sí     | HTML paginado  | Sí (headless) | Primaria *****
+  interrupciones-de-servicio|  Guayaquil     |             | + límites de calles    | (hora    |        | (/node?page=N) | ver obstáculos|
+                           |                |             | + cantón (Durán/Nobol) |  ini/fin)|        |                |               |
+X/Twitter @interagua       | Interagua      | 2021->2026  | barrio/sector          | Sí       | Sí     | tweets+imagen  | Parcial (OCR) | Primaria ****
+El Universo (Guayaquil)    | -              | 2022->2026  | muy detallada (calles) | Sí       | Sí     | HTML           | Sí            | Secundaria *****
+Primicias (Guayaquil)      | -              | 2023->2026  | detallada, a veces img | Sí       | Sí     | HTML           | Sí            | Secundaria ****
+Expreso                    | -              | 2022->2026  | detallada (calles)     | Sí       | Sí     | HTML           | Sí            | Secundaria ****
+Vistazo/Ecuavisa/Extra/    | -              | 2023->2026  | media-alta             | Sí       | Sí     | HTML           | Sí            | Secundaria ***
+  El Diario/Teleamazonas   |                |             |                        |          |        |                |               |
+Wayback Machine (CDX)      | archivo        | 2023->2026  | igual a lo archivado   | Sí       | Sí     | HTML archivado | Sí (API CDX)  | Archivo ****
+ARCA Boletín APS 2024      | regulador      | anual       | GADM (cantón)          | agregado | No     | PDF            | Sí            | Oficial *** (solo control agregado)
+
+CONCLUSIÓN A: la fuente base es la web oficial de Interagua, respaldada
+por la hemeroteca de El Universo (la más consistente, reproduce listas
+completas de calles) y Wayback para lo borrado.
+
+
+========================================================================
+B. DATASET MÍNIMO VIABLE (lo que SÍ podemos construir sin convenio)
+========================================================================
+
+Variable              Origen                          ¿Disponible público?
+--------------------  ------------------------------  --------------------
+fecha_inicio          comunicado Interagua/prensa     SÍ
+fecha_fin             comunicado (programada)         SÍ (ver gap: real vs programada)
+duracion_horas        hora inicio/fin explícita       SÍ (calculada)
+empresa               Interagua                       SÍ
+ciudad                Guayaquil                       SÍ
+canton                Guayaquil/Durán/Nobol/Samboron. SÍ (cuando aplica)
+sector / barrio       texto libre del comunicado      SÍ (requiere normalizar)
+motivo                acueducto / planta / eléctrico  SÍ
+requiere_almacenamien "abastézcase" / "reservas"      SÍ (cuando lo dicen)
+fuente                medio u oficial                 SÍ
+url                   enlace exacto                   SÍ
+lat / lon             geocodificación propia          NO directo -> diccionario propio
+verificacion          primaria/secundaria/archivo     SÍ (etiqueta)
+
+Este es exactamente el esquema de data/datos_cortes_interagua.csv que ya
+tenemos, más las columnas lat/lon y verificacion.
+
+
+========================================================================
+C. COBERTURA HISTÓRICA
+========================================================================
+
+- Datos concretos (fecha + sectores) de forma SISTEMÁTICA desde ~ago/sep
+  2023 en web oficial y prensa. Evidencia recuperable más atrás (2021-22)
+  vía X y hemeroteca, con menor densidad.
+- Densidad: ALTA. Cronogramas casi SEMANALES de trabajos programados +
+  cortes emergentes (fugas) + inducidos por energía.
+- Estimación (inferencia): 40-52 comunicados/año. Para 2023(parcial)-2026:
+  ~150-250+ eventos-comunicado recuperables. A nivel evento-sector-día se
+  superan fácilmente 1.000+ registros.
+- Resolución: barrio/cooperativa/ciudadela/parroquia, a veces con límites
+  de calles (buena para geocodificar). Más fina que la parroquial en
+  muchos casos: IDEAL para VENTANA SECA.
+- Duración: casi siempre con hora de inicio y fin -> duración exacta.
+
+
+========================================================================
+D. EVIDENCIA MÁS FUERTE — 15 EVENTOS VERIFICADOS PARA LA DEMO
+========================================================================
+Formato: fecha — duración — sectores — motivo — ¿almacenar? — verificación
+
+ 1. 8 FEB 2026 — 11 h norte/centro+Durán+Nobol / 16 h sur — Guasmo, Isla
+    Trinitaria, Cristo del Consuelo, La Floresta, Fertisa, Las Malvinas —
+    Mantenimiento subestación 69 kV planta LA TOMA + acueducto 1.050 mm —
+    SÍ, mantener reservas — PRIMARIA+SECUNDARIA (EVENTO ESTRELLA)
+    Primicias / El Universo / Vistazo / Expreso
+
+ 2. 18-19 ABR 2026 — >12 h — Mucho Lote I/II, Villa España, Bastión,
+    La Perla, vía a Daule km14-26 + anillo Pascuales — Rehabilitación
+    acueducto + interconexión, EN CONTEXTO DE CORTES ELÉCTRICOS —
+    parcial — VERIFICADO (tramo vía a Daule reprogramado; fuga 630 mm el 19)
+    Primicias / Teleamazonas / El Diario / Ecuavisa / Extra
+
+ 3. 7-8 NOV 2024 — 19 h — 54 sectores: Urdesa (Norte/Central), San Marino,
+    Las Garzas + Centro — Acueducto 1.050 mm Tungurahua y Brasil —
+    tanqueros a instituciones — VERIFICADO (en periodo de apagones)
+    El Universo / Primicias / Extra
+
+ 4. 27-28 SEP 2024 — 12 h — ~50 sectores suroeste: Febres Cordero,
+    Letamendi, Batallón del Suburbio, Cisne 1-2 — Acueducto 900 mm Portete
+    de Tarqui, posibles restricciones por corte de energía — VERIFICADO
+    El Universo (con tweet @interagua) / Vistazo / Primicias / Ecuavisa
+
+ 5. 8-13 ENE 2024 — 4-8 h/día — Psiquiátrico Lorenzo Ponce, 29 de Junio,
+    Los Geranios, Las Orquídeas, La Atarazana, Bastión Popular — Pruebas
+    de presión e interconexión — SÍ, recolectar líquido — VERIFICADO
+    Expreso / Extra
+
+ 6. 16-20 ENE 2024 — franjas diarias — Flor de Bastión, Balerio Estacio,
+    Samanes 1/2/6, Unidos Venceremos — Rehab./interconexión/medidores —
+    VERIFICADO — El Universo / Primicias
+
+ 7. 22-26 ENE 2024 — 06:00-22:00 según sector — Sur (Puerto Lisa, suburbio)
+    + vía a la costa (Puerto Azul, Portofino, Casa Club) — Interconexión +
+    rehabilitación — VERIFICADO — El Universo
+
+ 8. 5-6 SEP 2023 — franjas día/noche — Espol, Puerto Azul, parroquia
+    Ayacucho, Simón Bolívar, Inmaconsa — Pruebas de presión, limpieza de
+    reservas — VERIFICADO — El Universo
+
+ 9. 11-16 SEP 2023 — 4-10 h — 42 sectores: Mucho Lote 7, Ciudad Santiago,
+    Ciudad Colón, Urdesa Norte, Mapasingue oeste — Pruebas/interconexión/
+    válvulas — VERIFICADO — El Universo / Expreso
+
+10. 19-22 SEP 2023 — franjas — Ébanos, Vergeles, Samanes 1, Laguna Club,
+    Montebello, Albatros — Pruebas de presión + interconexión —
+    VERIFICADO — El Universo
+
+11. 28 AGO-1 SEP 2023 — semana — sectores en comunicado — Trabajos
+    programados — PRIMARIA (título en listado oficial Interagua)
+
+12. 14-20 AGO 2023 — semana — sectores en comunicado — Trabajos
+    programados — PRIMARIA (listado oficial Interagua)
+
+13. 21-22 AGO 2026 — 9 h emergente — Sauces 2/4/7/9, Acuarela del Río,
+    Brisas del Río, Terminal Terrestre, Metrovía — FUGA acueducto redondel
+    Sauces 6 — SÍ, abastecerse con anticipación — VERIFICADO — Expreso
+
+14. 29 AGO 2026 — por definir — Los Vergeles y alrededores — DAÑO tubería
+    acueducto 600 mm — VERIFICADO (emergente) — El Universo
+
+15. Antecedentes 2022 — 90 sectores (nov-2022) / 63 sectores (dic-2022) —
+    Mantenimiento — VERIFICADO — El Universo / Expreso (muestra densidad
+    histórica hacia atrás)
+
+
+========================================================================
+E. NEXO AGUA-ENERGÍA (refuerza el corolario del proyecto)
+========================================================================
+CONFIRMADO con fuente primaria + secundaria:
+
+- 18-19 SEP 2024: apagón nacional -> planta La Toma fuera (necesita 19 MW,
+  autonomía ~3 h) -> Guasmo/Trinitaria/Acacias sin agua; tanqueros al
+  Hospital del Guasmo. (El Universo, vocera Interagua; Primicias)
+- 7 SEP 2024: Interagua avisa que los apagones afectan el bombeo. (Expreso)
+- Diagnóstico estructural: 4 estaciones de bombeo al pie del río; sin
+  energía se detiene la producción. (Expreso)
+- Aviso primario en web Interagua: "Mantenimiento Eléctrico CNEL VÍA A LA
+  COSTA - 3 sep 2023" -> corte de agua por mantenimiento eléctrico.
+- La Toma entre los 10 mayores consumidores eléctricos del país.
+
+=> Cadena documentada: subestación/energía (CNEL/CENACE) -> paro de bombeo
+   en La Toma -> suspensión de agua. Es exactamente el corolario de VENTANA
+   SECA: "el sector eléctrico produce dengue sin que nadie lo contabilice".
+
+
+========================================================================
+F. ESCALABILIDAD A OTRAS CIUDADES (agente 2)
+========================================================================
+Hallazgo central: NINGUNA empresa ecuatoriana publica dataset/API ni
+histórico consolidado. Todo son comunicados por evento en prensa/redes.
+Se construye por scraping propio + geocodificación.
+
+MEJOR dato público, además de Guayaquil:
+  1. Manta (EPAM)                -> escalable (zona de dengue)
+  2. Samborondón/Daule (Amagua)  -> escalable (La Aurora, alto dengue)
+  3. Portoviejo / Quevedo        -> escalable
+
+ESCALABLE con datos públicos: Manta, Portoviejo, Babahoyo, Quevedo,
+  La Aurora (todas con carga de dengue).
+NO escalable solo con público:
+  - Machala: solo resolución cantonal
+  - Huaquillas: sin publicación estructurada (empresa nueva)
+  - Durán: cortes reactivos de emergencia, no calendario
+QUITO (EPMAPS): el mejor dato del país (visor GIS por nº de contrato)
+  pero NO aplica (sin dengue por altitud); además sitio bloqueado por
+  Incapsula.
+
+
+========================================================================
+G. GAPS — LO QUE FALTA (y si requiere convenio)
+========================================================================
+
+Dato faltante                         ¿Bloquea MVP? ¿Convenio?
+------------------------------------  ------------  ----------------------
+Georreferenciación barrio->polígono   Parcial       NO (diccionario propio)
+Duración REAL (no solo programada)     No            Parcial (notas de
+                                                     "restablecimiento")
+Cortes emergentes no anunciados        No            SÍ (órdenes de trabajo)
+Nº de usuarios/hogares por corte       No            SÍ (Interagua)
+Casos de dengue por manzana            No (usar      SÍ (MSP)
+                                       cantón en MVP)
+Índices entomológicos (LIRAa)          No            SÍ (MSP)
+
+Ninguno de los gaps impide el MVP. Todos los que exigen convenio son de
+la fase de piloto (mes 1), no del hackatón.
+
+
+========================================================================
+H. RECOMENDACIÓN PARA EL HACKATÓN
+========================================================================
+
+"Con fuentes públicas, ¿podemos construir un dataset histórico de cortes
+ de agua suficientemente bueno para demostrar VENTANA SECA?"
+
+  -> SÍ.
+
+Con qué:
+  1. Fuente base: scraping de interagua.com.ec/node?page=N (headless
+     browser, user-agent realista; la web timeoutea a fetchers simples).
+  2. Relleno/validación: hemeroteca El Universo (la más detallada) +
+     Primicias/Expreso; Wayback CDX para lo borrado.
+  3. Post-proceso: parser de fechas/horas -> OCR para sectores en imagen
+     -> normalización de barrios -> geocodificación a polígonos ->
+     tabla evento-sector-día.
+
+Qué dataset construiría para el MVP:
+  - El CSV que ya existe (datos_cortes_interagua.csv), ampliado a 15-20
+    eventos verificados (sección D) + columnas lat/lon y verificacion.
+  - Suficiente para: (a) reproducir el caso La Toma 8-feb-2026,
+    (b) alimentar el motor de reglas, (c) generar la cola de brigada,
+    (d) mostrar el nexo agua-energía.
+
+OBSTÁCULOS a declarar en el pitch (honestidad):
+  - La web de Interagua bloquea fetchers automáticos -> se usa headless.
+  - Sectores a veces en imagen -> OCR.
+  - Texto libre no normalizado -> diccionario de barrios.
+  - Duración real puede diferir de la programada -> se complementa.
+
+Para el hackatón NO hace falta el scraper en vivo: basta el CSV curado a
+mano con los 15 eventos verificados. El scraper es el mes 1.
+
+
+========================================================================
+TRAZABILIDAD
+========================================================================
+Agente 1 (Interagua/Guayaquil): 27b51c1a-541a-4443-8a82-cd901d3d4b67
+Agente 2 (otras ciudades):      7285dd92-7546-4890-945b-283cc2758d1a
+Agente 3 (validación cruzada):  3b7b91ef-8e81-498d-939c-cb23c1586051
+
+Todas las URLs de respaldo están en los reportes de cada agente.
+Clasificación usada en todo el informe:
+  (a) dato directo/primario  (b) secundaria prensa
+  (c) inferencia             (d) no verificable

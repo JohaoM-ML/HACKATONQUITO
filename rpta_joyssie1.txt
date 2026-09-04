@@ -1,0 +1,451 @@
+VENTANA SECA — Evaluación de tres propuestas complementarias
+(ML tabular, visión computacional, sensoramiento remoto)
+========================================================================
+Archivo: rpta_joyssie1.txt
+Uso: insumo para otra IA / discusión de equipo. No es entregable de demo.
+
+
+MARCO (no reabrir)
+------------------------------------------------------------------------
+VENTANA SECA predice dónde aparecerán criaderos de dengue usando como
+señal principal el calendario de cortes de agua potable que Interagua
+y EPMAPS ya publican. Hipótesis (Lowe et al. 2021; Huaquillas, PLOS NTD
+2021; Stewart-Ibarra, Machala): el corte produce almacenamiento
+improvisado y eleva el riesgo con rezago de 3 a 5 meses.
+
+Motor central: DLNM + INLA (misma familia que EWARS / OMS).
+Sitio piloto: Guayaquil.
+MVP del hackatón: motor de reglas A–D + app offline + panel.
+Sin convenio no hay casos por manzana ni LIRAa. Eso no se finge.
+
+Criterios de esta evaluación:
+  1. ¿Existe el dato a la escala que el modelo necesita, sin fingir?
+  2. ¿Aporta señal que el DLNM+INLA o las capas ya previstas no capturan?
+  3. ¿El costo (datos, etiquetado, ingeniería, riesgo ante el jurado)
+     justifica el valor?
+  4. ¿Se puede defender ante autoridad de salud, no solo ante un track
+     de data science?
+
+
+VEREDICTO CORTO
+------------------------------------------------------------------------
+Propuesta 1 — ML tabular (XGBoost/LightGBM/CatBoost o elastic-net)
+  Hackatón:     NO
+  Piloto 1–3:   SÍ, pero como benchmark lineal/GAM, no como boosting
+  Después:      boosting/stacking solo si hay panel parroquial vía
+                convenio y el DLNM ya está ajustado
+  Valor neto:   útil como CONTROL, no como producto
+
+Propuesta 2 — Visión en fotos del brigadista
+  Hackatón:     NO
+  Piloto 1–3:   NO como clasificador. Foto opcional SIN modelo: sí
+  Después:      clasificador solo con ≥1.000 fotos etiquetadas y uso
+                de QA / auditoría
+  Valor neto:   costo alto, dataset inexistente, no acelera lo que importa
+
+Propuesta 3 — Satélite (NDBI / informal / elevación)
+  Hackatón:     NO
+  Piloto 1–3:   NO procesar Sentinel-2
+  Después:      elevación como máscara nacional; informalidad vía INEC,
+                no vía satélite
+  Valor neto:   marginal en Guayaquil; redundante con WorldPop/HRSL/INEC
+
+Ninguna de las tres mejora el insight del proyecto (el calendario de
+cortes como predictor). Las tres, mal vendidas, DILUYEN la frase que
+el jurado tiene que recordar.
+
+
+========================================================================
+PROPUESTA 1 — ML tabular como complemento/benchmark del DLNM+INLA
+========================================================================
+
+Qué es (resumen de la propuesta)
+------------------------------------------------------------------------
+Gradient boosting o elastic-net sobre las mismas variables que el DLNM,
+con unidad parroquia-semana (no "evento de corte"). Features: días
+desde el corte, horas acumuladas en ventanas 0–3 y 3–5 meses, lluvia
+4 y 8 semanas, densidad, INEC, lag espacial, opcionalmente P(DLNM)
+como stacking. Validación temporal 2023–2025 / 2026. SHAP obligatorio.
+No reemplaza al DLNM: es benchmark y posible stacking.
+
+Preguntas a responder
+------------------------------------------------------------------------
+¿Aporta valor real sobre el DLNM+INLA dado el tamaño de datos, o es
+redundante? ¿La unidad parroquia-semana es razonable para el volumen
+público existente en Ecuador?
+
+
+RESPUESTA DIRECTA
+------------------------------------------------------------------------
+Con datos públicos de hoy, un gradient boosting NO aporta valor real
+sobre el DLNM+INLA: es redundante y fácil de sobreajustar.
+
+La unidad parroquia-semana es RAZONABLE EN DISEÑO e INCORRECTA como
+supuesto de dato público. El SIVE-Alerta GUARDA parroquia; las gacetas
+NO publican un panel parroquia-semana descargable.
+
+
+El cuello de botella no es el algoritmo, es el desenlace
+------------------------------------------------------------------------
+El lado de las FEATURES sí se puede armar:
+  - Interagua: ~40–52 comunicados/año desde ~2023; ~150–250 eventos;
+    1.000+ filas evento-sector.
+  - CHIRPS/GPM, WorldPop/HRSL, INEC 2022: abiertos.
+
+El lado del BLANCO (casos de dengue) no:
+
+  Fuente                         Resolución              ¿Panel parroquia-semana 2023–2026?
+  ------------------------------ ----------------------- ----------------------------------
+  Gacetas MSP / SIVE (PDF)       nación/provincia/CANTÓN No. A veces mencionan parroquias
+                                                         calientes; no hay matriz completa.
+  Base interna SIVE (metadato)   provincia/cantón/       SÍ, con convenio o solicitud
+                                 PARROQUIA               formal. Es lo que el documento
+                                                         ya marca como "detalle requiere
+                                                         convenio".
+  Red municipal Guayaquil        sectores en prensa      No. Recortes, sesgo de hospital
+  (55 establecimientos)          (Guasmo, Entrada de 8)  de referencia (Bicentenario
+                                                         atiende de toda la ciudad).
+  LIRAa / recipientes positivos  manzana / predio        Convenio. Mejor blanco que casos
+                                                         para un modelo de criaderos.
+
+Un estudio ecológico (Medwave 2024) usó parroquia para arbovirosis
+2015–2019: eso confirma que el dato EXISTE dentro del MSP, no que
+esté en la web.
+
+
+Números, sin teatro
+------------------------------------------------------------------------
+Guayaquil ~16 parroquias urbanas. SI hubiera panel:
+
+  Entrenamiento 2023–2025:  16 × 52 × 3  ≈ 2.500 filas
+  Validación 2026:          16 × ~36     ≈ 580 filas
+
+Eso parece suficiente para LightGBM. No lo es, por tres razones:
+
+1) N efectivo.
+   Dengue semanal está autocorrelacionado en tiempo y espacio. Un corte
+   grande (8-feb-2026, La Toma) pega a norte, centro y sur LA MISMA
+   semana. La feature "horas de corte" casi no varía entre parroquias
+   dentro del shock. El N independiente es más cercano a
+   16 unidades × 10–15 bloques temporales × 3 años (~500, o menos),
+   no a 2.500.
+
+2) Parroquias enormes.
+   Ximena mezcla Guasmo con zonas distintas; Tarqui y Febres Cordero
+   igual. Agregar el corte a parroquia LAVA la señal que el producto
+   promete (barrio/manzana).
+
+3) Desajuste espacial.
+   El corte vive en barrio/cooperativa; el caso público vive en cantón;
+   el producto promete manzana. El ML parroquia-semana NO cierra ese
+   hueco. El DLNM a manzana tampoco, sin convenio. Ambos chocan con
+   el mismo muro.
+
+Si el blanco es solo CANTÓN-semana (lo que hay hoy):
+  1–3 cantones × 156 semanas = 156–468 filas.
+  Ahí XGBoost/CatBoost es el modelo equivocado. Gana un DLNM, un GAM
+  o una elastic-net con pocos términos.
+
+La unidad "un evento de corte = una fila" es peor: 7 cortes en el CSV
+actual, 15 verificados, ~150–250 recuperables. Insuficiente para
+boosting.
+
+
+¿La parroquia-semana es razonable?
+------------------------------------------------------------------------
+SÍ como unidad de análisis epidemiológico, si y solo si el MSP entrega
+el panel. Es la escala administrativa estándar, alinea gaceta con censo
+y genera filas.
+
+NO como atajo para el volumen público. Asumir "histórico semanal de
+casos por parroquia 2023–2026" como si estuviera en las gacetas es el
+error que el documento ya nombra: fingir precisión.
+
+NO como camino a manzana. Nadie baja de parroquia a manzana con un
+booster. Eso es LIRAa + convenio + el motor de reglas que ya tienen.
+
+
+ML vs DLNM+INLA, con este N
+------------------------------------------------------------------------
+El DLNM no es un capricho de marca. Hace tres cosas que el boosting
+no hace bien con conteos escasos:
+
+  1. Superficie exposición–rezago (el claim científico: 3–5 meses).
+     SHAP puede decir "días desde el corte importa". No reemplaza
+     la cross-basis.
+  2. Incertidumbre defendible (intervalos de credibilidad,
+     P(exceder umbral)). Eso es lo que una autoridad de salud puede
+     usar. Un score de XGBoost no.
+  3. Préstamo de fuerza (BYM2 + splines + offset poblacional).
+     Diseñado para conteos sobredispersos en áreas pequeñas.
+
+El boosting SÍ puede cazar interacciones (corte × informalidad × lluvia)
+que un DLNM aditivo se come. Ese es el único argumento serio a favor.
+Con N efectivo pequeño, esas interacciones suelen ser ruido estacional.
+
+STACKING (meter P(DLNM) como feature): con pocas unidades espaciales
+el booster copia al DLNM y "gana" en train. No responde "¿hay señal
+que el DLNM no ve?". Primero se validan los dos por separado; el
+stacking es mes 6, no mes 1.
+
+El precedente que el propio LaTeX cita (MDPI Hygiene 2024: indicadores
+operativos de agua → Índice de Casa) usó datos de empresa + entomología,
+no gacetas públicas. Es el primo honesto. Sin LIRAa, no se replica.
+
+
+Qué sí vale la pena (y qué no)
+------------------------------------------------------------------------
+HACER
+  - Elastic-net o GAM / binomial negativa en la escala pública REAL
+    (cantón; parroquia solo si llega el convenio).
+  - Split temporal 2023–2025 / 2026.
+  - Baseline estacional fuerte (semana del año + población) ANTES de
+    declarar victoria.
+  - Coeficientes o SHAP del modelo SIMPLE como chequeo de robustez.
+  - Pregunta honesta: ¿el booster late al DLNM + estacionalidad en
+    2026? Si no, el DLNM sale MÁS fuerte.
+
+NO HACER
+  - XGBoost/LightGBM/CatBoost en el hackatón.
+  - K-fold aleatorio.
+  - Vender AUC sin baseline estacional.
+  - Stacking prematuro.
+  - Presentar el ML como "el modelo".
+
+Para el pitch: el ML es una frase de una línea
+  ("el mes 2 contrastamos contra un benchmark tabular; si no gana,
+   no lo usamos").
+No es un tercer entregable. El plan de tareas ya lo dice: no se
+entrena un modelo epidemiológico en el fin de semana.
+
+
+========================================================================
+PROPUESTA 2 — Visión computacional sobre fotos del brigadista
+========================================================================
+
+Qué es (resumen de la propuesta)
+------------------------------------------------------------------------
+Durante la visita, el brigadista ya registra tipo y cantidad de
+recipientes. Se añadiría foto, clasificada por transfer learning
+(MobileNet/EfficientNet): tipo de recipiente y/o agua estancada.
+No se pide foto al ciudadano (Mosquito Alert: la participación cae
+a casi cero a los 50 días). El output recalibraría el modelo de
+riesgo. Limitación honesta: el dataset no existe; en el hackatón
+solo sería prototipo conceptual.
+
+Preguntas a responder
+------------------------------------------------------------------------
+¿Vale el costo de desarrollo dado que el dataset no existe?
+¿Hay alternativas más baratas para verificar/acelerar el registro
+de campo?
+
+
+RESPUESTA DIRECTA
+------------------------------------------------------------------------
+NO vale el costo de desarrollo mientras no exista el dataset.
+
+El objetivo (verificar/acelerar el registro) se consigue más barato
+SIN clasificador.
+
+La decisión de no pedirle fotos al ciudadano es correcta. Eso NO
+implica que pedírselas al brigadista + inferir con MobileNet sea
+la siguiente pieza lógica.
+
+
+Por qué el clasificador no resuelve el cuello de botella
+------------------------------------------------------------------------
+El brigadista YA anota tipo y cantidad. El tiempo escaso no es
+teclear "3 barriles, 1 positivo". Es LLEGAR A LA MANZANA CORRECTA.
+El motor de cola ya ataca eso. Una foto + inferencia on-device
+ALARGA la visita (cámara, permiso, almacenamiento offline, luz,
+patio cerrado).
+
+El documento y division-tareas.txt ya lo cortan: cero fotos, no se
+hace clasificador. Un prototipo con EfficientNet genérico es el
+teatro que el propio texto pide no hacer.
+
+Límites concretos:
+  - No hay dataset etiquetado de tanques/tinas/llantas en patios de
+    Guayaquil. ImageNet no transfiere a eso (ángulo, sombra, agua
+    turbia, "tina" vs "tanque").
+  - Recolectarlo "en los primeros meses del piloto" es honesto; NO
+    es un componente del producto hasta tener etiqueta + métrica.
+  - Privacidad: fotografiar patios en asentamientos informales es
+    un no político frecuente en MSP/municipio. Puede matar el
+    convenio.
+  - La recalibración del DLNM que ya diseñaron (conteos + positividad
+    → índice entomológico) NO necesita imagen.
+
+
+Alternativas más baratas al mismo objetivo
+------------------------------------------------------------------------
+El problema real de calidad en control vectorial no es "el brigadista
+no sabe si es un barril". Es visitas inventadas, taxonomía
+inconsistente y subreporte de positivos.
+
+  Alternativa                              Qué logra                    Costo
+  ---------------------------------------  ---------------------------  ----------------
+  Formulario con 4–5 pictogramas           Acelera y estandariza.       Casi cero
+  (barril, tanque, llanta, maceta, otro)   Ya está en el MVP.
+  + stepper + sí/no larvas
+
+  Foto OPCIONAL, SIN modelo,               Prueba de visita             Un campo en
+  1 de cada 10 predios                     (anti-formularios bajo       la PWA
+                                           un árbol). Corpus futuro.
+
+  GPS + timestamp + tiempo en sitio        Verifica que estuvo ahí      Ya tiene el
+                                                                        teléfono
+
+  Supervisión de muestra                   QA humano, sin CV            Operativo,
+  (jefe revisa 10 fotos/semana)                                         no de R&D
+
+  Mensaje al barrio el día del corte       Previene el criadero;        Ya está en
+  (ciudadano = receptor)                   no lo clasifica              el plan
+
+La foto SIN inferencia es la única inversión de visión que tiene
+sentido en el piloto: barata, no promete accuracy, y deja la puerta
+abierta a un clasificador en el mes 6 si hay ≥1.000 imágenes
+etiquetadas y un uso de auditoría (no de "acelerar la captura").
+
+Si en seis meses existe el set, el caso de uso defendible es
+QA / entrenamiento de brigadistas nuevos, NO el score que entra
+al DLNM. Meter un clasificador ruidoso en la recalibración
+EMPEORA el modelo que sí es defendible.
+
+
+========================================================================
+PROPUESTA 3 — Sensoramiento remoto como contexto urbano
+              (NO como detección de objetos)
+========================================================================
+
+Qué es (resumen de la propuesta)
+------------------------------------------------------------------------
+Sentinel-2 y SRTM para contexto: NDBI (construido/impermeable),
+tipo de asentamiento (formal/informal), elevación (descartar Quito
+a 2.850 m). Se descarta detectar tanques/cisternas: 10 m/píxel es
+demasiado grueso; Planet/Maxar son de pago e inviables.
+
+Preguntas a responder
+------------------------------------------------------------------------
+¿Aporta algo que WorldPop, HRSL, CHIRPS/GPM no cubran ya?
+¿Vale incorporar una fuente satelital extra solo para densidad
+urbana/elevación, o es marginal?
+
+
+RESPUESTA DIRECTA
+------------------------------------------------------------------------
+En el piloto de Guayaquil, casi NO aporta nada que WorldPop, HRSL
+e INEC no cubran ya.
+
+Descartar la detección de tanques a 10 m/píxel es la decisión
+correcta. El error sería gastar el mismo esfuerzo en NDBI/elevación
+"porque el satélite es gratis".
+
+Gratis el raster; CARO el pipeline (descarga, nubes, índices,
+alineación a manzana, validación).
+
+
+Feature por feature
+------------------------------------------------------------------------
+ELEVACIÓN (SRTM)
+  Quito a 2.850 m se descarta con una línea en una tabla, no con
+  un DEM. Dentro de Guayaquil la cota va de ~0 a ~80 m: casi cero
+  varianza, dengue en toda la ciudad. Elevación importa en un
+  modelo NACIONAL (costa / sierra / amazonía), como en el estudio
+  de receptividad 2015–2019. No en el piloto.
+
+NDBI / IMPERMEABILIZACIÓN (Sentinel-2)
+  WorldPop YA usa covariables satelitales. HRSL y Open Buildings
+  YA dan densidad de construcción a 30 m o mejor. NDBI a 10 m es,
+  en la práctica, un eco de esas capas. El valor único sería cambio
+  reciente (expansión en vía a Daule, Mucho Lote). Eso es un plus
+  menor, no una fuente nueva de mecanismo.
+
+ASENTAMIENTO FORMAL / INFORMAL
+  Aquí sí hay sustancia epidemiológica (Huaquillas, Machala, Lowe:
+  sequía × urbanización). Sentinel-2 a 10 m NO clasifica
+  informalidad de forma barata ni estable; eso es un paper de CV
+  por sí solo.
+
+  La versión barata y más interpretable YA está en las features
+  propuestas del ML: INEC a sector censal — % sin agua entubada,
+  hacinamiento, material de vivienda. Eso ES informalidad, medible
+  y defendible ante el MSP. Lowe 2021 usó índices de urbanización
+  existentes, no un NDBI casero.
+
+
+Relación con lo que ya tienen
+------------------------------------------------------------------------
+  Capa ya prevista     Qué cubre                 ¿Sentinel-2 añade?
+  -------------------  ------------------------  -------------------
+  WorldPop / HRSL      gente y construido        muy poco
+  CHIRPS / GPM         lluvia                    nada (y no lo piden; bien)
+  INEC 2022            agua, hacinamiento,       informalidad MEJOR
+                       vivienda                  que NDBI
+  Calendario Interagua dónde se llena el         cero. El satélite
+                       recipiente                no ve el corte.
+
+DBDWaspada (Indonesia) predice con "agua estancada por satélite".
+El proyecto se diferencia JUSTAMENTE por no hacer eso y leer el
+calendario. Meter Sentinel "de contexto" acerca el relato a un
+competidor más débil.
+
+
+========================================================================
+ORDEN SI SOBRA CAPACIDAD (después del MVP, no en paralelo)
+========================================================================
+
+El MVP no se toca: reglas A–D → cola.json → app offline → panel.
+
+1. Mes 1.
+   Convenio. Pedir panel parroquia-semana (o line list) + LIRAa.
+   No imágenes Sentinel ni fotos etiquetadas.
+
+2. Mes 2–3.
+   Ajustar DLNM+INLA a la escala que el convenio habilite.
+   Al lado, UN benchmark (GAM o elastic-net), split temporal,
+   baseline estacional. Pregunta única: ¿queda residual?
+
+3. Mismo periodo.
+   Covariable de informalidad = INEC, no NDBI.
+   Elevación = máscara nacional de una línea.
+
+4. Mes 2+.
+   Campo de foto opcional, sin modelo, para QA y corpus.
+
+5. Mes 6+.
+   Revisar boosting/stacking y, aparte, un clasificador liviano
+   SOLO si hay dataset y un uso de auditoría.
+
+
+========================================================================
+QUÉ DEBE INTERIORIZAR LA OTRA IA
+========================================================================
+
+- El proyecto YA eligió el marco correcto (DLNM+INLA / EWARS) y ya
+  escribió qué no se construye. Estas tres ideas son complementos de
+  investigación, no el producto.
+
+- P1 es la única con valor científico, y solo como TEST DE RESIDUALES
+  cuando exista panel parroquial. Hoy el supuesto "cientos de filas
+  parroquia-semana 2023–2026 públicas" es falso o incompleto: el SIVE
+  las tiene por dentro; las gacetas no las sueltan.
+
+- P2 confunde "el ciudadano no reporta" con "entonces el brigadista
+  + MobileNet". El brigadista ya es el sensor. Falta ordenar su ruta,
+  no clasificar su foto.
+
+- P3 confunde "satélite gratis" con "variable nueva". En Guayaquil,
+  densidad y elevación ya están resueltas; la informalidad se lee
+  mejor en el censo.
+
+- Si hay que elegir UNA frase de ML para el jurado:
+
+  "El boosting no reemplaza al DLNM; si más adelante no late a un
+   GAM con split temporal, no lo usamos. No detectamos tanques por
+   satélite: 10 metros no alcanzan. No pedimos fotos al ciudadano;
+   al brigadista le pedimos lo que ya anota."
+
+Eso es coherente con Lowe, Huaquillas, Mosquito Alert y con el
+documento LaTeX. Añadir las tres piezas como "también hacemos IA"
+es el fallo que el propio proyecto le atribuye al resto del hackatón.
