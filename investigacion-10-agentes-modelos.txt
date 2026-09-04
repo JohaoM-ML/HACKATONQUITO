@@ -1,0 +1,460 @@
+VENTANA SECA — Investigación multiagente de modelos predictivos
+================================================================
+Archivo: investigacion-10-agentes-modelos.txt
+Fecha de síntesis: 3 septiembre 2026
+Pregunta: ¿mantener, reemplazar o combinar DLNM+INLA?
+
+Nota de método
+--------------
+Se lanzaron 10 agentes en paralelo (mandatos distintos). No había MCP
+académico en la sesión; las fuentes son papers localizados por búsqueda
+web + fetch. Esta síntesis NO inventa papers, DOIs ni métricas. Si un
+número no está en el paper, no se pone.
+
+Agentes:
+  1 ML clásico          bcffa885-083a-4612-8e14-8e3c4fab4dac
+  2 Deep learning       dee15312-880d-42b6-826c-5c0233ea618d
+  3 Series temporales   5ca6dfd7-2ada-4225-b92c-a851b0393a71
+  4 Mecanicistas        b1a07b6a-b1c7-49f4-a273-a1e553d9aab8
+  5 Espacio-temporal    322be28f-314a-4772-8e7c-65c04fe8f9c6
+  6 Lags / DLNM         8c20bd6a-1383-4c9a-9e23-ff47d82b3869
+  7 Causal              6dd7ac31-23ab-4663-9993-d0a2b2488a97
+  8 Ensembles           f2886893-f9e8-4e1c-8fa9-59b1caf5dd77
+  9 Conteos             1acc0e69-4c58-45ed-8c5d-908a0e5d8991
+  10 Crítico/benchmark  afbadbef-ef77-478c-ae56-2f07ae7eb595
+
+
+================================================================
+DECISIÓN FINAL (una frase)
+================================================================
+
+COMBINAR en capas. No reemplazar DLNM+INLA por boosting/DL/SEIR.
+No usarlo como único motor del MVP. Hoy: reglas + baseline estacional
+(+ SARIMAX o LASSO como chequeo). Con convenio: DLNM+INLA (NB, BYM2)
+para la superficie corte×rezago. Más adelante: ensemble probabilístico
+de modelos INDEPENDIENTES, no stacking XGBoost-sobre-DLNM.
+
+
+================================================================
+POR QUÉ (estructura de NUESTROS datos, no “qué gana en Kaggle”)
+================================================================
+
+El problema no es “predecir dengue con clima”. Es:
+
+  corte anunciado (barrio, horas, “almacene agua”)
+    → almacenamiento destapado
+    → criadero
+    → Ae. aegypti
+    → dengue
+  con rezago LARGO y NO LINEAL (3–5 meses; 4 h ≠ 16 h)
+
+Restricciones reales:
+  - Público hoy: dengue CANTÓN-semana (gacetas), ~3 años, 1–3 cantones
+    ≈ 156–468 filas. Cortes Interagua ~150–250 comunicados, resolución
+    barrio. Sin LIRAa, sin panel parroquial.
+  - El corte es EXÓGENA CONOCIDA A FUTURO (calendario). Eso no lo tiene
+    la lluvia.
+  - El usuario (MSP / jefe de brigada) necesita incertidumbre e
+    interpretación, no solo RMSE.
+  - El Niño 2026 es régimen nuevo. El sprint Brasil 2024 (PNAS) mostró
+    que casi todos los modelos SUBESTIMARON la temporada récord.
+
+Hueco que nadie debe tapar:
+  No hay paper que compare DLNM+INLA vs XGBoost vs LSTM vs SARIMAX
+  USANDO calendario operativo de cortes como exposición.
+  Lowe 2021 es el analogón más cercano (sequía × frequency of water
+  shortages), no el feed de Interagua.
+
+
+================================================================
+MATRIZ CONSOLIDADA
+================================================================
+
+Leyenda evidencia dengue: Fuerte / Media / Débil / Ausente (para ESTE
+uso: cortes + rezago + conteos + N chico).
+Lags / Espacio / Conteos / Pocos datos / Interp. / Complejidad / MVP:
+  A = encaja   B = intermedio   C = frágil aquí
+Recomendación: núcleo / complemento / baseline / no / más adelante
+
+Modelo                    Ev.dengue   Lags  Esp.  Cont.  N chico  Interp  Compl  MVP  Recomendación
+------------------------  ----------  ----  ----  -----  -------  ------  -----  ---  -------------------------
+Reglas A–D (proxy DLNM)   Media*      B     B     —      A        A       A      A    NÚCLEO MVP
+DLNM+INLA+NB+BYM2         Fuerte      A     A     A      B**      A       B      C    NÚCLEO CIENTÍFICO
+GAM-NB (mismos lags)      Fuerte      B     B     A      B        A       A      B    RÉPLICA / plan B
+SARIMAX / transferencia   Fuerte      C     C     C      A        B       A      B    BASELINE 1–4 sem
+LASSO / elastic-net       Fuerte      B     C     C      A        B       A      B    SELECCIÓN DE LAGS
+Ensemble densidades       Fuerte      B     B     B      C        C       B      C    MES 6 si hay diversidad
+RF (panel agrupado)       Fuerte      B     C     C      C        B       A      C    Solo CON parroquias
+XGBoost / LightGBM        Fuerte      B     C     C      C        B       A      C    Benchmark; no motor
+LSTM / LSTM-ATT           Fuerte      B     C     C      C        C       C      C    Ablación; no pitch
+TFT / Transformer / TCN   Media       B     C     C      C        C       C      C    NO
+N-BEATS / Seq2Seq         Media       B     C     C      C        C       C      C    NO
+SEIR / SEIR-SEI           Fuerte      A***  C     A      C        A       C      C    NO como cola
+Híbrido SEIR+LSTM         Media       B     C     B      C        C       C      C    NO (exige serie larga)
+ZIP / hurdle              Media       —     B     A      B        B       B      C    Solo manzana + ceros
+ITS / CausalImpact        Débil****   C     C     B      B        A       A      B    AUDITORÍA de un shock
+DiD staggered (CS/SA)     Ausente     C     B     B      C        A       B      C    NO (tratamiento on/off)
+de Chaisemartin on/off    Ausente     B     A     B      C        A       B      C    Convenio parroquial
+Prophet / ETS             Media       C     C     C      C        B       A      C    NO como modelo de X
+Stan / CARBayesST / GP    Fuerte***** A     A     A      C        A       C      C    INLA se queda; ellos auditan
+
+* Las reglas no son un paper; son la cross-basis hecha explícita (Lowe +
+  Huaquillas + Machala).
+** Con 1 ciudad × ~3 años el cross-basis está al límite (sobreparametrizado).
+   Con panel parroquial × más años, A.
+*** El lag biológico existe; no se identifica sin entomología.
+**** Hay ITS en control vectorial (Liyanage 2019, Sri Lanka), no de corte
+     operativo → dengue.
+***** La evidencia espacial es de disease mapping / Lowe, no de que Stan
+      sea mejor motor.
+
+
+================================================================
+TOP 5 PARA VENTANA SECA
+================================================================
+
+1) Motor de reglas A–D + canal endémico / baseline estacional
+   Qué es: las reglas ya escritas (corte ≥8 h + almacenar → cola esta
+   semana; corte hace 12–20 sem → alerta tardía; lluvia sin corte →
+   llantas; casos cantonales suben → +prioridad).
+   Por qué: el corte está anunciado; no hay que “descubrirlo”. Johansson
+   2016/2019: la autocorrelación + estacionalidad explican casi todo;
+   el clima a menudo NO mejora el forecast. Leung 2023: 20% de modelos
+   de dengue ni validan.
+   Datos: calendario Interagua + gacetas + (opcional) CHIRPS.
+   Vs DLNM+INLA: más viable en MVP; no estima la superficie f(x,ℓ).
+   Desventaja: no es inferencia; la regla B (3–5 meses) es hipótesis.
+   Cuándo: hackatón y operación día 1.
+   Viabilidad hoy: ALTA.
+
+2) DLNM + INLA + binomial negativa + BYM2
+   Qué es: cross-basis (horas de corte × lag 0–6 meses) + lluvia/T +
+   offset poblacional + efecto espacial BYM2 + RW/estacional.
+   Por qué: única familia que estima a la vez no linealidad (4 h ≠ 16 h)
+   y forma del rezago (seco 3–5 m ≠ lluvia 0–2 m). Lowe 2018/2021;
+   Gasparrini 2010/2016/2017; EWARS-csd (Frontiers 2024). INLA es el
+   cómputo correcto (Rue 2009; Riebler BYM2 2016).
+   Datos: panel parroquia-semana (ideal) o cantón-semana (grueso);
+   cortes geocodificados; clima; población. LIRAa = mediador, no
+   confounder.
+   Ventaja vs “ML”: superficie + IC + P(exceder umbral); no SHAP.
+   Desventaja: con N de 1 cantón × 3 años, df del cross-basis ≈ N
+   efectivo. Johansson 2019: modelos “más biológicos” PERDIERON
+   log-score de forecast. No es oráculo de manzana sin LIRAa.
+   Cuándo: mes 1–3 del piloto, cuando exista panel o al menos una
+   serie cantonal larga + honestidad de escala.
+   Viabilidad hoy: BAJA como producto; ALTA como método retrospectivo
+   grueso SI se declara el límite.
+
+3) SARIMAX o GAM-NB (baseline honesto)
+   Qué es: SARIMAX con xreg = cortes (+ lluvia/T), o gam(..., family=nb)
+   con los mismos lags.
+   Por qué: Johansson 2016 (clima no mejoró SARIMA de forma robusta);
+   Chen & Moraga 2025 (ARIMA 1-sem MAE 78 vs RF 89 / XGB 103 en Río);
+   Baquero 2018 (GAM 3,16× mejor que naïve a 1 mes, São Paulo);
+   Hasan 2026 (SARIMAX mejor ALERTA 1 paso).
+   Datos: serie semanal cantonal (~150–200 semanas).
+   Ventaja vs DLNM: pocos parámetros, difícil de vencer con N chico.
+   Desventaja: lineal (SARIMAX); no espacial; rezago 3–5 meses peor
+   que DLNM (Gasparrini 2016: MA/lags sueltos sesgan en lags largos).
+   Cuándo: chequeo “¿el modelo gana al estacional?”. Si no gana, no
+   se enseña.
+   Viabilidad hoy: ALTA como baseline.
+
+4) LASSO / elastic-net de muchos rezagos
+   Qué es: regularización sobre p grande (lags 0–20 sem de corte,
+   duración, “almacenar”, lluvia, T) y n chico.
+   Por qué: Shi et al. 2016 (EHP), sistema operativo NEA Singapur,
+   226 covariables, MAPE 17% (1 sem) → 24% (12 sem); mejor que
+   step-down y SARIMA a 3 meses. Encaja p >> n.
+   Datos: mismos que SARIMAX, más features de corte.
+   Ventaja vs DLNM: selección automática de lags; nowcast 1–8 sem.
+   Desventaja: no produce superficie exposición–rezago; no es BYM2.
+   Cuándo: complemento / filtro de predictores, no headline.
+   Viabilidad hoy: MEDIA-ALTA.
+
+5) Ensemble probabilístico de modelos independientes (no stacking)
+   Qué es: media / log-pool / BMA de 2–3 densidades (p. ej. DLNM-INLA
+   + SARIMAX + GAM), pesos por CRPS, NO un XGBoost meta-learner.
+   Por qué: Johansson 2019: ensemble = ÚNICO que superó al nulo en
+   todos los targets; +1,02 log-score. Colón-González 2021 (D-MOSS):
+   CRPS 73,4 vs 79,9 baseline, pero PIERDE a 4–6 meses. Wu 2025:
+   ensemble top-3 robusto, no siempre #1 local. Mathis 2024 FluSight:
+   el ensemble oficial quedó 5.º una temporada. Sebastianelli 2024:
+   stacking ML PIERDE vs un solo learner en varios estados.
+   Datos: hace falta entrenar ≥2 miembros con residuales distintos
+   y varias temporadas para pesar.
+   Ventaja: calibración / hedging.
+   Desventaja: con N de Guayaquil no hay miembros entrenables hoy;
+   stacking sobre DLNM COPIA al DLNM.
+   Cuándo: mes 6, si hay diversidad. Nunca en el MVP.
+   Viabilidad hoy: NULA como sistema; ALTA como idea de diseño.
+
+
+================================================================
+QUÉ QUEDA FUERA DEL TOP 5 (y por qué)
+================================================================
+
+XGBoost / RF como motor
+  Chen & Moraga 2025: en UNA ciudad-semana, RF/XGB pierden vs ARIMA;
+  meter clima EMPEORÓ el RF (MAE 88 → 410). Jaya 2025 Bandung:
+  XGBoost gana en train y pierde en test. Zhao 2020: RF gana porque
+  AGRUPA 30 departamentos, no 1 cantón. Ningún paper de ML clásico
+  usa cortes de agua.
+
+LSTM / TFT / N-BEATS / Transformer
+  Roster 2025 (preprint, 62 papers): cuando hay baseline no-NN, las
+  redes ganan ~50% de las veces. Nguyen 2022: LSTM-ATT gana con
+  ~20 AÑOS mensuales × 20 provincias. Chen & Moraga 2025 LSTM:
+  27 UFs × 364 semanas. Panja 2023: N-BEATS/TCN/Transformer PIERDEN
+  ante ensemble shallow. Pillay 2026 TFT: encoder 55–102 semanas
+  (casi todo nuestro histórico). Flores 2026: ConvLSTM sobreajusta
+  picos CON 1321 semanas nacionales. Nuestro N: 156–468 filas.
+
+SEIR / SEIR-SEI / CIMSiM
+  Kao & Eisenberg 2018: estructuralmente identificable, prácticamente
+  NO. Lizarralde-Bejarano 2020: con solo casos, el modelo SIMPLE es
+  el único fiable. Padmanabha 2012 / Focks 2000 exigen pupas por casa.
+  Johansson 2019: mecanicistas −0,65 log-score. Chen 2022 híbrido
+  bueno SOLO con MOI. El estado que mueve la cola es el RECIPIENTE,
+  no I_v.
+
+ZIP/hurdle por defecto
+  Lowe 2021 no los usa a escala agregada. Arab 2015 / Chen 2026:
+  justificados cuando hay ceros ESTRUCTURALES (manzana-semana).
+
+Stan / GP denso / spOccupancy
+  No sustituyen INLA (Rue 2009; Bakka 2018; Lee 2020). A manzana:
+  BYM2 separable o SPDE DENTRO de INLA, no GP O(n³).
+
+
+================================================================
+OPCIÓN A — MVP (datos públicos, hackatón / mes 0)
+================================================================
+
+INPUT
+  - data/datos_cortes_interagua.csv (fecha, horas, sectores, motivo,
+    pidio_almacenar, url)
+  - dengue cantón-semana (gacetas MSP; ~10–15 puntos mínimos para
+    la gráfica; ideal 2023–2026)
+  - opcional: CHIRPS/GPM o proxy “temporada invernal sí/no”
+  - población cantonal (INEC/WorldPop) solo para tasas en el panel
+
+PREPROCESAMIENTO
+  - Expandir cada comunicado a filas barrio × fecha
+  - Normalizar topónimos → id de barrio
+  - Flags: duracion_horas ≥ 8; pidio_almacenar; dias_desde_corte
+  - Ventanas: 0–14 días (regla A); 12–20 semanas (regla B);
+    lluvia 0–8 semanas (regla C)
+  - Tendencia cantonal 4 gacetas: sube / estable / baja (regla D)
+  - NO imputar casos a manzana. NO fingir un panel parroquial.
+
+MODELO
+  - Núcleo: reglas A–D (src/motor/reglas.js) → data/cola.json
+  - Chequeo opcional (si hay tiempo, NO en el pitch como “el modelo”):
+      * media estacional / percentil histórico cantonal
+      * SARIMAX o LASSO leave-future-out vs naïve estacional
+    Si no gana al estacional: no se muestra como victoria.
+  - NO entrenar DLNM+INLA de producción.
+  - NO LSTM, NO XGBoost, NO SEIR.
+  - Auditoría causal mínima (si hay curva semanal): ITS/CausalImpact
+    del 8-feb-2026 (La Toma), residualizado de estación, con placebos
+    de fecha. Si la curva NO muestra el rezago, NO se dibuja.
+
+PREDICCIÓN
+  - Puntaje por BARRIO (no probabilidad calibrada de brote)
+  - Acción: barriles/tinas | alerta tardía | minga de llantas
+  - Incertidumbre: bandas históricas cantonales, no posteriores INLA
+
+OUTPUT
+  - cola.json → app offline + panel
+  - gráfica corte vs dengue CANTONAL (honesta)
+  - frase: “hoy corre como reglas; el ajuste fino es el piloto”
+
+
+================================================================
+OPCIÓN B — Modelo científico (convenio: parroquia + LIRAa)
+================================================================
+
+INPUT
+  - Panel parroquia-semana: casos SIVE (line list o agrupado)
+  - LIRAa / recipientes positivos (mediador)
+  - Cortes: horas, cobertura, motivo (eléctrico/mantenimiento vs
+    turbidez), “almacenar”, geocodificados a parroquia
+  - CHIRPS/GPM, temperatura, ENSO/ONI
+  - INEC: población, % sin agua entubada, hacinamiento
+  - Grafo de vecindad parroquial
+
+PREPROCESAMIENTO
+  - Alinear todo a parroquia-semana
+  - Clasificar cortes por CAUSA (DAG: turbidez ≈ confusión máxima;
+    eléctrico/mantenimiento = variación usable)
+  - Cross-basis: corte (horas, no solo 0/1), Lmax ≥ 5–6 meses
+  - Cross-basis lluvia 0–3 meses (mecanismo húmedo)
+  - Offset log(población)
+  - NO ajustar LIRAa en el efecto TOTAL (bloquearía el mediador)
+  - Split temporal: train 2023–2025 / test 2026 (o leave-future-years)
+
+MODELO
+  - Motor: inla(..., family="nbinomial")
+            + DLNM(corte) + DLNM(lluvia) + g(T)
+            + BYM2 parroquial + RW/estacional
+  - Réplica: GAM-NB (mgcv) con los mismos lags
+    Si DLNM no gana en CRPS/PIT, se queda el GAM.
+  - Benchmark: LASSO de lags (punto, no incertidumbre)
+  - Si boosting gana RMSE y pierde PIT/cobertura: se DESCARTA
+    para el MSP (Hasan 2026; Chen 2025; Jaya 2025).
+  - Test predictivo anidado: M0 = estación+lluvia+T
+                            M1 = M0 + DLNM(cortes)
+    Criterio: ΔCRPS / Δlog-score OUT-OF-SAMPLE.
+  - Causal: ITS/CITS o CausalImpact de shocks no climáticos
+    + placebos (fechas falsas, outcome no vectorial, pre-trend).
+    DiD: de Chaisemartin (tratamiento que se enciende y apaga),
+    NO Callaway–Sant’Anna absorbente.
+
+PREDICCIÓN
+  - P(exceder umbral) por parroquia-semana + intervalo de credibilidad
+  - Superficie RR(horas de corte, lag) para el pitch científico
+  - LIRAa predicho / observado como chequeo del mediador
+    (corte → ↑ LIRAa en parroquia expuesta, 2–6 sem, no en vecinas)
+
+OUTPUT
+  - Cola de brigadas a PARROQUIA/barrio (aún no manzana fina)
+  - Informe de mecanismo (¿se replica Lowe 3–5 meses en Ecuador?)
+  - Si NO se replica: el producto se reduce a focalización espacial
+    (Huaquillas/Machala), que sigue valiendo.
+
+
+================================================================
+OPCIÓN C — Modelo avanzado (panel espacial rico)
+================================================================
+
+INPUT
+  - Casos y/o LIRAa a sector/manzana × semana (años suficientes)
+  - Órdenes de trabajo Interagua (cortes no anunciados, tanqueros)
+  - Grafo de manzanas o mesh SPDE
+  - INEC sector censal, WorldPop/HRSL
+  - Opcional: ovitrampas (si hay: occupancy, no SIVE)
+
+PREPROCESAMIENTO
+  - Igual que B, a la unidad fina
+  - Interacción corte × informalidad (INEC, no NDBI casero)
+  - Diagnóstico de ceros: rootograma NB vs ZIP/hurdle
+  - Si 70–90% ceros y NB deja masa en 0: hurdle-NB
+    (ocurrencia = “manzana en transmisión”)
+  - NO Knorr-Held tipo IV en manzana×semana (latente enorme)
+
+MODELO
+  - INLA se QUEDA. Cambia el grafo:
+      * BYM2 manzana + tiempo SEPARABLE (AR1/RW1), o
+      * SPDE si tratan el riesgo como campo continuo
+  - Varios INLA/GAM/SARIMAX con COVARIABLES DISTINTAS
+    (cortes vs lluvia vs ENSO) → ensemble por CRPS
+    (plantilla Colón-González 2021 / D-MOSS; Araujo 2026)
+  - NO meta-XGBoost sobre P(DLNM)
+  - Mecanicista (K o m = f(corte, densidad)) SOLO si hay LIRAa;
+    nunca un SEIR-SEI de libro para rankear manzanas
+  - LSTM compartido + transfer learning SOLO como miembro extra
+    si hay ≥15–20 unidades × ≥8–10 años Y gana en holdout
+  - Escenarios El Niño / resistencia: no un único ajuste histórico
+    (advertencia sprint Brasil 2024)
+
+PREDICCIÓN
+  - P(exceder umbral de cola) por manzana, no mapa de puntos
+  - Recalibración periódica con hallazgos de brigada
+  - Intervalos; cobertura empírica reportada (no asumir 95%)
+
+OUTPUT
+  - Cola dimensionada a brigadas/jornada
+  - Panel: % manzanas alto riesgo visitadas ANTES del pico
+  - API distrito
+
+
+================================================================
+¿MANTENER, REEMPLAZAR O COMBINAR DLNM+INLA?
+================================================================
+
+COMBINAR.
+
+Mantener como instrumento de MECANISMO (lags no lineales + conteos
++ espacio + incertidumbre). Eso es lo que Gasparrini y Lowe saben
+hacer y lo que XGBoost/SARIMAX/SEIR no recuperan cuando el lag es
+largo y el signo depende de la intensidad (4 h ≠ 16 h; sequía 4 meses
+≠ lluvia 1 mes). INLA no se cambia por Stan/GP (Agente 5). La familia
+de conteo se queda en NB a cantón/parroquia (Agente 9).
+
+NO mantener como oráculo del MVP. Con 1 ciudad × ~3 años el
+cross-basis está sobreparametrizado (Agente 10, Johansson 2016:
+incluso 28 años y 17 estados, el clima a menudo no mejoró SARIMA).
+Entrenar INLA a manzana sin LIRAa es teatro.
+
+NO reemplazar por ML/DL. La literatura que hace “ganar” a XGBoost o
+LSTM usa más años, más unidades o nowcasts, y cuando se mira test y
+calibración (Bandung, Río con árboles+clima, Hasan TFT cobertura 0
+en brotes, sprint 2024) el relato se cae. Ningún paper de esas
+familias modela el calendario de cortes.
+
+El híbrido correcto no es DLNM+XGBoost apilados. Es:
+
+  reglas (operación)
+    + DLNM+INLA o GAM-NB (ciencia del rezago)
+    + SARIMAX/LASSO (baseline)
+    + ensemble de densidades (robustez, cuando haya miembros)
+    + ITS/CausalImpact (¿el corte añade señal ⊥ lluvia+estación?)
+
+
+================================================================
+SÍNTESIS POR AGENTE (una línea)
+================================================================
+
+1 ML clásico     — LASSO sí como complemento; XGB/RF no con 1 cantón.
+2 Deep learning  — complejidad no justificada; overfitting central.
+3 Series temp.   — SARIMAX mete el corte como X; rezago 3–5 m peor.
+4 Mecanicistas   — SEIR es teoría; sin LIRAa es teatro de cola.
+5 Espacio        — quedarse con INLA; cambiar grafo/mesh, no motor.
+6 Lags           — DLNM SÍ tiene ventaja para corte→dengue 3–5 m.
+7 Causal         — hoy no hay ATE; ITS de La Toma + M0 vs M1.
+8 Ensembles      — sí si independientes; no stacking sobre DLNM.
+9 Conteos        — NB+offset basta; ZIP solo manzana+ceros estructurales.
+10 Crítico       — combinar capas; no consagrar ni DLNM-forecast ni ML.
+
+
+================================================================
+DOIs ANCLA (no exhaustivo; todos verificados por agentes)
+================================================================
+
+Mecanismo / DLNM
+  10.1002/sim.3940                          Gasparrini 2010 DLNM
+  10.1097/EDE.0000000000000533              Gasparrini 2016 sim lags
+  10.1111/biom.12645                        Gasparrini 2017 penalizado
+  10.1371/journal.pmed.1002613              Lowe 2018 Barbados
+  10.1016/S2542-5196(20)30292-8             Lowe 2021 Brasil
+  10.3389/fpubh.2024.1323618                EWARS-csd Colombia
+  10.1371/journal.pntd.0009931              Huaquillas 2021
+  10.1371/journal.pone.0078263              Stewart-Ibarra Machala
+
+Forecast / benchmarks
+  10.1073/pnas.1909865116                   Johansson 2019 challenge
+  10.1038/srep33707                         Johansson 2016 México
+  10.1073/pnas.2508989123                   Sprint Brasil 2024
+  10.1371/journal.pntd.0010631              Leung 2023 review
+  10.1371/journal.pmed.1003542              Colón-González D-MOSS
+  10.1186/s41182-025-00723-7                Chen & Moraga Río 2025
+  10.3390/su17156777                        Jaya Bandung 2025
+  10.1371/journal.pntd.0008056              Zhao RF Colombia
+  10.1289/ehp.1509981                       Shi LASSO Singapur
+
+Espacio / conteos / causal
+  10.1111/j.1467-9868.2008.00700.x          Rue INLA
+  10.1177/0962280216660421                  Riebler BYM2
+  10.1890/07-0043.1                         Ver Hoef NB vs QP
+  10.1093/ije/dyw098                        Lopez Bernal ITS
+  10.1214/14-AOAS788                        CausalImpact
+  10.1257/aer.20181169                      de Chaisemartin
+
+Ensembles / DL (límites)
+  10.1098/rsif.2016.0410                    Yamana BMA
+  10.1073/pnas.2422335122                   Wu ensemble 180+ sitios
+  10.1038/s41467-024-50601-9                Mathis FluSight
+  10.1371/journal.pntd.0010509              Nguyen LSTM-ATT Vietnam
+  10.1016/j.epidem.2018.05.010              Kao identificabilidad SEIR

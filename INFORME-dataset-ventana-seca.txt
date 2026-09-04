@@ -1,0 +1,139 @@
+========================================================================
+INFORME DE CONSTRUCCION DEL DATASET — VENTANA SECA
+Serie semanal Guayaquil para DLNM + Bayesiano (INLA)
+Construido con datos REALES el 2026-09-04 (10 misiones de investigacion)
+========================================================================
+
+VEREDICTO GLOBAL:  AMARILLO
+  Corre un DLNM+INLA cientificamente defendible A ESCALA NACIONAL (Ecuador)
+  con 156 semanas continuas reales (2021-2023). El objetivo por barrio/Guayas
+  NO es defendible aun: falta la Y (casos de dengue) a esa escala. No es simulacion.
+
+
+------------------------------------------------------------------------
+A. FUENTES REALMENTE UTILIZABLES (verificadas y descargadas)
+------------------------------------------------------------------------
+
+Fuente | Variable | Ciudad/escala | Periodo | Formato | Automatizable | Calidad
+-------|----------|---------------|---------|---------|---------------|--------
+Interagua + prensa (El Universo, Expreso, Primicias, Vistazo, Ecuavisa, Extra) | cortes de agua | Guayaquil (barrio/sector) | 2021-2026 | HTML/PDF | si (headless+Wayback) | B (algunos A)
+Open-Meteo ERA5 (archive-api) | lluvia, tmin/tmax/tmean, humedad | Guayaquil (punto) | 1991-2026 | API HTTP abierta | SI (sin credenciales) | A
+OpenDengue / PAHO | dengue semanal | Ecuador NACIONAL | 2015-2023 | CSV (zip) | SI | A
+MSP Gacetas ETV / SIVE-Alerta | dengue semanal | Guayas (grafico) | 2021-2026 | PDF (grafico) | parcial (digitalizar) | A->D
+INEC EPP Rev.2024 | poblacion | Guayaquil canton | 2021-2026 | XLSX | si | A
+ARCA Boletin APS | continuidad servicio | canton (anual) | 2019-2024 | PDF | si | A (solo anual)
+CENACE/ARCONEL datos abiertos | energia | nacional | 2021-2026 | CSV | si | A (contexto)
+
+
+------------------------------------------------------------------------
+B. DATASET MINIMO VIABLE CONSTRUIDO
+------------------------------------------------------------------------
+
+Archivo:  data/model/ventana_seca_guayaquil_weekly.csv
+Unidad:   Guayaquil x semana ISO
+Rango:    2021-W01 -> 2026-W35  (295 semanas CONTINUAS, sin huecos)
+
+Columnas con datos REALES:
+  - poblacion .......................... 100% (INEC, A)
+  - precipitacion_mm, precip_7/30/90d .. 100% (ERA5, A)
+  - spi3/spi6/spi12 .................... 100% (calculado, calibrado 1991-2020, C)
+  - tmin/tmax/tmean/humedad ............ 100% (ERA5, A)
+  - corte_hn/n_eventos/horas/almacenar . 100% de la columna; 61 semanas con corte real
+  - casos_dengue_nacional .............. 156 semanas reales (2021-2023, OpenDengue, A)
+  - casos_dengue (Guayas/local) ........ 0% -> NA (GAP CRITICO, ver E)
+
+
+------------------------------------------------------------------------
+C. COBERTURA HISTORICA
+------------------------------------------------------------------------
+
+Cortes de agua Guayaquil (eventos reales recuperados): 63
+  2021: 4   2022: 4   2023: 21   2024: 16   2025: 12   2026: 6
+  (2023-2025 bien cubiertos; 2021-2022 flojos -> 2do pase Wayback pendiente)
+
+Clima: 35 anios diarios (1991-2026) -> 1860 semanas; 100% de la ventana de estudio.
+Dengue nacional semanal: 2015-2023 (OpenDengue); solape util 2021-2023 = 156 semanas.
+Poblacion: 2021-2026 anual (proyeccion oficial).
+
+
+------------------------------------------------------------------------
+D. EVIDENCIA MAS FUERTE PARA LA DEMO (eventos ancla verificados)
+------------------------------------------------------------------------
+  1. 2026-02-08  planta La Toma, 11h norte / 16h sur, pidio almacenar (EVENTO ESTRELLA)
+  2. 2024-09-18  apagon nacional -> La Toma sin 19MW -> Guasmo sin agua (nexo agua-energia)
+  3. 2024-11-07  54 sectores, 19h, acueducto Tungurahua/Brasil
+  4. 2024-09-27  Portete de Tarqui, 12h, restriccion por energia
+  5. 2023-11-24  22h, 35% de la ciudad, cambio de valvulas 1250/1800mm
+  (lista completa: data/clean/cortes_interagua_clean.csv)
+
+
+------------------------------------------------------------------------
+E. GAPS (lo que NO tenemos y que requeriria convenio)
+------------------------------------------------------------------------
+
+GAP 1 (CRITICO) — casos de dengue por SEMANA a nivel Guayas o Guayaquil.
+  - No existe serie publica limpia. La de Guayas 2021-2026 vive como GRAFICO dentro
+    de los PDF de las Gacetas ETV del MSP -> hay que DIGITALIZARLA (confianza D) o
+    pedir la base EPI-1 a la DNVE-MSP (convenio, confianza A).
+  - Guayaquil-canton semanal NO existe ni digitalizando (solo line-list de la semana
+    vigente + atenciones municipales mensuales, con sesgo de establecimiento notificante).
+
+GAP 2 — cortes de agua por BARRIO georreferenciados (poligono), no texto libre.
+  - Se resuelve con diccionario de barrios propio (NO requiere convenio).
+
+GAP 3 — cortes NO anunciados, ordenes de trabajo, tanqueros, LIRAa.
+  - Requiere convenio Interagua/EMAPAG y MSP. Mejoran el modelo; no bloquean el MVP.
+
+GAP 4 — SPI con serie corta: mitigado calibrando con 1991-2020 (30 anios, estandar OMM).
+
+
+------------------------------------------------------------------------
+F. PRUEBA DE VIABILIDAD DLNM + INLA (respuestas)
+------------------------------------------------------------------------
+ 1. Semanas completas: 295.
+ 2. Semanas con dengue: Guayas/local 0; NACIONAL 156.
+ 3. Semanas con info de cortes: columna 100%; con corte real 61.
+ 4. Semanas con dengue(nac)+cortes+precip+temp+spi6 simultaneos: 156.
+ 5. Maxima racha continua sin NA (subset modelable): 156 semanas (2021-W01 -> 2023-W52).
+ 6. Lags 1..20 semanas: SI (racha de 156 lo permite con holgura).
+ 7. Efecto 3-5 meses (13-22 sem): SI, la racha equivale a ~36 meses.
+ 8. Primera fecha con todas las variables: 2021-W01 (nacional).
+ 9. Ultima fecha: 2023-W52 (dengue nac) / 2026-W35 (clima+cortes).
+10. Suficiente para DLNM+INLA defendible? -> SI A ESCALA NACIONAL; NO por barrio.
+
+
+------------------------------------------------------------------------
+G. RESPUESTA A LA PREGUNTA CENTRAL
+------------------------------------------------------------------------
+"Con los datos que existen AHORA, podemos construir un dataset suficientemente
+ solido para correr el DLNM + Bayesiano (INLA)?"
+
+  SI, con dos matices honestos:
+
+  (1) A ESCALA NACIONAL (Ecuador), YA: 156 semanas continuas reales
+      (dengue OpenDengue + lluvia/temperatura ERA5 + SPI + cortes agregados).
+      Permite estimar la estructura de rezago tipo Lowe y validar el efecto 3-5 meses.
+      Limitacion: la exposicion "cortes" es de Guayaquil pero la Y es nacional ->
+      sirve para PROBAR EL METODO y el rezago clima->dengue, no para atribuir causalidad
+      del corte al nivel fino.
+
+  (2) A ESCALA GUAYAS/GUAYAQUIL, NO todavia: falta la Y semanal.
+      Dato critico faltante = casos de dengue por semana en Guayas.
+      Mejor sustituto publico inmediato = digitalizar el grafico "GUAYAS por SE" de la
+      Gaceta ETV del MSP (confianza D) para una version preliminar; definitivo = base
+      EPI-1 de la DNVE-MSP (convenio).
+
+  Para el hackaton: el dataset actual (data/model/) es REAL, reproducible y defendible
+  como prueba de concepto del metodo. El salto a Guayas es 1 dia de digitalizacion; el
+  salto a barrio es convenio (mes 1 del piloto).
+
+
+------------------------------------------------------------------------
+H. TRAZABILIDAD
+------------------------------------------------------------------------
+Cada CSV en data/raw conserva columnas fuente/url/confianza.
+Scripts reproducibles en scripts/ (run_all.py ejecuta todo).
+Agentes de investigacion (trazas):
+  cortes 21575677 · dengue ef0aae61 · clima 8fabedce · poblacion 3faa7ce5 ·
+  energia 6fdb81bc · variables f74f3273
+========================================================================

@@ -1,0 +1,109 @@
+VENTANA SECA — INFORME DE EXPERIMENTACION
+=========================================
+Fecha: 2026-09-04
+Regla: no se inventaron casos de dengue. Datos observados vs derivados vs NA.
+
+1. DATASET FINAL
+   data/model/ventana_seca_guayaquil_weekly.csv
+
+2. N
+   N semanas = 295
+   fecha inicial = 2021-01-04 (2021-W01)
+   fecha final   = 2026-W35 (ultima semana con clima)
+
+   Subseries modelables
+   NAT: 156 semanas 2021-W01..2023-W52  (Y nacional OpenDengue)
+   GYA:  33 semanas 2026-W01..2026-W33  (Y Guayas, Gaceta ETV SE33)
+
+3. COBERTURA (295 semanas)
+   ver results/cobertura.csv
+   variable                 | disponible | NA  | %
+   casos_dengue (Guayas)    | 33         | 262 | 11.2
+   casos_dengue_nacional    | 156        | 139 | 52.9
+   poblacion                | 295        | 0   | 100
+   corte_hn / horas / n_evt | 295        | 0   | 100  (0 = no reportado)
+   precipitacion, tmin/max, SPI, humedad | 295 | 0 | 100
+
+4. MODELO DLNM
+   INLA: NO ejecutado (paquete no instalado; no hay estructura espacial).
+   Ejecutado: GLM-NB + cross-basis de rezagos (DLNM lineal en exposicion).
+   Formula NAT:
+     casos_dengue_nacional ~ offset(log(poblacion))
+       + harm(semana, k=2) + I(anio)
+       + cb(precip, lag 0-20) + cb(tmin, lag 0-8)
+       + [cb(corte_hn, lag 0-20)]
+   Familia: Negative Binomial (overdispersion Poisson 4-96 >> 1.5)
+   Offset: log(poblacion Guayaquil) — escala incorrecta para Y nacional.
+   Espacial: no aplica (1 unidad).
+
+5. COMPARACION (test temporal NAT = 2023, N=52)
+   modelo                 MAE    RMSE   Deviance  LogScore
+   baseline_media         194    226     6033      -62
+   E2_horas (contemp.)    150    181     3598      -39   <-- mejor GLM
+   B6_random_forest       212    254     8291      -84
+   E1_corte_hn            216    263     9771      -98
+   HYP_clima (DLNM)       288    318    11019     -110
+   B5_cortes_time         286    326    15949     -157
+   HYP_clima_cortes       394    425    34094     -332   <-- PEOR
+   E6_completo            403    432    33951     -331
+
+   Walk-forward (origen expandible, h=8, 2021-2023) MAE medio:
+     horas_corte 166 | clima+tiempo 180 | media 206
+
+   GYA test ultimas 6 semanas:
+     naive 20.8 | media 31.7 | corte_hn 32.4 | horas 34.2 | RF 13.7
+     DLNM / clima: no identificable (N insuficiente)
+
+6. HIPOTESIS CORTES vs CLIMA
+   ¿Agregar cortes mejora sobre clima+temporalidad?
+   NAT: NO. MAE 288 -> 394. LogScore empeora.
+   GYA: no se pudo estimar el modelo conjunto (N=33, ~6 en test).
+   El "mejor" predictor numerico (horas_corte contemporaneo sobre Y NACIONAL)
+   NO es evidencia de que los cortes de Guayaquil predigan dengue de Guayas:
+   Y esta en otra escala geografica y 2023 fue un anio epidemico distinto.
+
+7. LAG
+   Efecto cb(corte_hn) NAT, lags 0-20: TODOS los IC cubren 0.
+   Pico |efecto| en lag 20 = -0.089  IC [-0.21, 0.04]  (signo contrario
+   a la hipotesis 3-5 meses). No hay ventana 12-20 semanas detectable.
+   Sensibilidad L=8/12/20: MAE 291 / 308 / 345 (peor al alargar).
+
+8. FIGURAS
+   results/figures/01_dengue_nacional.png
+   results/figures/02_dengue_guayas_2026.png
+   results/figures/03_cortes_horas.png
+   results/figures/04_dengue_vs_cortes.png
+   results/figures/04b_guayas_dengue_vs_cortes.png
+   results/figures/05_lag_NAT.png
+   results/figures/06_pred_vs_obs_NAT.png
+   results/figures/07_mae_comparacion_NAT.png
+
+EXTRACCION DENGUE GUAYAS
+  PDF: data/raw/gacetas_msp/ETV_Gaceta_33.pdf
+  URL: https://www.salud.gob.ec/wp-content/uploads/2026/08/ETV_Gaceta_33.pdf
+  Pagina 3, etiquetas de la serie 2026 (texto embebido, no OCR).
+  33 semanas, suma 7202. Suma SE1-SE28 ≈ 5958 vs 5909 acumulado
+  reportado por El Universo (SE28) — diferencia compatible con reajuste.
+  Series 2021-2025 del mismo grafico: sin etiquetas -> NO extraidas.
+  OpenDengue Spatial Guayas: semanal solo hasta 2020 (sin solape 2021-26).
+  Canton Guayaquil semanal: NO encontrado.
+
+LIMITACIONES
+  Modelo ejecutable:     SI
+  Prediccion robusta:    NO
+  Estimacion de lag:     limitada (IC cubren 0)
+  Evidencia asociacion:  exploratoria
+  Evidencia causal:      NO
+  Y Guayas 2021-2025:    no disponible
+  Cortes 2021-22:        cobertura de prensa baja
+  Semana ISO vs SE MSP:  posible desfase de 1-2 dias
+
+ESTADO: AMARILLO
+  Podemos experimentar. No hay base para afirmar que DLNM+INLA
+  predice dengue cantonal ni que los cortes aportan senal neta.
+
+MVP RECOMENDADO
+  Motor de reglas A/B/C/D (ya disenado) + persistencia semanal (naive)
+  para el panel. NO el DLNM ajustado.
+  Para ciencia: conseguir EPI-1 / serie ViEpi Guayas 2021-2025 semanal
+  y reestimar entonces GLM-NB + cb(horas_corte, lag 0-20).

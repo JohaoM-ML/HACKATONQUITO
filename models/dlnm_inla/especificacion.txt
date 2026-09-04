@@ -1,0 +1,31 @@
+DLNM + Bayesiano jerarquico INLA
+================================
+Estado del entorno
+  R 4.5.1 instalado.
+  Paquetes INLA y dlnm: NO instalados.
+  Motivo de no instalar INLA en esta corrida: binario grande, sin uso espacial
+  (una sola unidad geografica). El DLNM espacial de Lowe (BYM2) no aplica.
+
+Que se estimo realmente
+  Equivalente frecuente de Gasparrini:
+    Y_t ~ NegBin(mu_t, alpha)
+    log(mu_t) = log(poblacion_t) + s(semana; armonicos 2) + anio
+                + cb(exposicion, lag=0..L)
+  cb = matriz de rezagos x spline natural en el lag (lineal en la exposicion).
+  Estimacion: GLM IRLS (statsmodels). Familia NB si overdispersion Poisson > 1.5.
+
+Formula NAT (modalidad nacional, L=20)
+  casos_dengue_nacional ~ offset(log(poblacion))
+                          + harm(semana, k=2) + I(anio)
+                          + cb(precipitacion_mm, lag=0..20)
+                          + cb(tmin, lag=0..8)
+                          + cb(corte_hn, lag=0..20)   [solo en HYP_clima_cortes]
+
+Formula GYA (Guayas 2026, L=2 si N lo permite)
+  casos_dengue ~ offset(log(poblacion)) + corte_hn   [E1]
+  DLNM completo: N=33, no identificable (se aborta).
+
+Estructura espacial: no aplica (1 unidad).
+Estructura temporal: armonicos semanales + dummy de anio. No RW1 INLA.
+Offset: log(poblacion Guayaquil, proyeccion INEC). Para Y nacional es un
+escalado lento, no una tasa cantonal correcta.
