@@ -1,4 +1,4 @@
-const CACHE = "ventana-seca-v5";
+const CACHE = "ventana-seca-v6";
 const ASSETS = [
   "./",
   "./index.html",

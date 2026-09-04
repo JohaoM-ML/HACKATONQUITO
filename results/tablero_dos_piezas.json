@@ -1,0 +1,36 @@
+{
+  "pieza_1": {
+    "mae_test_2023": 87.0,
+    "n_test": 52,
+    "familia": "nb",
+    "alpha_nb": 0.038636835222508055,
+    "intercept": -10.192469646927224,
+    "coef_ar1": 0.002915241549303697,
+    "formula": "mu = exp(intercept + coef_ar1 * casos(t-1) + log(poblacion))",
+    "nota": "Pronostico NACIONAL. No define barrio. No usa cortes."
+  },
+  "pieza_2": {
+    "n_eventos_corte": 63,
+    "pct_con_duracion": 41.3,
+    "pct_pidio_almacenar": 69.8,
+    "pct_con_sectores_nombrados": 100.0,
+    "semanas_2023_con_cola_a": 2,
+    "barrio_semanas_a_2023": 4,
+    "barrios_distintos_a_2023": 2,
+    "barrios_unicos_en_csv": 191,
+    "visitas_si_se_recorre_catalogo_cada_semana": 9932,
+    "pct_trabajo_evitado_vs_visitar_todos_cada_semana": 99.96,
+    "cortes_2023": 21,
+    "cortes_2023_con_duracion": 2,
+    "cortes_2023_sin_horas": 19,
+    "cortes_2023_pidio_almacenar": 17,
+    "regla": "A = >=8 h + almacenar + 0-14 dias. Ranking operativo, no P(brote)."
+  },
+  "coincidencia_2023": {
+    "umbral_semana_alta_p75": 662.5,
+    "semanas_alta_y_cola": 0,
+    "semanas_alta_sin_cola": 13,
+    "semanas_cola_sin_alta": 2,
+    "nota": "Conteo descriptivo en el mismo calendario. NO es evidencia de que la cola predice dengue ni lo contrario."
+  }
+}

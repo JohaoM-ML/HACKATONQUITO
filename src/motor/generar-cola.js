@@ -68,6 +68,16 @@ function loadTendenciaDengue(fechaEval) {
   return t;
 }
 
+function loadDosPiezas() {
+  const p = path.join(ROOT, "results/tablero_dos_piezas.json");
+  if (!fs.existsSync(p)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf8"));
+  } catch (e) {
+    return null;
+  }
+}
+
 function loadClima(fechaEval) {
   const p = path.join(ROOT, "data/clean/clima_guayaquil_semanal.csv");
   if (!fs.existsSync(p)) {
@@ -115,6 +125,7 @@ function main() {
 
   const tendencia = loadTendenciaDengue(fechaEval);
   const lluvia = loadClima(fechaEval);
+  const dosPiezas = loadDosPiezas();
   const contexto = { tendencia, lluvia };
 
   // Solo cortes con fecha ≤ evaluación (no usar eventos futuros del CSV).
@@ -173,6 +184,16 @@ function main() {
       "Lista incompleta por diseño (ejemplos de prensa). lat/lon=null. " +
       "Predios no existen en datos: se registran en campo.",
     puntaje_nota: "Ranking operativo transparente, no calibrado, no es probabilidad de brote.",
+    dos_piezas: dosPiezas
+      ? {
+          nota:
+            "Dos preguntas, dos Y publicas. Pieza 1 = dengue nacional (MAE). " +
+            "Pieza 2 = cola de cortes (cobertura). Ninguna predice dengue por barrio.",
+          pieza_1: dosPiezas.pieza_1,
+          pieza_2: dosPiezas.pieza_2,
+          coincidencia_2023: dosPiezas.coincidencia_2023,
+        }
+      : null,
     contexto_cantonal: {
       dengue: {
         tendencia: tendencia.tendencia,

@@ -6,3 +6,5 @@ Thumbs.db
 node_modules/
 .cursor/
 paper-search-mcp/
+__pycache__/
+*.pyc

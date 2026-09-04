@@ -37,7 +37,7 @@ Si ya tenías un service worker viejo: DevTools → Application → Unregister, 
 |------|--------|
 | Cortes y sectores del CSV | Observados (lista *ejemplo*, puede estar incompleta) |
 | Categoría A/B | Regla operativa aplicada |
-| Regla B | Hipótesis Lowe — **no** hallazgo validado en Ecuador |
+| Regla B | Ventana 7–14 d (ciclo Aedes aegypti). Hipótesis biológica — **no** hallazgo validado en Ecuador. La ventana previa de 12–20 sem (rezago Lowe) se descartó: sin efecto significativo en `results/lag_effects.csv` |
 | Regla C | Contexto cantonal; **no** emite barrios |
 | Regla D | Bonus de prioridad si casos suben; **no** define barrio |
 | lat/lon | `null` |

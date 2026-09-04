@@ -1,7 +1,7 @@
 % ======================================================================
 %  VENTANA SECA
-%  Focalización predictiva del control vectorial del dengue mediante
-%  el calendario de suspensiones del servicio de agua potable
+%  Cola de brigadas (cortes públicos) + pronóstico nacional.
+%  Actualizado 2026-09-04 con resultados y decisiones del hackatón.
 %
 %  Documento técnico extenso — Hackatón Quito (Resiliencia climática
 %  ante El Niño). Ecuador, Perú, Colombia.
@@ -71,8 +71,8 @@
 \vspace*{2cm}
 {\Huge\bfseries\color{azulvs} VENTANA SECA\par}
 \vspace{0.6cm}
-{\large\itshape Focalización predictiva del control vectorial del dengue\\
-mediante el calendario de suspensiones del servicio de agua potable\par}
+{\large\itshape Cola de brigadas a partir del calendario de cortes de agua,\\
+con pronóstico nacional de dengue donde la $Y$ sí existe\par}
 \vspace{1.2cm}
 {\large\textbf{Título de la problemática}\par}
 \vspace{0.2cm}
@@ -83,8 +83,8 @@ cortes de agua que salud no lee»\par}
 \textbf{Desafío:} & Resiliencia climática ante El Niño\\
 \textbf{Track:} & 2 — Salud pública\\
 \textbf{Territorio piloto:} & Guayaquil (Guayas), Ecuador\\
-\textbf{Modelo:} & DLNM + Bayesiano (INLA)\\
-\textbf{Fecha:} & Septiembre de 2026\\
+\textbf{Modelo:} & Reglas A--D (ruta) + GLM-NB / XGBoost (nacional)\\
+\textbf{Fecha:} & 4 de septiembre de 2026\\
 \end{tabular}
 \vfill
 {\small\color{grisvs} Documento técnico extenso. Toda afirmación relevante lleva fuente,\\
@@ -99,33 +99,31 @@ se marcan como hipótesis y no como hallazgos.\par}
 \section{Resumen ejecutivo}
 % ======================================================================
 
-VENTANA SECA es un sistema de focalización que convierte un documento
-administrativo que el Estado ya publica —el calendario de suspensiones
-del servicio de agua potable— en una cola de trabajo priorizada, manzana
-por manzana, para las brigadas de control vectorial del dengue.
+VENTANA SECA convierte el calendario público de cortes de agua
+(Interagua / prensa) en una \textbf{cola de brigada} para inspeccionar
+recipientes, y usa la serie nacional de dengue (OpenDengue/PAHO) para
+un \textbf{pronóstico de carga del país}. Son dos preguntas con dos $Y$
+distintas. No se afirma predicción de dengue por barrio, parroquia ni
+manzana: esa $Y$ no es pública.
 
-La tesis del proyecto es incómoda para un hackatón: los sistemas que
-parecen faltar en Ecuador ya existen (pronóstico hidrológico nacional,
-malla de comunicación \textit{offline}, apps de reporte ciudadano), y los
-que existen fallan por razones que ninguna aplicación nueva resuelve. Lo
-que sí falta es de otro tipo: \textbf{nadie está conectando datos
-operativos que ya se publican con las decisiones que dependen de ellos}.
-El caso más nítido y mejor respaldado por la ciencia es el de la empresa
-de agua potable, que publica con días de anticipación y con resolución de
-barrio el mapa exacto de dónde miles de hogares van a llenar recipientes
-destapados —y a veces se los ordena explícitamente— mientras el sector
-salud programa sus brigadas mirando la lluvia y los casos ya notificados.
+La tesis original ---el corte de agua predice el brote semanas o meses
+después--- viene de la literatura (Lowe; Huaquillas; Machala). En este
+hackatón se puso a prueba con datos reales de Ecuador (2021--2023
+nacional; Guayas 2018--2020 y gaceta 2026). \textbf{Con la $Y$ disponible,
+los cortes no mejoran el pronóstico de casos} y a veces empeoran el
+error. El producto se queda, por tanto, en lo que sí se puede defender:
+ruteo operativo (Regla A) + termómetro nacional (MAE), y un oficio al MSP
+por dengue o LIRAa por parroquia/sector.
 
-El corazón analítico es un \textbf{modelo de rezagos distribuidos no
-lineales (DLNM) en marco bayesiano (INLA)}, el mismo motor estadístico de
-Lowe \textit{et al.} y del sistema EWARS de la Organización Mundial de la
-Salud, que capta el rezago de 3 a 5 meses entre el corte de agua y el
-brote. El entregable del hackatón es este motor validado de forma
-retrospectiva contra un brote real de Guayaquil, más una aplicación de
-brigada que funciona sin conexión y un panel distrital.
+El entregable es una PWA \textit{offline} con cola A--D, un panel de
+jefe, y un pipeline de experimentos reproducible
+(\texttt{scripts/run\_experiments.py} y extensiones). El DLNM+INLA a
+escala de manzana sigue siendo el objetivo de un piloto con convenio, no
+el resultado de este fin de semana.
 
-\nota{En una frase}{Leemos un documento que el propio Estado ya publica y
-lo convertimos en la orden de trabajo que las brigadas hoy no tienen.}
+\nota{En una frase}{Leemos un documento que el Estado ya publica y lo
+convertimos en la orden de visita de hoy. El dengue del país se pronostica
+aparte. El dengue del barrio se pide al MSP.}
 
 % ======================================================================
 \section{Contexto y justificación}
@@ -185,11 +183,11 @@ datos que otras instituciones ya generan.
 
 \subsection{Enunciado en una línea}
 
-\nota{Problema}{En Ecuador, las brigadas de control vectorial llegan tarde
-y a la manzana equivocada porque persiguen los casos de dengue ya
-notificados, cuando el mejor predictor de dónde vendrá el brote —el
-calendario de cortes de agua que la propia empresa publica con meses de
-anticipación— está a la vista y nadie en salud lo lee.}
+\nota{Problema}{Las brigadas deciden la ruta con casos ya notificados y a
+escala gruesa. El calendario de cortes ---dónde se acaba de pedir
+almacenar agua--- es público y no entra a esa programación. La pregunta
+operativa no es «dónde va a haber dengue», que no tiene $Y$ por barrio,
+sino «adónde ir esta semana a tapar recipientes».}
 
 \subsection{Descomposición del problema}
 
@@ -206,14 +204,15 @@ Causa & La decisión de dónde y cuándo fumigar/inspeccionar se toma con
 información retrasada (casos ya notificados) y a escala gruesa.\\
 Consecuencia & El recurso se despliega cuando el criadero ya produjo
 casos, y donde ya hay casos, no donde van a aparecer.\\
-Momento crítico & Los 3 a 5 meses posteriores a un corte de agua, cuando
-los recipientes de almacenamiento maduran como criaderos.\\
-Información que falta & Una predicción espacial fina (manzana) y temprana
-de dónde se acumularán criaderos.\\
-Decisión que se toma mal o tarde & La programación semanal de brigadas y
-la asignación de insumos (abate, larvicida, personal).\\
-Tecnología candidata & Modelo de rezagos (DLNM bayesiano) alimentado por
-el calendario de suspensiones de la empresa de agua.\\
+Momento crítico & Los 7--14 días posteriores a un corte $\geq 8$\,h con
+pedido de almacenar (ciclo huevo$\to$adulto de \textit{Ae. aegypti}).
+El rezago de 12--20 semanas (Lowe) se probó y no se confirmó aquí.\\
+Información que falta & Dengue o LIRAa por parroquia/sector (MSP). Sin
+eso no hay modelo de zonas.\\
+Decisión que se toma mal o tarde & La programación semanal de brigadas:
+no usa el comunicado de corte de esta semana.\\
+Tecnología candidata & Motor de reglas A--D sobre cortes públicos +
+pronóstico nacional donde la $Y$ existe.\\
 \bottomrule
 \end{longtable}
 
@@ -236,14 +235,13 @@ lluviosa), pero prioriza la señal más fuerte y más anticipable.
 \section{El insight}
 % ======================================================================
 
-\nota{Insight}{El mejor predictor de dónde habrá dengue no está en los
-datos meteorológicos: está en el calendario de suspensiones de la empresa
-de agua potable. El Estado publica, con días de anticipación y resolución
-de barrio, el mapa exacto de dónde miles de hogares van a llenar
-recipientes destapados. En Guayaquil incluso lo ordena: los tanqueros no
-abastecen viviendas, así que «abastézcase previamente». Ese documento
-administrativo es una predicción de criaderos con 3 a 5 meses de
-anticipación, y el sector salud no lo lee.}
+\nota{Insight (literatura, no hallazgo de este dataset)}{La literatura
+(Lowe; Huaquillas; Machala) señala el almacenamiento tras el corte como
+el criadero más productivo y predecible. El Estado publica, con
+resolución de barrio, dónde se pidió llenar recipientes. Eso justifica
+\textbf{mandar brigada a tapar tanques}, no afirmar que el corte predice
+casos semanales. En nuestros experimentos esa segunda afirmación no se
+sostuvo.}
 
 El corolario es más fuerte que el insight: el sector que genera el riesgo
 vectorial no es el sanitario ni el climático, es el de infraestructura.
@@ -308,15 +306,19 @@ por turbiedad, daño a captaciones y fallas eléctricas. &
 Inferencia propia (caso Interagua--CELEC); no verificada con datos
 operativos & \hipotesis\\
 \addlinespace
-La curva de rezago de 3 a 5 meses medida en Brasil y Barbados se replica
-con datos ecuatorianos. & Pendiente de validación; primer entregable del
-piloto & \hipotesis\\
+La curva de rezago de 3 a 5 meses de Brasil/Barbados se replica en
+Ecuador. & \textbf{No hallada} en 21 rezagos de \texttt{corte\_hn}
+(IC 95\,\% cruza cero); residuos AR1 no significativos; eventos
+apilados con signo contrario (probable sesgo de prensa). &
+\textcolor{rojovs}{\textbf{Refutada aquí (escala disponible)}}\\
 \bottomrule
 \end{longtable}
 
-\nota{Advertencia metodológica}{Las dos últimas filas están marcadas como
-hipótesis a propósito. Presentarlas como hechos sería el error más fácil de
-detectar por un jurado técnico.}
+\nota{Advertencia metodológica}{Huaquillas y Machala miden mosquito en el
+hogar, no casos semanales de ciudad. Lowe mide clima$\to$población de
+mosquito a escala de ciudad. Este proyecto midió \textit{casos semanales
+nacionales o provinciales} frente a cortes de Guayaquil: otra $Y$ y otra
+escala. No contradice esos papers; no los replica tampoco.}
 
 % ======================================================================
 \section{Estado del arte y precedentes en la literatura}
@@ -366,12 +368,11 @@ teóricamente la cadena sequía $\to$ almacenamiento $\to$ mosquito. &
         \textbf{INAMHI-GEOGLOWS}, que ya funciona sobre 2.300 tramos de río.
 \end{itemize}
 
-\nota{La frase de defensa}{No inventamos el concepto de predecir y
-responder —la OMS ya lo validó con EWARS, y funciona en Colombia. No
-inventamos el método —es el DLNM de Lowe. No inventamos el vínculo
-agua-mosquito —está medido en Nicaragua y Brasil. Lo que nadie ha hecho es
-alimentar ese sistema con el calendario de cortes que la empresa de agua
-ya publica, y bajarlo de resolución de cantón a manzana.}
+\nota{La frase de defensa}{No inventamos el vínculo agua--mosquito (está
+en Huaquillas y Machala). No inventamos el pronóstico de casos (OpenDengue
++ un GLM-NB). Lo que hacemos aquí es \textbf{usar el comunicado de corte
+como orden de visita}, y ser explícitos: sin $Y$ por zona no hay modelo de
+barrio. El DLNM+INLA a manzana es el mes 1 del piloto, no este MVP.}
 
 % ======================================================================
 \section{La solución}
@@ -379,11 +380,11 @@ ya publica, y bajarlo de resolución de cantón a manzana.}
 
 \subsection{En una frase}
 
-Un motor que convierte los calendarios de racionamiento y las órdenes de
-trabajo de las empresas de agua en una cola priorizada de manzanas para
-las brigadas de control vectorial, entregada en una aplicación que
-funciona sin conexión, y que se recalibra con lo que las brigadas
-encuentran en cada predio.
+Una PWA que convierte el calendario público de cortes en una cola
+priorizada de \textbf{barrios nombrados en el comunicado} (no manzanas
+inventadas), funciona sin conexión, y muestra aparte un pronóstico
+nacional de dengue. Se recalibrará cuando exista LIRAa o dengue por
+parroquia.
 
 \subsection{Cómo funciona, paso a paso}
 
@@ -391,32 +392,33 @@ encuentran en cada predio.
   \item El sistema ingiere diariamente el mapa y el calendario de
         suspensiones publicados por la empresa de agua, junto con órdenes
         de trabajo y despachos de tanqueros cuando hay convenio.
-  \item Cada barrio afectado se convierte en polígono y se cruza con la
-        grilla de población para aislar la banda crítica de 3.000 a 7.000
-        habitantes por kilómetro cuadrado.
-  \item Se añaden temperatura de superficie y precipitación satelital, y
-        un \textbf{modelo de rezagos distribuidos} calcula por manzana la
-        probabilidad de acumulación de recipientes, con dos mecanismos:
-        exceso de lluvia (rezago 0--3 meses) e interrupción de servicio
-        (rezago 3--5 meses).
-  \item El riesgo no se publica como mapa de calor: se convierte en una
-        \textbf{cola de trabajo ordenada}, dimensionada al número real de
-        brigadas y a la jornada, con ruta sugerida.
+  \item Solo se usan sectores \textbf{nombrados} en el comunicado
+        (\texttt{sectores\_ejemplo}). \texttt{lat/lon = null}: no se
+        fabrican polígonos.
+  \item Se añade clima cantonal (ERA5) como contexto (Regla C). No se
+        calcula probabilidad por manzana: no hay $Y$ a esa escala.
+  \item El corte se convierte en una \textbf{cola ordenada} (A delante
+        de B). El puntaje es ranking operativo, no $P$(brote).
   \item El brigadista descarga la cola en el centro de salud y trabaja el
         día entero \textbf{sin conexión}, registrando por predio el número
         y tipo de recipientes y su positividad.
-  \item Al volver, la app sincroniza. Los hallazgos alimentan el índice
-        entomológico oficial y \textbf{recalibran el modelo}.
-  \item La dirección distrital ve en un panel la cobertura de manzanas de
-        alto riesgo visitadas antes del pico previsto y exporta un
-        respaldo imprimible.
+  \item Al volver, la app sincroniza predios. Eso genera la $Y$
+        entomológica de campo (\texttt{larva\_visible}); no recalibra
+        todavía un modelo de casos.
+  \item El jefe ve cobertura de barrios A y el MAE nacional. No hay mapa
+        de calor georreferenciado.
 \end{enumerate}
 
 % ======================================================================
 \section{El modelo: DLNM + Bayesiano (INLA)}
 % ======================================================================
 
-El componente predictivo es un modelo de rezagos distribuidos no lineales
+Esta sección describe el \textbf{modelo-objetivo del piloto} (mes 1+),
+no el artefacto del hackatón. En el repo se corrió un DLNM clásico
+(Gasparrini / GLM-NB, sin INLA) a escala nacional; empeoró el MAE
+frente a baselines. La formulación se conserva para el convenio.
+
+El componente predictivo de ese piloto sería un modelo de rezagos distribuidos no lineales
 (\textit{Distributed Lag Non-linear Model}, DLNM) embebido en un marco
 jerárquico bayesiano espaciotemporal, estimado por aproximación de Laplace
 anidada e integrada (INLA). Es la misma familia de modelos de Lowe
@@ -478,24 +480,135 @@ sino una \textbf{probabilidad de exceder un umbral} de brote/positividad
 por manzana y semana, con su intervalo de credibilidad. Esa probabilidad
 es la que se ordena para producir la cola de brigada.
 
-\subsection{Qué se entrena en el hackatón (honestidad)}
+\subsection{Qué se entrenó en el hackatón (honestidad)}
 
-Sin convenio no se dispone de casos por manzana ni de índices
-entomológicos (LIRAa) ni de órdenes de trabajo. Por tanto, en el fin de
-semana el DLNM se ajusta de forma \textbf{retrospectiva} a la escala
-disponible (cantón/parroquia, con la curva pública del MSP) para
-\textbf{validar la estructura de rezago} contra un brote real de
-Guayaquil, y la focalización fina se opera con un motor de reglas derivado
-de esos coeficientes. El DLNM+INLA a escala de manzana es el objetivo del
-mes 1 del piloto, cuando el convenio habilita los datos finos.
+No hay casos por manzana, ni por parroquia de Guayaquil, ni LIRAa
+público. OpenDengue Spatial para Ecuador tiene \texttt{adm\_2} vacío:
+la zona pública más fina es la \textbf{provincia}. El DLNM clásico
+(Gasparrini, no INLA: no estaba instalado) se corrió a escala
+\textbf{nacional} (156 semanas, 2021--2023) y \textbf{Guayas} (gaceta
+2026, $N$ insuficiente para DLNM). La cola de brigada \textbf{no} usa
+esos coeficientes: usa reglas puestas a mano, etiquetadas como proxy no
+calibrado.
 
-\nota{Regla derivada para el MVP}{(A) Corte $\geq 8$\,h hace 0--14 días y la
-empresa pidió almacenar $\Rightarrow$ cola de brigada esta semana. (B)
-Corte hace 12--20 semanas ($\approx$3--5 meses) $\Rightarrow$ alerta de
-brote tardío (rezago de Lowe, marcado como hipótesis). (C) Lluvia fuerte
-hace 0--8 semanas sin corte $\Rightarrow$ minga de llantas y abandonados.
-(D) Cantón con casos subiendo $\Rightarrow$ sube prioridad, no define la
-manzana.}
+\nota{Reglas del MVP (código en \texttt{src/motor/reglas.js})}{(A) Corte
+$\geq 8$\,h hace 0--14 días y pidieron almacenar $\Rightarrow$ cola esta
+semana. (B) Corte hace 7--14 días sin cumplir A $\Rightarrow$ ventana de
+criadero; hipótesis biológica, no Lowe. (C) Lluvia 0--8 semanas sin
+catálogo de barrios sin corte $\Rightarrow$ no emite ítems. (D) Tendencia
+de 4 semanas de Guayas (gaceta) $\Rightarrow$ bonus de prioridad; no
+define barrio. No se enchufó el XGBoost nacional a D: el modelo no
+transfiere a Guayas (el naive gana).}
+
+% ======================================================================
+\section{Lo que se corroboró en este hackatón}
+% ======================================================================
+
+Todas las cifras salen de \texttt{results/metrics.csv},
+\texttt{metrics\_extra.csv}, \texttt{lag\_effects.csv},
+\texttt{test\_enso\_rain\_events.csv},
+\texttt{test\_guayas\_opendengue\_metrics.csv},
+\texttt{test\_historia\_extendida.csv},
+\texttt{test\_zonas\_*.csv} y \texttt{tablero\_dos\_piezas.json}.
+No hay dengue sintético en las métricas.
+
+\subsection{Pronóstico nacional (test = 2023, train = 2021--2022)}
+
+\begin{longtable}{@{}l r p{6.4cm}@{}}
+\toprule
+\textbf{Modelo} & \textbf{MAE} & \textbf{Lectura}\\
+\midrule
+\endhead
+XGBoost (AR1+AR2+clima+estación) & 61,3 & Mejor error de \textit{magnitud}.
+Recall de semanas altas: 1 de 13. No sirve como detector de brote.\\
+XGBoost + radiación & 59,3 & Gana 2 puntos de MAE; la precisión de
+semanas altas baja de 1,00 a 0,50.\\
+AR1 solo (GLM-NB) & 89,9 / 87,0 & Peor MAE, mejor detector en el split
+2023 (12 de 13). En walk-forward el AUC de detección cae a $\sim$0,66
+(1 sem) y $\sim$0,54 (4 sem): \textbf{no está corroborado} como aviso
+de brote.\\
+E2 horas de corte (GLM-NB) & 150,2 & Punto de partida del equipo.
+Gana a la media (194) por estacionalidad compartida, no por señal de
+corte.\\
+DLNM clima+cortes / E6 & 288--403 & Peor que el baseline. Sobreajuste
+con $\sim$100 semanas de train.\\
+XGBoost + ONI (ENSO) & 74,1 & Empeora: 2023 es El Niño fuerte; el
+train solo vio La Niña.\\
+XGBoost + lluvia extrema & 66,0 & Empeora.\\
+XGBoost + zona norte/sur del corte & 68,2 & Empeora. Además 20/20
+semanas «sur» también son «norte»: no se separan.\\
+\bottomrule
+\end{longtable}
+
+Importancia del XGBoost ganador: \texttt{ar1\_nac} 45\,\%, semana 24\,\%,
+\texttt{ar2\_nac} 14\,\%, clima $\sim$15\,\%, \texttt{corte\_hn}+\texttt{horas\_corte}
+$\approx 1{,}5$\,\%.
+
+\subsection{Cortes de agua y dengue}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item 21 rezagos de \texttt{corte\_hn} (0--20 semanas): intervalo de
+        confianza al 95\,\% cruza cero en todos
+        (\texttt{lag\_effects.csv}).
+  \item Residuo del AR1 vs horas/intensidad/almacenar: ningún rezago
+        sobrevive; la mayoría $p>0{,}10$.
+  \item Eventos apilados (29 eventos, permutación): residuo
+        \textit{negativo} alrededor del corte ($p$ global 0,004). Signo
+        contrario a la hipótesis. Lectura: sesgo de cobertura de prensa
+        (baja 2021--22, alta 2023--25), no efecto protector.
+\end{itemize}
+
+\nota{Veredicto}{Con la $Y$ disponible, los cortes \textbf{no sirven
+para predecir casos}. Siguen sirviendo para \textbf{decidir a qué barrio
+ir hoy} si hay horas y pedido de almacenar.}
+
+\subsection{Escala Guayas y «zonas»}
+
+En Guayas OpenDengue 2018--2019 (media $\sim$9 casos/semana) y en la
+gaceta 2026 (33 semanas, media 218) \textbf{ningún modelo le gana al
+naive} (repetir la última semana). Panel de 5 provincias costeras,
+2019: AR1 pooled MAE 2,00 vs media 2,16 --- igual de ruido. OpenDengue
+no baja de provincia.
+
+\subsection{Más historia (2015--2022) para ENSO}
+
+OpenDengue nacional ya tiene 2015--2023. Entrenar con 360 semanas en
+lugar de 102 \textbf{empeora} (AR1 91$\to$166; XGBoost 58$\to$120).
+Las medias anuales saltan 13$\times$ (2018 = 60 vs 2015 = 805): se
+mezcla epidemiología con cambios de reporte. No se integra.
+
+\subsection{Cola operativa (Regla A) en 2023}
+
+De 21 cortes de 2023, \textbf{19 no publicaron horas}. La cola A solo
+encendió 2 semanas (2 barrios). El pico nacional de julio--agosto y
+esa cola no coinciden (0 semanas altas $\cap$ cola). El cuello de
+botella de la ruta es la \textbf{duración del corte}, no otro modelo.
+En la evaluación de demo (15-feb-2026) sí hay 6 barrios A: esos
+comunicados sí traen horas.
+
+\subsection{Decisiones tomadas}
+
+\begin{longtable}{@{}p{2.8cm} p{2.2cm} Y@{}}
+\toprule
+\textbf{Decisión} & \textbf{Veredicto} & \textbf{Por qué}\\
+\midrule
+\endhead
+Regla B: 12--20 sem $\to$ 7--14 días & Sí, hecho & Lowe mide clima de
+ciudad, no el tanque. Los lags 12--20 no tienen señal. B sigue
+marcada como hipótesis.\\
+Bajar peso de B vs C & No & C no emite ítems. A ya domina a B
+(piso A 80 $>$ techo B 47).\\
+Regla D $\leftarrow$ XGBoost nacional & No & No hay modelo serializado
+útil; D consume Guayas; un AR de Guayas pierde contra naive.\\
+Más años para ENSO & No (probado) & Empeora el MAE.\\
+Dummy de dengue por zona & No & Justificaría un modelo inventado.
+El oficio al MSP se sostiene con los huecos reales.\\
+Oficio MSP: dengue/LIRAa parroquia o sector & Sí, pendiente & Única $Y$
+que habilita modelo de zonas.\\
+Pregunta de la app & Ruta de hoy & «Con las horas de brigada de esta
+semana, ¿dónde inspeccionar recipientes?» No: «dónde habrá dengue».\\
+\bottomrule
+\end{longtable}
 
 % ======================================================================
 \section{Arquitectura tecnológica}
@@ -511,8 +624,9 @@ Ingesta & Raspadores versionados de los portales de las empresas de agua
 degradación del portal.\\
 Geocodificación & Diccionario topónimo $\to$ polígono construido con
 revisión humana, por ciudad.\\
-Motor de riesgo & DLNM + INLA (R) en el backend; en producción,
-recalibración periódica con hallazgos de brigada.\\
+Motor de riesgo & Reglas A--D en Node (\texttt{reglas.js}). Pronóstico
+nacional: GLM-NB / XGBoost en Python (\texttt{scripts/}). INLA a
+manzana: fuera del MVP.\\
 API / backend & Servicio ligero que expone la cola priorizada por
 distrito; costo de servidor marginal.\\
 App de brigada & PWA \textit{offline-first} (IndexedDB), cola descargable,
@@ -537,8 +651,9 @@ Mapa y calendario de suspensiones & EPMAPS, Interagua y pares municipales &
 Público, sin API: requiere raspado\\
 Órdenes de trabajo y tanqueros & Empresas de agua & Requiere convenio;
 mejora mucho el modelo\\
-Casos de dengue por parroquia & MSP / SIVE-Alerta & Público agregado; el
-detalle requiere convenio\\
+Casos de dengue semanal & OpenDengue (nacional 2015--2023; provincia
+Guayas $\leq$2020) y gaceta ETV (Guayas 2026, gráfico) & Público. Cantón
+Guayaquil y parroquia: \textbf{no} públicos; convenio DNVE / EPI-1\\
 Índices entomológicos (LIRAa) & MSP & Requiere convenio; variable de
 calibración\\
 Grilla de población & INEC, WorldPop, HRSL & Abierto\\
@@ -630,11 +745,12 @@ anillo; cortes eléctricos simultáneos\\
 \bottomrule
 \end{longtable}
 
-\nota{Disponibilidad de datos}{Para el modelo retrospectivo de reglas
-(MVP): \textbf{sí hay datos}, todos públicos (cortes de Interagua, dengue
-semanal por cantón, lluvia CHIRPS/GPM, población WorldPop/INEC). Para el
-DLNM entrenado a escala de manzana: \textbf{no} sin convenio (falta dengue
-por manzana, LIRAa y órdenes de trabajo).}
+\nota{Disponibilidad de datos}{Para la cola de reglas: sí (cortes
+Interagua/prensa + sectores ejemplo; clima ERA5). El dengue semanal
+\textbf{por cantón Guayaquil no está} en las gacetas (solo provincia o
+nación). Para modelar zonas: hace falta oficio a DNVE (EPI-1
+cantón/parroquia) y a Control Vectorial (LIRAa). No se usa data dummy
+para métricas.}
 
 % ======================================================================
 \section{MVP del hackatón}
@@ -642,18 +758,15 @@ por manzana, LIRAa y órdenes de trabajo).}
 
 Tres piezas, ninguna de ellas hardware:
 \begin{enumerate}[leftmargin=1.6em]
-  \item \textbf{Motor de riesgo} entrenado con el histórico real de
-        suspensiones de un cantón y la curva de casos del MSP, con
-        validación retrospectiva del rezago.
-  \item \textbf{App de brigada} como PWA, con cola descargable, captura de
-        hallazgos por predio y sincronización oportunista, demostrable en
-        modo avión.
-  \item \textbf{Panel distrital} con la cobertura de manzanas de alto
-        riesgo y exportación imprimible.
+  \item \textbf{Cola de reglas A--D} sobre cortes reales, con
+        incertidumbre explícita (lista ejemplo incompleta; B es
+        hipótesis; C no emite ítems).
+  \item \textbf{Pronóstico nacional} (MAE) documentado; no define la
+        ruta.
+  \item \textbf{PWA} cola + predio + panel de jefe, demostrable en modo
+        avión.
 \end{enumerate}
-Es alcanzable porque no hay que desplegar nada en territorio ni conseguir
-permisos: el insumo principal ya está publicado en la web de la empresa de
-agua.
+No se promete validación del rezago de Lowe ni mapa de manzanas.
 
 % ======================================================================
 \section{La demo de tres minutos}
@@ -664,23 +777,19 @@ agua.
 \textbf{Tiempo} & \textbf{Qué se muestra y qué se dice}\\
 \midrule
 \endhead
-0:00--0:30 & El calendario de racionamiento real y el comunicado que pide
-mantener reservas. «Es un documento público. Es también una predicción de
-criaderos con meses de anticipación, y nadie en salud lo lee.»\\
-0:30--1:15 & Se superpone la curva real de casos del cantón sobre las
-fechas de corte, mostrando el pico en la ventana predicha. «El brote no
-llegó con la lluvia. Llegó con el rezago de Lowe, contado desde el corte
-de agua.»\\
-1:15--2:00 & Mapa de dónde estuvieron las brigadas vs. la cola priorizada
-por el motor, con la cifra de discrepancia. «Las brigadas trabajaron donde
-el sistema les indicó, y el sistema miraba el reloj equivocado.»\\
-2:00--2:40 & Se pone el teléfono en modo avión, se recorre la cola, se
-registran recipientes en dos predios y se sincroniza al reconectar. «No
-necesita señal, no aprende nada nuevo, no camina un metro más. Solo cambia
-el orden.»\\
-2:40--3:00 & Panel distrital con \% de manzanas de alto riesgo cubiertas
-antes del pico. «No pedimos presupuesto ni hardware. Pedimos leer un
-documento que el Estado ya publica.»\\
+0:00--0:30 & Comunicado real (p.\ ej.\ 8-feb-2026, La Toma) que pide
+reservas. «Documento público. Hoy nadie lo convierte en cola de
+visita.»\\
+0:30--1:15 & Curva nacional 2023 y MAE (XGBoost $\approx$61; AR1
+$\approx$87--90). «Predecimos la carga del país. Los cortes no
+mejoran ese número.»\\
+1:15--2:00 & Cola A del 15-feb-2026 (Guasmo, Trinitaria, \ldots).
+«La ruta sale del corte $\geq 8$\,h + almacenar, no de un mapa de
+casos por barrio ---ese dato no existe.»\\
+2:00--2:40 & Modo avión: abrir barrio, guardar predio. «No necesita
+señal. Cambia el orden de la caminata.»\\
+2:40--3:00 & Pedido al MSP: dengue o LIRAa por parroquia. «Ahí sí se
+modela por zona. Hasta entonces no lo fingimos.»\\
 \bottomrule
 \end{longtable}
 
@@ -693,15 +802,15 @@ documento que el Estado ya publica.»\\
 \textbf{Métrica} & \textbf{Por qué es la correcta}\\
 \midrule
 \endhead
-\% de manzanas de alto riesgo visitadas \textbf{antes} del pico previsto &
-Mide anticipación, que es todo el punto del sistema.\\
-Reducción de índices entomológicos (Índice de Casa/Recipiente/Breteau)
-frente a control & Es lo que la intervención puede mover y lo que
-DengueChat efectivamente movió.\\
-Días de adelanto de la brigada frente a la práctica actual & Cuantifica la
-ganancia operativa directa.\\
-Discrepancia corregida entre cola predicha y despliegue real & Mide el
-cambio de comportamiento inducido.\\
+MAE del dengue nacional (test temporal) & Es la $Y$ pública. Hoy:
+61 (XGBoost) / 87--90 (AR1) vs 194 (media) vs 150 (solo horas).\\
+\% de cortes con duración usable y \% que generan al menos un barrio A &
+Mide si el calendario se vuelve ruta. En 2023, 19 de 21 cortes no
+tenían horas.\\
+Barrios A de la evaluación / jornada de brigada & Cabe o no en el día.
+No es probabilidad de brote.\\
+(Piloto, no hackatón) Índice de casa / Breteau por sector & Calibra
+las reglas. Requiere MSP o censo de brigada en el tiempo.\\
 \bottomrule
 \end{longtable}
 
@@ -792,12 +901,14 @@ servicio intermitente —la norma, no la excepción—, lo que abre Piura
 \textbf{Horizonte} & \textbf{Actividad y criterio de avance}\\
 \midrule
 \endhead
-Hackatón & Motor retrospectivo validado + app offline + panel. Criterio:
-reproducir un brote real con datos públicos.\\
-Mes 1 & Convenio con una empresa de agua (Interagua o EPMAPS) y un
-distrito de salud. Criterio: acceso a órdenes de trabajo y LIRAa.\\
-Meses 2--3 & Ajuste del DLNM+INLA a escala de manzana; validar el rezago
-de 3--5 meses con datos locales. Criterio: AUC/PPV frente a modelo base.\\
+Hackatón & Cola A--D + PWA + MAE nacional. Criterio: no fingir $Y$ de
+barrio; documentar que el rezago de cortes no aparece a escala
+disponible.\\
+Mes 1 & Oficio DNVE (EPI-1 cantón/parroquia) + Control Vectorial
+(LIRAa) + Interagua (horas y usuarios por sector). Criterio: $Y$
+espacial real.\\
+Meses 2--3 & Recién entonces DLNM o clasificador por parroquia/sector.
+Criterio: gana al naive en esa escala. Si no, se queda en reglas.\\
 Meses 4--6 & Piloto operativo de una temporada en un distrito. Criterio:
 reducción de índices entomológicos frente a control.\\
 Meses 6--12 & Expansión Nivel 1 (mismos cantones de Interagua) y
@@ -814,11 +925,10 @@ preparación de conectores Nivel 2.\\
 \textbf{Riesgo} & \textbf{Severidad} & \textbf{Mitigación honesta}\\
 \midrule
 \endhead
-La curva de rezago de 3--5 meses viene de Brasil y Barbados y puede no
-replicarse con datos ecuatorianos. & \textcolor{rojovs}{Alta} & Es el
-primer entregable del piloto, no un supuesto. Si no se replica, el
-producto se reduce a focalización espacial, que sigue teniendo valor
-(Huaquillas, Machala).\\
+La curva de 3--5 meses no se ve con $Y$ nacional/provincial. &
+\textcolor{rojovs}{Alta} & Ya ocurrió. El producto se redujo a cola
+operativa + pronóstico nacional. El rezago se vuelve a probar solo si
+llega dengue o LIRAa por parroquia.\\
 \addlinespace
 El dato de la empresa de agua puede ser de mala calidad; los cortes no
 programados quizá no se registren. & \textcolor{rojovs}{Alta} & Versionado
@@ -854,21 +964,16 @@ histórico de brigada y la relación institucional.\\
   pronóstico hidrológico nacional, malla offline resuelta y apps de
   reporte ciudadano probadas (y fallidas). La mayoría de propuestas del
   hackatón reconstruirán una de esas tres.
-  \item \textbf{El insight no se obtiene por lluvia de ideas.} Exige haber
-  cruzado tres literaturas que no se citan entre sí (Huaquillas, Lowe, y
-  el calendario de la empresa de agua) más una fuente administrativa que
-  nadie considera un dato científico.
-  \item \textbf{Responde bien a las preguntas incómodas.} No asume
-  internet, electricidad, smartphones en la comunidad ni alfabetización
-  digital; no despliega hardware; no pide presupuesto nuevo; no exige
-  cambiar de hábito. El brigadista camina las mismas manzanas, en otro
-  orden.
-  \item \textbf{El momento es exacto.} Más del 90\,\% de probabilidad de un
-  El Niño muy fuerte para fin de 2026, mayor expresión entre noviembre y
-  diciembre, 11 semanas de dengue por encima de 2025, 91,5\,\% de
-  resistencia al insecticida, y fondos de acción anticipatoria buscando
-  disparadores antes de noviembre. La ventana de 3--5 meses que el sistema
-  explota se está abriendo mientras se presenta el proyecto.
+  \item \textbf{Probamos la hipótesis incómoda y reportamos el no.} Los
+  cortes no mejoran el MAE nacional. Un jurado técnico respeta más eso
+  que un DLNM por manzana sin $Y$.
+  \item \textbf{La app no exige un modelo que no existe.} El brigadista
+  camina barrios del comunicado, sin señal. El jefe ve cobertura y el
+  MAE del país. El hueco (parroquia/LIRAa) está escrito, no maquillado.
+  \item \textbf{El momento sigue siendo ahora.} El Niño, dengue por
+  encima de 2025, resistencia a insecticida. Lo que se puede hacer
+  \textit{esta semana} es tapar tanques donde acaba de cortarse el agua
+  $\geq 8$\,h, no esperar un mapa de casos que el MSP no publica.
 \end{enumerate}
 
 % ======================================================================
@@ -902,6 +1007,11 @@ histórico de brigada y la relación institucional.\\
   \item INSPI (2025). Gaceta de resistencia a insecticidas de
   \textit{Ae. aegypti}, Ecuador.
   \item MSP Ecuador. Gacetas Epidemiológicas SIVE-Alerta 2025--2026.
+  \item OpenDengue. National y Spatial extract V1.3 (Clarke \textit{et al.},
+  \textit{Scientific Data}, 2024).
+  \item Resultados propios del repo: \texttt{results/metrics.csv},
+  \texttt{metrics\_extra.csv}, \texttt{lag\_effects.csv},
+  \texttt{tablero\_dos\_piezas.json} (septiembre 2026).
   \item CEPAL. El Niño 1997--1998 en Ecuador (evaluación de daños).
 \end{itemize}
 

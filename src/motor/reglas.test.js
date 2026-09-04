@@ -81,12 +81,12 @@ ok("C no inventa barrios — solo contexto", () => {
   assert.ok(c.precip_mm_acum > 50);
 });
 
-ok("Regla B en ventana 12–20 semanas marcada como hipótesis", () => {
-  // 15-feb-2026 menos ~16 semanas ≈ 26-oct-2025
+ok("Regla B en ventana 7–14 días marcada como hipótesis", () => {
+  // 15-feb-2026 menos 11 días = 04-feb-2026 (ciclo huevo→adulto de Aedes aegypti)
   const r = clasificarBarrio(
     {
       nombre: "Guayacanes",
-      fecha_corte: "2025-10-20",
+      fecha_corte: "2026-02-04",
       duracion_horas: "",
       duracion_horas_num: null,
       pidio_almacenar: "NA",
@@ -99,6 +99,36 @@ ok("Regla B en ventana 12–20 semanas marcada como hipótesis", () => {
   assert.strictEqual(r.hipotesis, true);
   assert.strictEqual(r.requiere_confirmacion_humana, true);
   assert.ok(r.justificacion.toLowerCase().includes("hipótesis") || r.justificacion.toLowerCase().includes("hipotesis"));
+  assert.ok(r.incertidumbre.includes("regla_b_hipotesis_no_validada_ecuador"));
+  assert.ok(r.incertidumbre.includes("regla_b_sin_metricas_no_existe_dengue_por_barrio"));
+});
+
+ok("Corte de 12–20 semanas ya NO genera regla B", () => {
+  // Ventana vieja (rezago Lowe): sin efecto significativo en results/lag_effects.csv
+  const r = clasificarBarrio(
+    {
+      nombre: "Guayacanes",
+      fecha_corte: "2025-10-20",
+      duracion_horas_num: null,
+      pidio_almacenar: "NA",
+    },
+    "2026-02-15"
+  );
+  assert.strictEqual(r.regla, null);
+});
+
+ok("B nunca supera a A en puntaje (techo B < piso A)", () => {
+  const base = { nombre: "Z", pidio_almacenar: "si", duracion_horas_num: 8 };
+  const a = clasificarBarrio({ ...base, fecha_corte: "2026-02-08" }, "2026-02-15",
+    { tendencia: { tendencia: "estable" } });
+  const b = clasificarBarrio(
+    { nombre: "Z", fecha_corte: "2026-02-08", duracion_horas_num: null, pidio_almacenar: "NA" },
+    "2026-02-15",
+    { tendencia: { tendencia: "sube" } }
+  );
+  assert.strictEqual(a.regla, "A");
+  assert.strictEqual(b.regla, "B");
+  assert.ok(b.puntaje < a.puntaje, `B=${b.puntaje} debe ser < A=${a.puntaje}`);
 });
 
 ok("Sin almacenar en 0–14 d no aplica A", () => {

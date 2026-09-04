@@ -334,6 +334,26 @@
     $("kpi-regla").textContent = "A";
 
     const d = COLA.contexto_cantonal && COLA.contexto_cantonal.dengue;
+    const dp = COLA.dos_piezas;
+    const box = $("dos-piezas");
+    if (dp && dp.pieza_1) {
+      $("dp1-mae").textContent = dp.pieza_1.mae_test_2023 != null ? String(dp.pieza_1.mae_test_2023) : "—";
+      $("dp1-sub").textContent = "MAE nacional 2023 (AR1) · no define barrio";
+      $("dp2-cola").textContent = String((COLA.meta && COLA.meta.n_regla_a) || aItems.length);
+      const p2 = dp.pieza_2 || {};
+      const sinHoras = p2.cortes_2023_sin_horas;
+      const n23 = p2.cortes_2023;
+      $("dp2-sub").textContent = "barrios A esta evaluación";
+      $("dp-nota").textContent =
+        (dp.nota || "") +
+        (n23 != null
+          ? " En 2023, " + sinHoras + " de " + n23 + " cortes no tenían horas: la cola se queda sin entrada, no el modelo."
+          : "");
+      if (box) box.style.display = "";
+    } else if (box) {
+      box.style.display = "none";
+    }
+
     $("nota-d").innerHTML =
       "<strong>Regla D:</strong> tendencia " +
       (d ? d.tendencia : "unknown") +

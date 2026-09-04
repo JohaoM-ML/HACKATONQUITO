@@ -3,9 +3,22 @@
  * Reglas exactas de division-tareas.txt — no se inventan otras.
  *
  * A  corte ≥ 8 h  hace 0–14 días  + pidió almacenar → COLA ESTA SEMANA
- * B  corte hace 12–20 semanas → ALERTA TARDÍA (hipótesis Lowe, no hecho EC)
+ * B  corte hace 7–14 días, sin confirmar almacenamiento/duración → VENTANA DE CRIADERO (hipótesis)
  * C  lluvia/temporada 0–8 sem, sin corte → MINGA LLANTAS (sin catálogo = sin ítems)
  * D  cantón con casos subiendo → +prioridad, NO define barrio
+ *
+ * CAMBIO DE VENTANA EN REGLA B (antes 12–20 semanas, rezago de Lowe et al. 2017):
+ * la ventana original se descartó por dos motivos, ninguno de ellos una mejora de métrica
+ * (la Pieza 2 no tiene métricas y no puede tenerlas sin dengue/infestación por barrio):
+ *   1. Incoherencia de mecanismo. El rezago 12–20 sem de Lowe et al. 2017 (Machala) mide
+ *      CLIMA → dinámica poblacional del mosquito a escala de ciudad. No mide cuánto tarda
+ *      un tanque con agua almacenada en producir adultos. Ese proceso es el ciclo de vida
+ *      de Aedes aegypti: huevo→adulto ≈ 7–14 días en condiciones cálidas.
+ *   2. Ausencia de señal en los datos propios. results/lag_effects.csv (DLNM E4 sobre
+ *      corte_hn, modalidad NAT, lags 0–20 semanas) tiene el IC 95 % cruzando cero en TODOS
+ *      los lags, incluido 12–20. No hay evidencia ecuatoriana que sostenga esa ventana.
+ * B sigue siendo HIPÓTESIS sin validar: cambiar la ventana la hace biológicamente coherente,
+ * NO la convierte en un hallazgo. Requiere confirmación humana igual que antes.
  */
 
 "use strict";
@@ -64,7 +77,8 @@ function pidioAlmacenar(barrio) {
 
 /**
  * Tendencia D: últimas 4 semanas de casos antes o en la semana de evaluación.
- * sube = cada semana ≥ anterior y al menos un incremento; o último > primero con ≥2 alzas.
+ * sube = ≥2 incrementos semana-a-semana Y última > primera. baja = simétrico.
+ * Umbral operativo transparente, no calibrado contra brotes observados.
  * Sin inventar: si faltan datos → unknown.
  */
 function tendenciaCantonal(casosSemanas) {
@@ -239,25 +253,36 @@ function clasificarBarrio(barrio, fechaEval, contexto = {}) {
   }
 
   // --- Regla B ---
-  const cumpleB = sem >= 12 && sem <= 20;
+  // Ventana 7–14 d = ciclo huevo→adulto de Aedes aegypti (ver nota de cabecera).
+  // A tiene precedencia, así que B recoge los cortes de esa ventana que NO cumplen
+  // el umbral ≥8 h y/o el pedido explícito de almacenar (o son unknown).
+  const cumpleB = dias >= 7 && dias <= 14;
   if (cumpleB) {
-    let puntaje = 40 + Math.round((20 - sem) * 2);
+    // Techo de B (47) muy por debajo del piso de A (80): B nunca desplaza a A.
+    let puntaje = 35 + Math.round(14 - dias);
     if (aplicaD) puntaje += 5;
     return {
       regla: "B",
-      accion: "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
+      accion: "Revisar recipientes con agua almacenada del corte (hipótesis, no hecho EC).",
       justificacion:
-        `Corte hace ~${Math.round(sem)} semanas (ventana 12–20). ` +
-        `Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. ` +
+        `Corte hace ${dias} días (ventana 7–14 d = ciclo huevo→adulto de Aedes aegypti). ` +
+        `No cumple A: ${horas == null ? "duración desconocida" : horas < 8 ? `duración ${horas} h < 8 h` : "sin pedido explícito de almacenar"}. ` +
+        `Regla B = hipótesis biológica; NO validada con datos ecuatorianos en este proyecto ` +
+        `(lags 0–20 sem de corte_hn sin efecto significativo en results/lag_effects.csv). ` +
         `Requiere confirmación humana antes de priorizar como hallazgo.`,
       puntaje,
       evidencias,
-      incertidumbre: [...incertidumbre, "regla_b_hipotesis_no_validada_ecuador"],
+      incertidumbre: [
+        ...incertidumbre,
+        "regla_b_hipotesis_no_validada_ecuador",
+        "regla_b_ventana_biologica_sin_calibrar",
+        "regla_b_sin_metricas_no_existe_dengue_por_barrio",
+      ],
       confianza: barrio.confianza || "B",
       origen_dato: [...new Set([...origen_dato, "inferido"])],
       aplica_d: aplicaD,
       hipotesis: true,
-      label_regla: "ALERTA TARDÍA (hipótesis)",
+      label_regla: "VENTANA DE CRIADERO (hipótesis)",
       requiere_confirmacion_humana: true,
     };
   }
@@ -269,13 +294,11 @@ function clasificarBarrio(barrio, fechaEval, contexto = {}) {
     justificacion:
       dias < 0
         ? "Fecha de corte posterior a la evaluación."
-        : horas == null
-          ? "Duración desconocida: no se puede aplicar umbral ≥8 h. Pendiente de validación."
-          : dias > 14 && (sem < 12 || sem > 20)
-            ? `Fuera de ventanas A (0–14 d) y B (12–20 sem). Días desde corte: ${dias}.`
-            : almacenar !== true && dias <= 14
-              ? "Dentro de 0–14 días pero sin pedido explícito de almacenar (o unknown). No aplica A."
-              : "Sin regla A/B aplicable.",
+        : dias > 14
+          ? `Fuera de ventanas A (0–14 d) y B (7–14 d). Días desde corte: ${dias}.`
+          : horas == null
+            ? "Duración desconocida: no se puede aplicar umbral ≥8 h. Pendiente de validación."
+            : "Corte de 0–6 días: aún dentro de A por fecha, pero sin ≥8 h y/o sin pedido de almacenar. No aplica A ni B.",
     puntaje: 0,
     evidencias,
     incertidumbre,

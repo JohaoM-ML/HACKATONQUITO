@@ -6,6 +6,43 @@
   "nota_modelo": "El modelo estadístico conjunto (clima+cortes) empeoró MAE 288→394 en experimentos NAT. No se afirma rezago 3–5 meses validado en Ecuador. Validar rezago = mes 1 del piloto.",
   "nota_datos": "Sectores tomados exclusivamente de sectores_ejemplo del CSV. Lista incompleta por diseño (ejemplos de prensa). lat/lon=null. Predios no existen en datos: se registran en campo.",
   "puntaje_nota": "Ranking operativo transparente, no calibrado, no es probabilidad de brote.",
+  "dos_piezas": {
+    "nota": "Dos preguntas, dos Y publicas. Pieza 1 = dengue nacional (MAE). Pieza 2 = cola de cortes (cobertura). Ninguna predice dengue por barrio.",
+    "pieza_1": {
+      "mae_test_2023": 87,
+      "n_test": 52,
+      "familia": "nb",
+      "alpha_nb": 0.038636835222508055,
+      "intercept": -10.192469646927224,
+      "coef_ar1": 0.002915241549303697,
+      "formula": "mu = exp(intercept + coef_ar1 * casos(t-1) + log(poblacion))",
+      "nota": "Pronostico NACIONAL. No define barrio. No usa cortes."
+    },
+    "pieza_2": {
+      "n_eventos_corte": 63,
+      "pct_con_duracion": 41.3,
+      "pct_pidio_almacenar": 69.8,
+      "pct_con_sectores_nombrados": 100,
+      "semanas_2023_con_cola_a": 2,
+      "barrio_semanas_a_2023": 4,
+      "barrios_distintos_a_2023": 2,
+      "barrios_unicos_en_csv": 191,
+      "visitas_si_se_recorre_catalogo_cada_semana": 9932,
+      "pct_trabajo_evitado_vs_visitar_todos_cada_semana": 99.96,
+      "cortes_2023": 21,
+      "cortes_2023_con_duracion": 2,
+      "cortes_2023_sin_horas": 19,
+      "cortes_2023_pidio_almacenar": 17,
+      "regla": "A = >=8 h + almacenar + 0-14 dias. Ranking operativo, no P(brote)."
+    },
+    "coincidencia_2023": {
+      "umbral_semana_alta_p75": 662.5,
+      "semanas_alta_y_cola": 0,
+      "semanas_alta_sin_cola": 13,
+      "semanas_cola_sin_alta": 2,
+      "nota": "Conteo descriptivo en el mismo calendario. NO es evidencia de que la cola predice dengue ni lo contrario."
+    }
+  },
   "contexto_cantonal": {
     "dengue": {
       "tendencia": "estable",
@@ -380,236 +417,6 @@
       "aplica_d": false,
       "motivo_corte": "mantenimiento subestacion 69kV planta La Toma + rehabilitacion acueducto 1050mm",
       "prioridad": 6
-    },
-    {
-      "id": "alborada-13",
-      "nombre": "Alborada 13",
-      "zona": "Norte",
-      "lat": null,
-      "lon": null,
-      "fecha_corte": "2025-10-20",
-      "duracion_horas": null,
-      "duracion_horas_num": null,
-      "pidio_almacenar": false,
-      "regla": "B",
-      "puntaje": 46,
-      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
-      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
-      "fuente": "El Universo",
-      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
-      "confianza": "B",
-      "origen_dato": [
-        "observado",
-        "inferido"
-      ],
-      "incertidumbre": [
-        "duracion_horas_desconocida",
-        "pidio_almacenar_desconocido",
-        "lista_sectores_ejemplo_incompleta",
-        "regla_b_hipotesis_no_validada_ecuador"
-      ],
-      "evidencias": [
-        {
-          "campo": "dias_desde_corte",
-          "valor": 118,
-          "origen": "derivado"
-        },
-        {
-          "campo": "semanas_desde_corte",
-          "valor": 16.9,
-          "origen": "derivado"
-        }
-      ],
-      "hipotesis": true,
-      "requiere_confirmacion_humana": true,
-      "label_regla": "ALERTA TARDÍA (hipótesis)",
-      "aplica_d": false,
-      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
-      "prioridad": 7
-    },
-    {
-      "id": "guayacanes",
-      "nombre": "Guayacanes",
-      "zona": "Norte",
-      "lat": null,
-      "lon": null,
-      "fecha_corte": "2025-10-20",
-      "duracion_horas": null,
-      "duracion_horas_num": null,
-      "pidio_almacenar": false,
-      "regla": "B",
-      "puntaje": 46,
-      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
-      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
-      "fuente": "El Universo",
-      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
-      "confianza": "B",
-      "origen_dato": [
-        "observado",
-        "inferido"
-      ],
-      "incertidumbre": [
-        "duracion_horas_desconocida",
-        "pidio_almacenar_desconocido",
-        "lista_sectores_ejemplo_incompleta",
-        "regla_b_hipotesis_no_validada_ecuador"
-      ],
-      "evidencias": [
-        {
-          "campo": "dias_desde_corte",
-          "valor": 118,
-          "origen": "derivado"
-        },
-        {
-          "campo": "semanas_desde_corte",
-          "valor": 16.9,
-          "origen": "derivado"
-        }
-      ],
-      "hipotesis": true,
-      "requiere_confirmacion_humana": true,
-      "label_regla": "ALERTA TARDÍA (hipótesis)",
-      "aplica_d": false,
-      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
-      "prioridad": 8
-    },
-    {
-      "id": "rio-sol",
-      "nombre": "Rio Sol",
-      "zona": "Norte",
-      "lat": null,
-      "lon": null,
-      "fecha_corte": "2025-10-20",
-      "duracion_horas": null,
-      "duracion_horas_num": null,
-      "pidio_almacenar": false,
-      "regla": "B",
-      "puntaje": 46,
-      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
-      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
-      "fuente": "El Universo",
-      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
-      "confianza": "B",
-      "origen_dato": [
-        "observado",
-        "inferido"
-      ],
-      "incertidumbre": [
-        "duracion_horas_desconocida",
-        "pidio_almacenar_desconocido",
-        "lista_sectores_ejemplo_incompleta",
-        "regla_b_hipotesis_no_validada_ecuador"
-      ],
-      "evidencias": [
-        {
-          "campo": "dias_desde_corte",
-          "valor": 118,
-          "origen": "derivado"
-        },
-        {
-          "campo": "semanas_desde_corte",
-          "valor": 16.9,
-          "origen": "derivado"
-        }
-      ],
-      "hipotesis": true,
-      "requiere_confirmacion_humana": true,
-      "label_regla": "ALERTA TARDÍA (hipótesis)",
-      "aplica_d": false,
-      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
-      "prioridad": 9
-    },
-    {
-      "id": "samanes",
-      "nombre": "Samanes",
-      "zona": "Norte",
-      "lat": null,
-      "lon": null,
-      "fecha_corte": "2025-10-20",
-      "duracion_horas": null,
-      "duracion_horas_num": null,
-      "pidio_almacenar": false,
-      "regla": "B",
-      "puntaje": 46,
-      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
-      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
-      "fuente": "El Universo",
-      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
-      "confianza": "B",
-      "origen_dato": [
-        "observado",
-        "inferido"
-      ],
-      "incertidumbre": [
-        "duracion_horas_desconocida",
-        "pidio_almacenar_desconocido",
-        "lista_sectores_ejemplo_incompleta",
-        "regla_b_hipotesis_no_validada_ecuador"
-      ],
-      "evidencias": [
-        {
-          "campo": "dias_desde_corte",
-          "valor": 118,
-          "origen": "derivado"
-        },
-        {
-          "campo": "semanas_desde_corte",
-          "valor": 16.9,
-          "origen": "derivado"
-        }
-      ],
-      "hipotesis": true,
-      "requiere_confirmacion_humana": true,
-      "label_regla": "ALERTA TARDÍA (hipótesis)",
-      "aplica_d": false,
-      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
-      "prioridad": 10
-    },
-    {
-      "id": "union-civica",
-      "nombre": "Union Civica",
-      "zona": "Norte",
-      "lat": null,
-      "lon": null,
-      "fecha_corte": "2025-10-20",
-      "duracion_horas": null,
-      "duracion_horas_num": null,
-      "pidio_almacenar": false,
-      "regla": "B",
-      "puntaje": 46,
-      "accion": "Alerta de brote tardío: revisar recipientes (hipótesis, no hecho EC).",
-      "justificacion": "Corte hace ~17 semanas (ventana 12–20). Regla B = hipótesis de rezago Lowe; NO validada con datos ecuatorianos en este proyecto. Requiere confirmación humana antes de priorizar como hallazgo.",
-      "fuente": "El Universo",
-      "fuente_url": "https://www.eluniverso.com/guayaquil/comunidad/corte-de-agua-norte-de-guayaquil-estos-son-los-sectores-que-no-tendran-servicio-nota/",
-      "confianza": "B",
-      "origen_dato": [
-        "observado",
-        "inferido"
-      ],
-      "incertidumbre": [
-        "duracion_horas_desconocida",
-        "pidio_almacenar_desconocido",
-        "lista_sectores_ejemplo_incompleta",
-        "regla_b_hipotesis_no_validada_ecuador"
-      ],
-      "evidencias": [
-        {
-          "campo": "dias_desde_corte",
-          "valor": 118,
-          "origen": "derivado"
-        },
-        {
-          "campo": "semanas_desde_corte",
-          "valor": 16.9,
-          "origen": "derivado"
-        }
-      ],
-      "hipotesis": true,
-      "requiere_confirmacion_humana": true,
-      "label_regla": "ALERTA TARDÍA (hipótesis)",
-      "aplica_d": false,
-      "motivo_corte": "posible fuga en tuberia 600mm a la altura del colegio Tnte. Hugo Ortiz",
-      "prioridad": 11
     }
   ],
   "cola_brigada": [
@@ -620,18 +427,12 @@
     "la-floresta",
     "las-malvinas"
   ],
-  "alertas_hipotesis": [
-    "alborada-13",
-    "guayacanes",
-    "rio-sol",
-    "samanes",
-    "union-civica"
-  ],
+  "alertas_hipotesis": [],
   "meta": {
     "n_sectores_csv_total": 257,
     "n_candidatos_unicos": 176,
     "n_regla_a": 6,
-    "n_regla_b": 5,
+    "n_regla_b": 0,
     "n_regla_c": 0,
     "fuente_cortes": "data/clean/cortes_interagua_clean.csv",
     "barrios_cortes": "data/barrios_cortes.csv"
