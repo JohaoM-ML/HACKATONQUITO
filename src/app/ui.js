@@ -25,6 +25,23 @@
 
   const $ = (id) => document.getElementById(id);
 
+  // Posición ilustrativa en el pseudo-mapa (no hay lat/lon en los datos).
+  // Norte a la izquierda, Sur a la derecha junto a la "isla" del SVG —
+  // isla-trinitaria cae sobre el accidente geográfico a propósito.
+  const POS_MAPA = {
+    "alborada-13": [45, 45],
+    "guayacanes": [85, 35],
+    "rio-sol": [60, 90],
+    "samanes": [100, 75],
+    "union-civica": [40, 120],
+    "cristo-del-consuelo": [150, 140],
+    "fertisa": [185, 165],
+    "guasmo": [150, 185],
+    "isla-trinitaria": [228, 80],
+    "la-floresta": [190, 110],
+    "las-malvinas": [165, 60],
+  };
+
   function parseHash() {
     const raw = (location.hash || "#/").replace(/^#/, "") || "/";
     const parts = raw.split("/").filter(Boolean);
@@ -95,6 +112,7 @@
           ]
         : [
             { id: "resumen", label: "Resumen", href: "#/jefe/resumen", icon: "i-chart" },
+            { id: "mapa", label: "Mapa", href: "#/jefe/mapa", icon: "i-map" },
             { id: "cola", label: "Cola", href: "#/jefe/cola", icon: "i-list" },
             { id: "avisos", label: "Avisos", href: "#/jefe/avisos", icon: "i-wa" },
             { id: "ajustes", label: "Ajustes", href: "#/jefe/ajustes", icon: "i-gear" },
@@ -331,6 +349,74 @@
       COLA.canton + " · evaluación " + COLA.generado_en + " · " + COLA.empresa_agua;
   }
 
+  /* ---------- JEFE MAPA ---------- */
+  function posParaBarrio(b, i) {
+    if (POS_MAPA[b.id]) return POS_MAPA[b.id];
+    const col = i % 4;
+    const row = Math.floor(i / 4);
+    return [40 + col * 45, 35 + row * 45];
+  }
+
+  function renderJefeMapa() {
+    setNav("Mapa de riesgo", null);
+    setTabs("jefe", "mapa");
+    showView("view-jefe-mapa");
+
+    const barrios = COLA.barrios || [];
+    $("mapa-kpi-a").textContent = barrios.filter((b) => b.regla === "A").length;
+    $("mapa-kpi-b").textContent = barrios.filter((b) => b.regla === "B").length;
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    const zonas = $("mapaZonas");
+    zonas.innerHTML = "";
+    barrios.forEach((b, i) => {
+      const [cx, cy] = posParaBarrio(b, i);
+      const c = document.createElementNS(svgNS, "circle");
+      c.setAttribute("cx", cx);
+      c.setAttribute("cy", cy);
+      c.setAttribute("r", b.regla === "A" ? 16 : 12);
+      c.setAttribute("fill", b.regla === "A" ? "#E5352B" : "#EAB308");
+      c.setAttribute("fill-opacity", "0.85");
+      c.classList.add("zona-bubble");
+      zonas.appendChild(c);
+    });
+
+    const box = $("lista-mapa-jefe");
+    const top = [...barrios].sort((a, z) => (z.puntaje || 0) - (a.puntaje || 0)).slice(0, 6);
+    if (!top.length) {
+      box.innerHTML = '<p class="empty">Sin datos.</p>';
+      return;
+    }
+    box.innerHTML =
+      '<div class="group">' +
+      top
+        .map((b, i) => {
+          return (
+            '<div class="row with-avatar' +
+            (i ? " row-sep" : "") +
+            '">' +
+            '<span class="avatar ' +
+            (b.regla === "A" ? "p1" : "p2") +
+            '">' +
+            inicial(b.nombre) +
+            "</span>" +
+            '<span class="info"><span class="name">' +
+            b.nombre +
+            '</span><span class="meta"><span>' +
+            (b.zona || "") +
+            " · puntaje " +
+            b.puntaje +
+            '</span><span class="badge' +
+            (b.regla === "B" ? " b" : "") +
+            '">Regla ' +
+            b.regla +
+            "</span></span></span></div>"
+          );
+        })
+        .join("") +
+      "</div>";
+  }
+
   /* ---------- JEFE COLA ---------- */
   function renderJefeCola() {
     setNav("Cola", null);
@@ -476,6 +562,7 @@
         VS.setRol(null);
         return go("/");
       }
+      if (parts[1] === "mapa") return renderJefeMapa();
       if (parts[1] === "cola") return renderJefeCola();
       if (parts[1] === "avisos") return renderAvisos();
       if (parts[1] === "ajustes") return renderAjustes("jefe");
