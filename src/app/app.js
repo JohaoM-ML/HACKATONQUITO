@@ -1,5 +1,5 @@
 /**
- * VENTANA SECA — app compartida: cola + IndexedDB + offline
+ * VENTANA SECA — store: cola + IndexedDB + rol + offline
  */
 (function (global) {
   "use strict";
@@ -9,6 +9,7 @@
   const STORE_COLA = "cola";
   const STORE_PREDIOS = "predios";
   const URL_COLA = "./data/cola.json";
+  const ROL_KEY = "vs-rol";
 
   function openDb() {
     return new Promise((resolve, reject) => {
@@ -97,13 +98,27 @@
     return idbGetAll(STORE_PREDIOS);
   }
 
+  function getRol() {
+    const r = localStorage.getItem(ROL_KEY);
+    return r === "brigadista" || r === "jefe" ? r : null;
+  }
+
+  function setRol(rol) {
+    if (rol !== "brigadista" && rol !== "jefe") {
+      localStorage.removeItem(ROL_KEY);
+      return null;
+    }
+    localStorage.setItem(ROL_KEY, rol);
+    return rol;
+  }
+
   function setupOfflineUI() {
     const banner = document.getElementById("offline-banner");
     const sync = document.getElementById("sync-banner");
     function paint() {
-      if (banner) banner.classList.toggle("on", !navigator.onLine);
-      if (sync && navigator.onLine) {
-        // se muestra al reconectar vía evento
+      if (banner) {
+        banner.classList.toggle("on", !navigator.onLine);
+        banner.classList.toggle("show", !navigator.onLine);
       }
     }
     window.addEventListener("offline", paint);
@@ -146,17 +161,39 @@
     return (data.barrios || []).filter((b) => b.regla === "B");
   }
 
+  function mensajeWhatsApp(b) {
+    const dur = formatDuracion(b);
+    const fecha = b.fecha_corte || "fecha unknown";
+    return (
+      "Aviso de VENTANA SECA. Hoy hubo corte de agua en " +
+      b.nombre +
+      " (" +
+      dur +
+      " reportadas, " +
+      fecha +
+      "). Si llenó tanques o tinas, TÁPELOS. Un recipiente destapado cría Aedes en pocos días."
+    );
+  }
+
+  function waMeUrl(texto) {
+    return "https://wa.me/?text=" + encodeURIComponent(texto);
+  }
+
   global.VS = {
     loadCola,
     savePredio,
     prediosPorBarrio,
     todosPredios,
+    getRol,
+    setRol,
     setupOfflineUI,
     registerSW,
     origenLabel,
     formatDuracion,
     colaBrigada,
     alertasB,
+    mensajeWhatsApp,
+    waMeUrl,
     URL_COLA,
   };
 })(window);

@@ -2,89 +2,241 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#084A24">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#F2F2F7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>VENTANA SECA</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="stylesheet" href="./estilos.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" media="print" onload="this.media='all'">
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 17V10M12 17V7M16 17v-4"/></symbol>
+    <symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.5 7.3L3 20l1.3-5.2A8.4 8.4 0 1 1 21 11.5z"/><path d="M8.5 9.5c.3-.6.5-.6.8-.6h.6c.2 0 .4.1.5.4l.7 1.7c.1.2 0 .4-.1.6l-.3.4c-.1.2-.1.4.1.6.4.5 1 1.1 1.6 1.5.5.4 1 .7 1.2.5l.5-.4c.2-.1.4-.1.6 0l1.6.8c.3.1.4.3.4.5v.6c0 .3 0 .5-.6.8A4.5 4.5 0 0 1 12 16a6 6 0 0 1-3.5-6.5z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  </defs>
+</svg>
+
+<div class="app-shell">
   <div id="offline-banner" class="offline-banner">SIN CONEXIÓN · se usa la copia en este dispositivo</div>
   <div id="sync-banner" class="sync-banner"></div>
 
-  <header class="topbar">
-    <div>
-      <p class="brand">VENTANA SECA</p>
-      <div class="meta">Guayaquil · Interagua → orden de trabajo</div>
-    </div>
-    <nav>
-      <a href="./index.html" class="active">Inicio</a>
-      <a href="./brigada.html">Brigada</a>
-      <a href="./panel.html">Panel</a>
-    </nav>
+  <header class="nav-bar">
+    <button type="button" class="nav-back" id="nav-back"><span class="chev">‹</span> Atrás</button>
+    <div class="nav-title" id="nav-title">VENTANA SECA</div>
   </header>
 
-  <main class="wrap">
-    <p class="eyebrow">Producto operativo · demo hackatón</p>
-    <h1>Leemos un documento que Interagua ya publica y lo convertimos en orden de trabajo.</h1>
-    <p class="lead">
-      No pedimos un sensor nuevo. Tomamos el comunicado de corte de agua,
-      aplicamos reglas A–D y entregamos la cola que camina el brigadista — también sin red.
-    </p>
+  <div id="error" class="error-box"></div>
 
-    <div class="ficha" id="ficha-comunicado">
-      <p class="eyebrow">Entrada observada</p>
-      <h2>Comunicado / prensa · 8 feb 2026</h2>
-      <p>Mantenimiento subestación 69 kV planta La Toma + rehabilitación acueducto 1050 mm. Pidieron mantener reservas.</p>
-      <dl>
-        <dt>Fecha corte</dt><dd>2026-02-08</dd>
-        <dt>Duración</dt><dd>11–16 h (rango reportado; umbral usa 13.5 h)</dd>
-        <dt>Sectores en CSV</dt><dd>Guasmo; Isla Trinitaria; Cristo del Consuelo; La Floresta; Fertisa; Las Malvinas <em>(lista ejemplo, puede ser incompleta)</em></dd>
-        <dt>Fuente</dt><dd><a id="fuente-url" href="https://www.primicias.ec/guayaquil/corte-agua-guayaquil-horarios-sectores-donde-cortes-domingo-interagua-115356/" target="_blank" rel="noopener">Primicias</a> · confianza <strong>B</strong> (prensa)</dd>
-        <dt>Evaluación</dt><dd>2026-02-15 → motor de reglas → cola.json</dd>
-      </dl>
+  <div class="content">
+    <!-- ROLE PICKER -->
+    <section class="view" id="view-role">
+      <div class="view-pad">
+        <h1 class="large-title">¿Quién usa el teléfono?</h1>
+        <p class="subhead">Dos roles. Misma cola. Sin login: el rol se guarda solo en este dispositivo.</p>
+
+        <button type="button" class="role-card" id="btn-rol-brigada">
+          <span class="role-icon brigada" aria-hidden="true">🚶</span>
+          <span>
+            <h3>Soy brigadista</h3>
+            <p>Cola de hoy, visitar barrios y registrar predios — también sin red.</p>
+          </span>
+        </button>
+
+        <button type="button" class="role-card" id="btn-rol-jefe">
+          <span class="role-icon jefe" aria-hidden="true">📋</span>
+          <span>
+            <h3>Soy jefe de brigada</h3>
+            <p>Cobertura, cola completa y avisos por WhatsApp a los barrios.</p>
+          </span>
+        </button>
+
+        <div class="callout warn">
+          <strong>Producto, no predicción.</strong>
+          Leemos un comunicado que Interagua ya publica y lo convertimos en orden de trabajo.
+          Validar el rezago epidemiológico en Ecuador es el mes 1 del piloto.
+        </div>
+      </div>
+    </section>
+
+    <!-- BRIGADA COLA -->
+    <section class="view" id="view-brigada-cola">
+      <div class="view-pad">
+        <h1 class="large-title">Cola de hoy</h1>
+        <p class="subhead" id="meta-brigada">Guayaquil · Interagua</p>
+
+        <div class="search">
+          <svg><use href="#i-search"/></svg>
+          <input id="buscar" type="search" placeholder="Buscar barrio" autocomplete="off">
+        </div>
+
+        <div class="segmented" id="segmented">
+          <button type="button" data-estado="pendientes" class="active">Pendientes</button>
+          <button type="button" data-estado="todos">Todos</button>
+          <button type="button" data-estado="visitados">Visitados</button>
+        </div>
+
+        <div class="callout" id="banner-cola">Cargando…</div>
+
+        <div class="progress-card">
+          <div class="top">
+            <span class="lbl">Progreso de la ruta</span>
+            <span class="num" id="rc-count">0 / 0</span>
+          </div>
+          <div class="track"><div class="fill" id="progressFill"></div></div>
+        </div>
+
+        <p class="group-header">Barrios por prioridad · solo regla A</p>
+        <div id="lista-brigada"></div>
+      </div>
+    </section>
+
+    <!-- DETAIL (push over content) -->
+    <div class="detail" id="detail">
+      <div class="detail-scroll">
+        <div class="d-hero">
+          <div class="d-name" id="d-name">—</div>
+          <div class="d-tags">
+            <span class="badge muted" id="d-tag-time">—</span>
+            <span class="badge" id="d-tag-regla">Regla A</span>
+          </div>
+        </div>
+        <div class="just" id="d-just">—</div>
+        <div class="trace" id="d-trace"></div>
+        <p class="footnote" id="d-fuente" style="margin:0 0 16px"></p>
+
+        <label class="field-label" for="casa">Casa o dirección</label>
+        <div class="field">
+          <input id="casa" type="text" placeholder="Calle / nº / referencia" autocomplete="street-address">
+        </div>
+
+        <label class="field-label">Nº de recipientes</label>
+        <div class="stepper">
+          <button type="button" id="nrec-minus">−</button>
+          <span id="nrecVal">1</span>
+          <button type="button" id="nrec-plus">+</button>
+        </div>
+
+        <label class="field-label">Tipo</label>
+        <div class="pills" id="tipos">
+          <button type="button" aria-pressed="true">Tina</button>
+          <button type="button" aria-pressed="false">Tanque</button>
+          <button type="button" aria-pressed="false">Llanta</button>
+          <button type="button" aria-pressed="false">Otro</button>
+        </div>
+
+        <label class="field-label">¿Larva a simple vista?</label>
+        <div class="sino" id="larva">
+          <button type="button" aria-pressed="false">Sí</button>
+          <button type="button" aria-pressed="true">No</button>
+        </div>
+
+        <div class="visitados">
+          <p class="group-header">Ya visitados en este barrio</p>
+          <ul id="visitados"></ul>
+        </div>
+      </div>
+      <button type="button" class="footer-btn" id="guardar">Guardar predio</button>
     </div>
 
-    <div class="note">
-      <strong>Qué es hecho vs. qué es regla.</strong>
-      El corte y la fuente son observados. La categoría A/B/C/D es una regla operativa (proxy), no una predicción calibrada de brote.
-      Validar el rezago epidemiológico en Ecuador es el <strong>mes 1 del piloto</strong>, no un hallazgo ya demostrado.
-    </div>
+    <!-- MIS REGISTROS -->
+    <section class="view" id="view-mis">
+      <div class="view-pad">
+        <h1 class="large-title">Mis registros</h1>
+        <p class="subhead">Predios guardados en este dispositivo (IndexedDB).</p>
+        <div id="lista-mis"></div>
+      </div>
+    </section>
 
-    <div class="note warn" id="nota-modelo">
-      El modelo estadístico conjunto (clima+cortes) empeoró MAE 288→394 en experimentos exploratorios.
-      Hoy corre como reglas. El ajuste fino es el piloto.
-    </div>
+    <!-- JEFE RESUMEN -->
+    <section class="view" id="view-jefe-resumen">
+      <div class="view-pad">
+        <h1 class="large-title">Resumen</h1>
+        <p class="subhead" id="meta-jefe">Guayaquil</p>
 
-    <div class="cta-row">
-      <a class="btn-primary" href="./brigada.html">Entrar como brigada</a>
-      <a class="btn-secondary" href="./panel.html">Entrar al panel</a>
-    </div>
+        <div class="kpis">
+          <div class="kpi"><b id="kpi-cov">—</b><span>barrios A con predio</span></div>
+          <div class="kpi"><b id="kpi-pred">0</b><span>predios en el teléfono</span></div>
+          <div class="kpi"><b id="kpi-regla">A</b><span>regla de la ruta</span></div>
+        </div>
 
-    <p class="trace" id="cola-meta"></p>
-  </main>
+        <div class="callout" id="nota-d"></div>
+        <div class="callout warn" id="nota-modelo"></div>
+        <div class="callout" id="nota-c"></div>
+      </div>
+    </section>
 
-  <script src="./app.js"></script>
-  <script>
-    VS.setupOfflineUI();
-    VS.registerSW();
-    VS.loadCola()
-      .then(({ data, from }) => {
-        const a = (data.cola_brigada || []).length;
-        const meta = document.getElementById("cola-meta");
-        meta.textContent =
-          "Cola generada: " + data.generado_en +
-          " · " + a + " barrios regla A" +
-          " · cargada desde " + from +
-          " · " + (data.modelo || "");
-        if (data.nota_modelo) {
-          document.getElementById("nota-modelo").textContent = data.nota_modelo;
-        }
-      })
-      .catch((e) => {
-        document.getElementById("cola-meta").textContent = "Error: " + e.message;
-      });
-  </script>
+    <!-- JEFE COLA -->
+    <section class="view" id="view-jefe-cola">
+      <div class="view-pad">
+        <h1 class="large-title">Cola</h1>
+        <p class="subhead">Misma cola que camina la brigada. B es hipótesis.</p>
+
+        <div class="filter-chips" id="filtros-jefe">
+          <button type="button" data-f="A" class="active">Regla A</button>
+          <button type="button" data-f="B">Regla B</button>
+          <button type="button" data-f="all">Todas</button>
+        </div>
+
+        <div class="callout warn" id="nota-b-jefe" style="display:none">
+          <strong>Regla B</strong> = corte hace 12–20 semanas (hipótesis Lowe).
+          No validada en Ecuador. Requiere confirmación humana. No entra a la ruta de caminata.
+        </div>
+
+        <div id="lista-jefe"></div>
+      </div>
+    </section>
+
+    <!-- AVISOS WHATSAPP -->
+    <section class="view" id="view-avisos">
+      <div class="view-pad">
+        <h1 class="large-title">Avisos</h1>
+        <p class="subhead">Solo WhatsApp. El vecino recibe el texto; no reporta ni instala nada.</p>
+
+        <div class="callout">
+          Se abre el selector de contacto de WhatsApp. No hay números en el sistema:
+          no se inventan teléfonos.
+        </div>
+
+        <div id="lista-avisos"></div>
+      </div>
+    </section>
+
+    <!-- AJUSTES -->
+    <section class="view" id="view-ajustes">
+      <div class="view-pad">
+        <h1 class="large-title">Ajustes</h1>
+        <p class="group-header">Rol en este dispositivo</p>
+        <div class="group">
+          <div class="row">
+            <span class="info">
+              <span class="name" id="ajustes-rol">—</span>
+              <span class="meta" id="ajustes-meta"></span>
+            </span>
+          </div>
+        </div>
+        <button type="button" class="footer-btn secondary" id="btn-cambiar-rol" style="position:static;width:100%;margin-top:8px;box-shadow:none">
+          Cambiar de rol
+        </button>
+        <p class="footnote">
+          Sin login. Cambiar de rol no borra los predios guardados en IndexedDB.
+          El modelo estadístico conjunto empeoró MAE 288→394: hoy corre como reglas.
+        </p>
+      </div>
+    </section>
+
+    <div class="toast" id="toast">Listo</div>
+  </div>
+
+  <nav class="tabbar hidden" id="tabbar" aria-label="Secciones"></nav>
+</div>
+
+<script src="./app.js"></script>
+<script src="./ui.js"></script>
 </body>
 </html>
