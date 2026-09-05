@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -28,6 +28,7 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
   const [nombres, setNombres] = useState<Record<string, string>>({});
   const [viviendas, setViviendas] = useState<Record<string, number>>({});
   const [seleccionadaId, setSeleccionadaId] = useState<string | null>(null);
+  const [distanciaReal, setDistanciaReal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const cardRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const lastTap = useRef<{ id: string; at: number } | null>(null);
@@ -92,6 +93,13 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
     [router]
   );
 
+  // Memorizados para que la referencia se mantenga estable entre renders:
+  // MapaBrigadista dispara Directions cuando `minizonas` cambia de referencia,
+  // así que si `hoy` fuera un array nuevo en cada render (por ej. al guardar
+  // la distancia real) se volvería a pedir la ruta sin fin.
+  const bloque = useMemo(() => celdasEnOrden(items), [items]);
+  const hoy = useMemo(() => rutaDelDia(bloque), [bloque]);
+
   if (loading) {
     return (
       <div className="card animate-pulse space-y-2">
@@ -112,15 +120,15 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
     );
   }
 
-  const bloque = celdasEnOrden(items);
-  const hoy = rutaDelDia(bloque);
   const pendientes = bloque.filter((m) => m.estado !== "cubierta");
   const restoBloque = Math.max(0, pendientes.length - hoy.length);
   const hechasHoy = hoy.filter((m) => m.estado === "cubierta").length;
   const vivHoy = hoy.reduce((s, m) => s + (viviendas[m.id] || 0), 0);
   const metaHoy = hoy.reduce((s, m) => s + (m.meta_viviendas || 5), 0);
   const pct = metaHoy ? Math.round((100 * vivHoy) / metaHoy) : 0;
-  const metros = largoRutaM(hoy);
+  // Distancia real de caminata (Directions) si ya llegó; si no, la línea recta
+  // entre centroides como estimado mientras carga.
+  const metros = distanciaReal ?? largoRutaM(hoy);
 
   if (!hoy.length) {
     return (
@@ -157,13 +165,14 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
           {restoBloque > 0
             ? ` El resto de tu bloque (${restoBloque}) queda para otros días para cubrir el perímetro sin cruzarte con la brigada.`
             : null}{" "}
-          Ruta de {(metros / 1000).toFixed(1)} km · celdas de ~160 m. Tocá un hex para
-          resaltar; otra vez para inspeccionar.
+          Ruta de {(metros / 1000).toFixed(1)} km{distanciaReal == null ? " (estimada)" : " caminando"} ·
+          celdas de ~160 m. Tocá una parada para resaltarla; otra vez para inspeccionar.
         </p>
         <MapaBrigadista
           minizonas={hoy}
           seleccionadaId={seleccionadaId}
           onSeleccionar={onSeleccionarMapa}
+          onDistanciaRuta={setDistanciaReal}
         />
       </div>
 
