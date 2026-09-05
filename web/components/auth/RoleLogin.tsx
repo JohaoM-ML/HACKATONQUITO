@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ZankuLogo } from "@/components/brand/ZankuLogo";
 import type { Rol } from "@/types";
 
 const DEMO = {
@@ -101,12 +102,11 @@ export function RoleLogin({
       <div className="ec-stripe" />
       <div className="mx-auto flex min-h-[calc(100dvh-4px)] w-full max-w-md flex-col justify-center px-5 py-10">
         <div className="mb-6 text-center">
-          <img src="/icons/zanku-circle.png" alt="Zanku" className="mx-auto mb-3 h-11 w-11 rounded-full" />
-          <p className="text-[11px] font-bold uppercase tracking-wide text-muted-fg">
+          <ZankuLogo size={144} priority />
+          <p className="mt-4 text-[11px] font-bold uppercase tracking-wide text-muted-fg">
             {copy.kicker}
           </p>
-          <h1 className="font-heading text-2xl font-bold text-primary">ZANKU</h1>
-          <p className="mt-1 font-heading text-base font-bold text-fg">{copy.title}</p>
+          <h1 className="font-heading text-2xl font-bold text-fg">{copy.title}</h1>
           <p className="mt-1 text-sm text-muted-fg">{copy.subtitle}</p>
         </div>
 

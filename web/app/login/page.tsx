@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ZankuLogo } from "@/components/brand/ZankuLogo";
 
 /** Entrada alternativa: misma puerta dual que el home. */
 export default function LoginPage() {
@@ -7,9 +8,9 @@ export default function LoginPage() {
       <div className="ec-stripe" />
       <div className="mx-auto flex min-h-[calc(100dvh-4px)] w-full max-w-md flex-col justify-center px-5 py-10">
         <div className="mb-6 text-center">
-          <img src="/icons/zanku-circle.png" alt="Zanku" className="mx-auto mb-3 h-11 w-11 rounded-full" />
-          <h1 className="font-heading text-2xl font-bold text-primary">ZANKU</h1>
-          <p className="mt-1 text-sm text-muted-fg">Elegí tu puerta</p>
+          <ZankuLogo size={144} priority />
+          <h1 className="sr-only">ZANKU</h1>
+          <p className="mt-4 text-sm text-muted-fg">Elegí tu puerta</p>
         </div>
         <div className="space-y-2">
           <Link href="/brigada" className="btn-primary">
