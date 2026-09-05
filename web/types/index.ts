@@ -50,6 +50,68 @@ export interface Sector {
   zona: string | null;
   lat: number | null;
   lon: number | null;
+  radio_m?: number | null;
+}
+
+export type EstadoMinizona = "pendiente" | "en_curso" | "cubierta";
+export type OrigenMinizona = "malla" | "cerco";
+
+/** Celda H3 res 10 (~160 m). Unidad de muestreo a escala de vuelo del vector. */
+export interface Minizona {
+  id: string;
+  sector_id: string;
+  h3: string;
+  lat: number;
+  lon: number;
+  estado: EstadoMinizona;
+  origen: OrigenMinizona;
+  foco_visita_id: string | null;
+  meta_viviendas: number;
+  sectores?: Sector;
+}
+
+export interface AsignacionMinizona {
+  id: string;
+  minizona_id: string;
+  brigadista_id: string;
+  orden: number | null;
+  estado: "pendiente" | "en_curso" | "completada";
+  minizonas?: Minizona;
+}
+
+export interface IndicesMinizona {
+  minizona_id: string;
+  h3: string;
+  sector_id: string;
+  sector_nombre: string;
+  lat: number;
+  lon: number;
+  estado: EstadoMinizona;
+  origen: OrigenMinizona;
+  semana: string;
+  viviendas_inspeccionadas: number;
+  viviendas_positivas: number;
+  recipientes_inspeccionados: number;
+  recipientes_positivos: number;
+  hi: number | null;
+  ci: number | null;
+  bi: number | null;
+}
+
+export interface CoberturaSector {
+  sector_id: string;
+  sector_nombre: string;
+  zona: string | null;
+  lat: number | null;
+  lon: number | null;
+  radio_m: number | null;
+  minizonas_total: number;
+  minizonas_cubiertas: number;
+  minizonas_en_curso: number;
+  minizonas_cerco: number;
+  cercos_cerrados: number;
+  pct_cobertura: number | null;
+  pct_cercos_cerrados: number | null;
 }
 
 export interface ColaItem {
@@ -76,6 +138,8 @@ export interface ColaItem {
 export interface Visita {
   id: string;
   sector_id: string;
+  minizona_id: string | null;
+  h3: string | null;
   cola_item_id: string | null;
   brigadista_id: string;
   brigada_id: string | null;

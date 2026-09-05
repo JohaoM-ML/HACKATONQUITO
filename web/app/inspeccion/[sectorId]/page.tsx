@@ -9,7 +9,7 @@ export default async function InspeccionPage({
   searchParams,
 }: {
   params: { sectorId: string };
-  searchParams: { cola?: string };
+  searchParams: { cola?: string; minizona?: string };
 }) {
   const perfil = await requireRol("brigadista");
   const supabase = createClient();
@@ -25,6 +25,25 @@ export default async function InspeccionPage({
   let justificacion: string | null = null;
   let accion: string | null = null;
   let colaItemId = searchParams.cola || null;
+
+  let minizonaId: string | null = searchParams.minizona || null;
+  let minizonaH3: string | null = null;
+  let minizonaOrigen: string | null = null;
+
+  if (minizonaId) {
+    const { data: mz } = await supabase
+      .from("minizonas")
+      .select("id, h3, origen, sector_id")
+      .eq("id", minizonaId)
+      .maybeSingle();
+    if (mz && mz.sector_id === params.sectorId) {
+      minizonaId = mz.id;
+      minizonaH3 = mz.h3;
+      minizonaOrigen = mz.origen;
+    } else {
+      minizonaId = null;
+    }
+  }
 
   if (colaItemId) {
     const { data: item } = await supabase
@@ -60,6 +79,9 @@ export default async function InspeccionPage({
         accion={accion}
         brigadistaId={perfil.id}
         brigadaId={perfil.brigada_id}
+        minizonaId={minizonaId}
+        minizonaH3={minizonaH3}
+        minizonaOrigen={minizonaOrigen}
       />
     </DashboardShell>
   );

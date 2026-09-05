@@ -3,10 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EstadoCargando, EstadoVacio } from "@/components/estados/Estados";
+import { Avatar, Card, Pill } from "@/components/panel/Tarjetas";
 import type { ColaItem } from "@/types";
 import { cn } from "@/lib/utils";
 
 type Filtro = "A" | "B" | "todas";
+
+function inicial(n: string) {
+  return n.trim().charAt(0).toUpperCase();
+}
 
 export function ColaJefeClient() {
   const [items, setItems] = useState<ColaItem[]>([]);
@@ -31,7 +36,9 @@ export function ColaJefeClient() {
 
   if (loading) return <EstadoCargando />;
   if (!items.length) {
-    return <EstadoVacio titulo="Cola vacía" descripcion="Ejecuta el seed de cortes para generar ítems." />;
+    return (
+      <EstadoVacio titulo="Cola vacía" descripcion="Ejecuta el seed de cortes para generar ítems." />
+    );
   }
 
   return (
@@ -48,31 +55,39 @@ export function ColaJefeClient() {
           </button>
         ))}
       </div>
-      <ul className="space-y-2">
-        {filtered.map((it) => (
-          <li key={it.id} className="card">
-            <div className="flex justify-between gap-2">
-              <p className="font-heading font-bold">
-                {it.prioridad}. {it.sectores?.nombre}
-              </p>
-              <span
-                className={cn(
-                  "rounded-full px-2 py-0.5 text-[11px] font-bold",
-                  it.regla === "A" ? "bg-red-100 text-ios-red" : "bg-orange-100 text-ios-orange"
+
+      <Card>
+        {filtered.map((it) => {
+          const nombre = it.sectores?.nombre || "Sector";
+          return (
+            <div
+              key={it.id}
+              className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 border-b border-ios-sep py-3 last:border-0 last:pb-0 first:pt-0"
+            >
+              <Avatar
+                texto={inicial(nombre)}
+                tono={it.regla === "A" ? "alto" : "medio"}
+              />
+              <div className="min-w-0">
+                <p className="truncate text-[13.5px] font-semibold">
+                  {it.prioridad}. {nombre}
+                </p>
+                <p className="mt-0.5 line-clamp-2 text-[11.5px] text-ios-label-2">
+                  {it.justificacion}
+                </p>
+                {it.hipotesis && (
+                  <p className="mt-1 text-[11px] font-semibold text-risk-medio">
+                    Hipótesis — no entra a la ruta de caminata
+                  </p>
                 )}
-              >
-                {it.label_regla || it.regla}
-              </span>
+              </div>
+              <Pill tono={it.regla === "A" ? "alto" : "medio"}>
+                {it.label_regla || `Regla ${it.regla}`}
+              </Pill>
             </div>
-            <p className="mt-1 text-xs text-ios-label-2">{it.justificacion}</p>
-            {it.hipotesis && (
-              <p className="mt-1 text-[11px] font-semibold text-ios-orange">
-                Hipótesis — no entra a ruta de caminata
-              </p>
-            )}
-          </li>
-        ))}
-      </ul>
+          );
+        })}
+      </Card>
     </div>
   );
 }

@@ -21,11 +21,24 @@ En Supabase Dashboard → Authentication → Providers: desactivar confirmación
 - `lib/motor/reglas.ts` — motor A–D
 - `supabase/migrations/` — schema + RLS
 
+## Google Maps (panel del jefe)
+
+El formulario del brigadista usa el GPS del teléfono. Google Maps va solo en `/mapa`
+(hexágonos H3 de ~160 m + cerco perifocal).
+
+1. En Google Cloud habilita **Maps JavaScript API**.
+2. Crea una clave restringida por referrer (`http://localhost:3000/*`).
+3. Pégala en `.env.local` como `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`.
+4. Reinicia `npm run dev`.
+
+Sin la clave el resto del panel funciona: solo se oculta el mapa.
+
 ## Seed
 
-La cola demo (6 sectores Regla A) ya está en la base. Para regenerar desde `../data/cola.json`:
+La cola demo (6 sectores Regla A) y la malla de minizonas ya están en la base.
 
 ```bash
 # con service role en .env.local
 npx tsx scripts/seed-cola.ts
+npx tsx scripts/seed-minizonas.ts   # geocodifica con Google o usa centros públicos
 ```

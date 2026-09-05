@@ -1,6 +1,26 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const PUBLIC_PREFIXES = [
+  "/login",
+  "/registro",
+  "/brigada",
+  "/jefe",
+  "/api/health",
+  "/api/public",
+];
+
+const BRIGADA_PREFIXES = ["/ruta", "/inspeccion", "/mis-registros", "/perfil"];
+const JEFE_PREFIXES = ["/panel", "/mapa", "/cola", "/equipo", "/avisos"];
+
+function matchesPrefix(path: string, prefixes: string[]) {
+  return prefixes.some((p) => path === p || path.startsWith(`${p}/`));
+}
+
+function isPublic(path: string) {
+  return path === "/" || matchesPrefix(path, PUBLIC_PREFIXES);
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -28,18 +48,20 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isAuth =
-    path.startsWith("/login") ||
-    path.startsWith("/registro") ||
-    path.startsWith("/api/health");
 
-  if (!user && !isAuth && path !== "/") {
+  if (!user && !isPublic(path)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    if (matchesPrefix(path, BRIGADA_PREFIXES)) {
+      url.pathname = "/brigada";
+    } else if (matchesPrefix(path, JEFE_PREFIXES)) {
+      url.pathname = "/jefe";
+    } else {
+      url.pathname = "/";
+    }
     return NextResponse.redirect(url);
   }
 
-  if (user && (path === "/login" || path === "/registro" || path === "/")) {
+  if (user && path.startsWith("/registro")) {
     const { data: perfil } = await supabase
       .from("perfiles")
       .select("rol")

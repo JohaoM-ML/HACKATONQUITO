@@ -1,12 +1,16 @@
-import { DashboardShell } from "@/components/layout/DashboardShell";
+import { PanelShell } from "@/components/layout/PanelShell";
 import { EquipoClient } from "@/components/equipo/EquipoClient";
 import { requireRol } from "@/lib/auth";
 
 export default async function EquipoPage() {
   const perfil = await requireRol("jefe");
   return (
-    <DashboardShell perfil={perfil} title="Equipo">
+    <PanelShell
+      perfil={perfil}
+      title="Brigada"
+      subtitle="Minizonas asignadas y avance de cobertura por brigadista"
+    >
       <EquipoClient brigadaId={perfil.brigada_id} />
-    </DashboardShell>
+    </PanelShell>
   );
 }

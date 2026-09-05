@@ -32,6 +32,18 @@ const config: Config = {
           DEFAULT: "#1E3A8A",
           dark: "#16296B",
         },
+        accent: {
+          DEFAULT: "#A16207",
+          dark: "#7C4A05",
+        },
+        risk: {
+          alto: "#DC2626",
+          "alto-bg": "#FCE8E7",
+          medio: "#C2410C",
+          "medio-bg": "#FCE9DD",
+          bajo: "#16A34A",
+          "bajo-bg": "#E4F6EA",
+        },
       },
       fontFamily: {
         sans: ['"Source Sans 3"', "system-ui", "sans-serif"],

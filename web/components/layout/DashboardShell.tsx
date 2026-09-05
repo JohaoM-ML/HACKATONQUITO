@@ -16,7 +16,7 @@ import type { Perfil } from "@/types";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_BRIG = [
-  { href: "/ruta", label: "Ruta", icon: Route },
+  { href: "/ruta", label: "Mis zonas", icon: Route },
   { href: "/mis-registros", label: "Registros", icon: ClipboardList },
   { href: "/perfil", label: "Perfil", icon: Settings },
 ];
@@ -49,6 +49,12 @@ export function DashboardShell({
     router.refresh();
   }
 
+  async function irAMando() {
+    await createClient().auth.signOut();
+    router.push("/jefe");
+    router.refresh();
+  }
+
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col bg-ios-bg shadow-2xl sm:my-6 sm:min-h-[calc(100dvh-3rem)] sm:rounded-[32px] sm:overflow-hidden">
       <div className="h-1.5 bg-gradient-to-r from-ec-yellow via-ec-blue to-ec-red" />
@@ -59,13 +65,24 @@ export function DashboardShell({
           </p>
           <h1 className="font-heading text-lg font-bold text-ios-label">{title}</h1>
         </div>
-        <button
-          type="button"
-          onClick={logout}
-          className="rounded-lg px-2 py-1 text-xs font-semibold text-ios-label-2"
-        >
-          Salir
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          {perfil.rol === "brigadista" && (
+            <button
+              type="button"
+              onClick={irAMando}
+              className="cursor-pointer text-[11px] font-semibold text-primary"
+            >
+              Cambiar a panel de mando
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={logout}
+            className="cursor-pointer rounded-lg px-2 py-1 text-xs font-semibold text-ios-label-2"
+          >
+            Salir
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 pb-[calc(var(--tab-h)+var(--safe-b)+12px)] pt-4">

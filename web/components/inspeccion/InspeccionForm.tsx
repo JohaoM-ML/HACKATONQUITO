@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { celdaDesde, etiquetaMinizona } from "@/lib/geo/minizonas";
 import {
   TIPOS_RECIPIENTE,
   USOS_RECIPIENTE,
@@ -22,6 +23,10 @@ type Props = {
   accion: string | null;
   brigadistaId: string;
   brigadaId: string | null;
+  /** Minizona preasignada desde la ruta (`?minizona=`). GPS puede confirmar u override. */
+  minizonaId?: string | null;
+  minizonaH3?: string | null;
+  minizonaOrigen?: string | null;
 };
 
 const emptyRecip = (): Recipiente => ({
@@ -70,12 +75,23 @@ export function InspeccionForm(props: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Nivel 1
+  // Nivel 1 — si viene minizona por URL, se preliga; GPS puede confirmar u override
+  const preligada = !!props.minizonaId;
   const [estadoVisita, setEstadoVisita] = useState<EstadoVisita>("inspeccionada");
   const [codigo, setCodigo] = useState("");
   const [manzana, setManzana] = useState("");
   const [gps, setGps] = useState<{ lat: number; lon: number; precision_m: number | null } | null>(null);
   const [gpsMsg, setGpsMsg] = useState("Sin GPS aún");
+  const [h3, setH3] = useState<string | null>(props.minizonaH3 ?? null);
+  const [minizonaId, setMinizonaId] = useState<string | null>(props.minizonaId ?? null);
+  const [minizonaMsg, setMinizonaMsg] = useState<string | null>(() => {
+    if (!props.minizonaH3) return null;
+    const et = etiquetaMinizona(props.minizonaH3);
+    return props.minizonaOrigen === "cerco"
+      ? `${et} · cerco de un foco (asignada)`
+      : `${et} · asignada a tu ruta`;
+  });
+  const [gpsOverride, setGpsOverride] = useState(false);
 
   // Nivel 2
   const [nHab, setNHab] = useState(4);
@@ -109,13 +125,47 @@ export function InspeccionForm(props: Props) {
     }
     setGpsMsg("Obteniendo…");
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         setGps({
           lat: pos.coords.latitude,
           lon: pos.coords.longitude,
           precision_m: pos.coords.accuracy,
         });
         setGpsMsg(`±${Math.round(pos.coords.accuracy)} m`);
+
+        const celda = celdaDesde(pos.coords.latitude, pos.coords.longitude);
+
+        // Si ya hay minizona preligada y el GPS cae en la misma celda → confirma.
+        if (preligada && props.minizonaH3 && celda === props.minizonaH3) {
+          setH3(props.minizonaH3);
+          setMinizonaId(props.minizonaId ?? null);
+          setGpsOverride(false);
+          setMinizonaMsg(
+            `${etiquetaMinizona(celda)}${
+              props.minizonaOrigen === "cerco" ? " · cerco de un foco" : ""
+            } · GPS confirma`
+          );
+          return;
+        }
+
+        // GPS en otra celda: override (sigue permitiendo guardar la visita real).
+        setH3(celda);
+        const { data } = await createClient()
+          .from("minizonas")
+          .select("id, origen")
+          .eq("h3", celda)
+          .maybeSingle();
+        setMinizonaId(data?.id ?? null);
+        setGpsOverride(preligada);
+        setMinizonaMsg(
+          data
+            ? `${etiquetaMinizona(celda)}${data.origen === "cerco" ? " · cerco de un foco" : ""}${
+                preligada ? " · GPS distinta a la asignada" : ""
+              }`
+            : `${etiquetaMinizona(celda)} · fuera de la malla${
+                preligada ? " · GPS distinta a la asignada" : ""
+              }`
+        );
       },
       () => setGpsMsg("No se pudo obtener GPS"),
       { enableHighAccuracy: true, timeout: 12000 }
@@ -134,6 +184,8 @@ export function InspeccionForm(props: Props) {
 
     const visitaPayload = {
       sector_id: props.sectorId,
+      minizona_id: minizonaId,
+      h3,
       cola_item_id: props.colaItemId,
       brigadista_id: props.brigadistaId,
       brigada_id: props.brigadaId,
@@ -188,6 +240,16 @@ export function InspeccionForm(props: Props) {
         setSaving(false);
         return;
       }
+
+      // Foco confirmado: se abren las minizonas vecinas (~225 m) como pendientes.
+      const hayFoco = recipientes.some((r) => r.positivo_larvas || r.positivo_pupas);
+      if (hayFoco && h3) {
+        await fetch("/api/minizonas/cerco", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ visita_id: visita.id }),
+        }).catch(() => null);
+      }
     }
 
     router.push("/ruta");
@@ -198,6 +260,12 @@ export function InspeccionForm(props: Props) {
     <div className="space-y-4">
       <div className="card">
         <p className="font-heading text-lg font-bold">{props.sectorNombre}</p>
+        {preligada && props.minizonaH3 && (
+          <p className="mt-1 text-sm font-semibold text-primary">
+            Minizona {etiquetaMinizona(props.minizonaH3)}
+            {props.minizonaOrigen === "cerco" ? " · cerco ~225 m" : " · celda ~160 m"}
+          </p>
+        )}
         {props.accion && <p className="mt-1 text-sm font-medium text-primary">{props.accion}</p>}
         {props.justificacion && (
           <p className="mt-2 text-xs leading-relaxed text-ios-label-2">{props.justificacion}</p>
@@ -240,8 +308,23 @@ export function InspeccionForm(props: Props) {
             <input className="input-field" value={manzana} onChange={(e) => setManzana(e.target.value)} />
           </div>
           <button type="button" className="btn-secondary" onClick={capturarGps}>
-            Capturar GPS · {gpsMsg}
+            {preligada ? "Confirmar / actualizar GPS" : "Capturar GPS"} · {gpsMsg}
           </button>
+          {minizonaMsg && (
+            <p className="text-xs text-ios-label-2">
+              Minizona <span className="font-semibold">{minizonaMsg}</span>
+            </p>
+          )}
+          {gpsOverride && (
+            <p className="text-[11px] text-ios-orange">
+              El GPS cayó en otra celda: se usará esa ubicación al guardar (override).
+            </p>
+          )}
+          {preligada && !gps && (
+            <p className="text-[11px] text-ios-label-3">
+              La visita ya está ligada a esta minizona. Capturá GPS para confirmar o corregir.
+            </p>
+          )}
         </div>
       )}
 

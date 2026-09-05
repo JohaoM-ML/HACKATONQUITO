@@ -10,6 +10,8 @@ const DICT = {
   codigo_vivienda: "Código local",
   lat: "Latitud GPS",
   lon: "Longitud GPS",
+  minizona_h3: "Celda H3 res 10 (~160 m de ancho). Agrupador para el efecto aleatorio del GLMM",
+  minizona_origen: "malla|cerco — cerco = abierta por un foco a menos de ~225 m",
   n_habitantes: "Habitantes en vivienda",
   tiene_conexion_red: "bool",
   dias_sin_agua_ultima_semana: "0-7",
@@ -51,7 +53,7 @@ export async function GET() {
 
   const { data: visitas, error } = await supabase
     .from("visitas")
-    .select("*, sectores(nombre, zona), recipientes(*)")
+    .select("*, sectores(nombre, zona), minizonas(h3, origen), recipientes(*)")
     .order("fecha_hora", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -62,70 +64,65 @@ export async function GET() {
     headers.join(","),
   ];
 
+  const CAMPOS_RECIPIENTE = [
+    "recipiente_tipo",
+    "uso",
+    "capacidad_l",
+    "tapado",
+    "con_agua",
+    "ubicacion",
+    "positivo_larvas",
+    "positivo_pupas",
+    "n_pupas",
+    "tratado",
+  ];
+
   for (const v of visitas || []) {
+    const base: Record<string, unknown> = {
+      visita_id: v.id,
+      sector_nombre: v.sectores?.nombre,
+      zona: v.sectores?.zona,
+      estado_visita: v.estado_visita,
+      fecha_hora: v.fecha_hora,
+      codigo_vivienda: v.codigo_vivienda,
+      lat: v.lat,
+      lon: v.lon,
+      minizona_h3: v.minizonas?.h3 ?? v.h3,
+      minizona_origen: v.minizonas?.origen,
+      n_habitantes: v.n_habitantes,
+      tiene_conexion_red: v.tiene_conexion_red,
+      dias_sin_agua_ultima_semana: v.dias_sin_agua_ultima_semana,
+      horas_agua_por_dia: v.horas_agua_por_dia,
+      almacena_agua: v.almacena_agua,
+      motivo_almacenamiento: v.motivo_almacenamiento,
+      dias_almacenada: v.dias_almacenada,
+      recibio_tanquero: v.recibio_tanquero,
+    };
+
     const recips = (v.recipientes as Record<string, unknown>[]) || [];
+
+    // Una visita sin recipientes igual va al CSV: es denominador de HI y no debe perderse.
     if (!recips.length) {
+      const row = { ...base, ...Object.fromEntries(CAMPOS_RECIPIENTE.map((c) => [c, ""])) };
+      lines.push(headers.map((h) => csvEscape(row[h])).join(","));
+      continue;
+    }
+
+    for (const r of recips) {
       const row: Record<string, unknown> = {
-        visita_id: v.id,
-        sector_nombre: v.sectores?.nombre,
-        zona: v.sectores?.zona,
-        estado_visita: v.estado_visita,
-        fecha_hora: v.fecha_hora,
-        codigo_vivienda: v.codigo_vivienda,
-        lat: v.lat,
-        lon: v.lon,
-        n_habitantes: v.n_habitantes,
-        tiene_conexion_red: v.tiene_conexion_red,
-        dias_sin_agua_ultima_semana: v.dias_sin_agua_ultima_semana,
-        horas_agua_por_dia: v.horas_agua_por_dia,
-        almacena_agua: v.almacena_agua,
-        motivo_almacenamiento: v.motivo_almacenamiento,
-        dias_almacenada: v.dias_almacenada,
-        recibio_tanquero: v.recibio_tanquero,
-        recipiente_tipo: "",
-        uso: "",
-        capacidad_l: "",
-        tapado: "",
-        con_agua: "",
-        ubicacion: "",
-        positivo_larvas: "",
-        positivo_pupas: "",
-        n_pupas: "",
-        tratado: "",
+        ...base,
+        recipiente_tipo: r.tipo,
+        uso: r.uso,
+        capacidad_l: r.capacidad_l,
+        tapado: r.tapado,
+        con_agua: r.con_agua,
+        ubicacion: r.ubicacion,
+        positivo_larvas: r.positivo_larvas,
+        positivo_pupas: r.positivo_pupas,
+        n_pupas: r.n_pupas,
+        tratado: r.tratado,
       };
       lines.push(headers.map((h) => csvEscape(row[h])).join(","));
-    } else {
-      for (const r of recips) {
-        const row: Record<string, unknown> = {
-          visita_id: v.id,
-          sector_nombre: v.sectores?.nombre,
-          zona: v.sectores?.zona,
-          estado_visita: v.estado_visita,
-          fecha_hora: v.fecha_hora,
-          codigo_vivienda: v.codigo_vivienda,
-          lat: v.lat,
-          lon: v.lon,
-          n_habitantes: v.n_habitantes,
-          tiene_conexion_red: v.tiene_conexion_red,
-          dias_sin_agua_ultima_semana: v.dias_sin_agua_ultima_semana,
-          horas_agua_por_dia: v.horas_agua_por_dia,
-          almacena_agua: v.almacena_agua,
-          motivo_almacenamiento: v.motivo_almacenamiento,
-          dias_almacenada: v.dias_almacenada,
-          recibio_tanquero: v.recibio_tanquero,
-          recipiente_tipo: r.tipo,
-          uso: r.uso,
-          capacidad_l: r.capacidad_l,
-          tapado: r.tapado,
-          con_agua: r.con_agua,
-          ubicacion: r.ubicacion,
-          positivo_larvas: r.positivo_larvas,
-          positivo_pupas: r.positivo_pupas,
-          n_pupas: r.n_pupas,
-          tratado: r.tratado,
-        };
-        lines.push(headers.map((h) => csvEscape(row[h])).join(","));
-      }
     }
   }
 
