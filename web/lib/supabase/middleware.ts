@@ -8,6 +8,8 @@ const PUBLIC_PREFIXES = [
   "/jefe",
   "/api/health",
   "/api/public",
+  "/aviso",
+  "/mockup-whatsapp.html",
 ];
 
 const BRIGADA_PREFIXES = ["/ruta", "/inspeccion", "/mis-registros", "/perfil"];

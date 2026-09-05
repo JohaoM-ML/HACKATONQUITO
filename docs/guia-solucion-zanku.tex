@@ -1,0 +1,646 @@
+% ======================================================================
+%  ZANKU / VENTANA SECA — Guía de la solución (para el pitch)
+%
+%  Documento para el equipo: problemática + evidencia + recorrido
+%  comentado de la app (brigadista, jefe, WhatsApp).
+%  No sustituye el paper técnico de experimentos.
+%
+%  Compilar (desde docs/):
+%    pdflatex guia-solucion-zanku.tex
+%    pdflatex guia-solucion-zanku.tex
+% ======================================================================
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{float}
+\usepackage{caption}
+\usepackage[hidelinks,colorlinks=true,linkcolor=azulvs,urlcolor=azulvs,citecolor=azulvs]{hyperref}
+
+\definecolor{azulvs}{HTML}{1C5FD6}
+\definecolor{rojovs}{HTML}{D1382C}
+\definecolor{ambarvs}{HTML}{C07A14}
+\definecolor{verdevs}{HTML}{177A4A}
+\definecolor{grisvs}{HTML}{4A5058}
+\definecolor{panelvs}{HTML}{F2F5FA}
+
+\titleformat{\section}{\Large\bfseries\color{azulvs}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{grisvs}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.6em}{}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\newcommand{\nota}[2]{%
+  \par\vspace{4pt}\noindent
+  \colorbox{panelvs}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+  \textbf{\color{azulvs}#1.}\ #2}}\par\vspace{4pt}}
+
+\newcommand{\pitch}[1]{%
+  \par\vspace{2pt}\noindent
+  \textit{\textcolor{azulvs}{Qué decir en el pitch:}\ #1}\par\vspace{4pt}}
+
+\newcommand{\appfig}[3]{%
+  \begin{figure}[H]
+  \centering
+  \includegraphics[width=#2\linewidth]{figuras/app/#1}
+  \caption{#3}
+  \label{fig:#1}
+  \end{figure}}
+
+\graphicspath{{figuras/app/}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\textcolor{grisvs}{ZANKU / VENTANA SECA}}
+\rhead{\small\textcolor{grisvs}{Guía de pitch}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\begin{document}
+
+% ------------------------------- portada ------------------------------
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\Huge\bfseries\color{azulvs} ZANKU\par}
+\vspace{0.4cm}
+{\large\textit{App operativa de VENTANA SECA}\par}
+\vspace{0.8cm}
+{\LARGE\bfseries Guía de la solución\par}
+\vspace{0.35cm}
+{\large\color{grisvs} Problemática, evidencia y recorrido de la app\\
+para armar el pitch del equipo\par}
+\vspace{1.2cm}
+{\large\textbf{Título de la problemática}\par}
+\vspace{0.2cm}
+{\large\color{grisvs} «Brigadas antidengue a ciegas: el calendario de\\
+cortes de agua que salud no lee»\par}
+\vspace{1.5cm}
+\begin{tabular}{rl}
+\textbf{Desafío:} & Resiliencia climática ante El Niño\\
+\textbf{Track:} & 2 --- Salud pública\\
+\textbf{Territorio piloto:} & Guayaquil (Guayas), Ecuador\\
+\textbf{Producto:} & ZANKU (Next.js + Supabase)\\
+\textbf{Proyecto:} & VENTANA SECA\\
+\textbf{Fecha:} & 5 de septiembre de 2026\\
+\end{tabular}
+\vfill
+{\small\color{grisvs}
+Este documento es el \textbf{libreto} del equipo: explica qué problema
+resolvemos, por qué el corte de agua importa, y qué hace cada pantalla
+de la app. El paper largo (\texttt{VENTANA-SECA-documento-latex.txt})
+guarda la prueba experimental. Toda cifra aquí sale de ese paper, del
+código o de fuentes citadas.\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ======================================================================
+\section{Cómo leer este documento}
+% ======================================================================
+
+Hay tres capas que no se deben mezclar:
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Problemática y evidencia.} Por qué las brigadas llegan
+        tarde y por qué el calendario de Interagua es la señal útil.
+  \item \textbf{Producto ZANKU.} App de campo (brigadista) + panel de
+        mando (jefe) + avisos WhatsApp al vecino.
+  \item \textbf{Termómetro nacional.} Pronóstico de casos de dengue
+        \emph{del país} (OpenDengue). Corre en el pipeline de
+        experimentos; no manda la ruta del barrio.
+\end{enumerate}
+
+\nota{En una frase}{Leemos un documento que el Estado ya publica (el
+corte de agua) y lo convertimos en la orden de visita de hoy. El dengue
+del país se estima aparte. El dengue del barrio se pide al MSP.}
+
+\pitch{«No inventamos un mapa de brotes. Convertimos el comunicado de
+corte en la cola de la brigada.»}
+
+% ======================================================================
+\section{La problemática}
+% ======================================================================
+
+\subsection{Enunciado}
+
+Las brigadas antidengue deciden la ruta con \textbf{casos ya notificados}
+y a \textbf{escala gruesa} (cantón / provincia). El calendario de cortes
+de agua ---dónde Interagua acaba de pedir \emph{almacenar}--- es
+\textbf{público} y \textbf{no entra} a esa programación.
+
+La pregunta operativa no es «¿dónde va a haber dengue?» (no hay $Y$
+pública por barrio). Es: \textbf{«¿adónde ir esta semana a tapar
+recipientes?»}
+
+\subsection{Quién lo sufre}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item El \textbf{jefe de control vectorial}: programa la semana sin
+        mirar el comunicado de Interagua.
+  \item El \textbf{brigadista}: camina sectores amplios; el tiempo
+        escaso no es teclear «3 barriles», es \emph{llegar a la manzana
+        correcta}.
+  \item El \textbf{vecino}: recibe el aviso de corte («abastézcase»)
+        pero no un tip claro de \emph{tapar} el tanque.
+\end{itemize}
+
+\subsection{Causa, consecuencia y momento crítico}
+
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{3.2cm}Y@{}}
+\toprule
+Causa & La inspección se decide con información retrasada (casos
+notificados) y a escala gruesa.\\
+Consecuencia & El recurso llega cuando el criadero ya produjo casos, no
+donde van a aparecer criaderos tras el corte.\\
+Momento crítico & Los \textbf{7--14 días} posteriores a un corte
+$\geq 8$\,h con pedido de almacenar (ciclo huevo$\to$adulto de
+\textit{Aedes aegypti}).\\
+\bottomrule
+\end{tabularx}
+
+\subsection{Cómo se «trata» un corte en Ecuador}
+
+En Guayaquil, Interagua publica el corte (web, X, prensa): horario,
+barrios y, a menudo, «abastézcase» / «haga reservas». Si el corte es
+largo, mandan tanqueros. Salud no usa ese calendario para programar
+brigadas.
+
+En la casa, el protocolo informal es el de siempre: llenar lo que haya.
+Quien puede, tanque elevado o cisterna. Quien no, barril, tina o balde.
+\textbf{El tanque resuelve el corte; si queda destapado, es el
+criadero.}
+
+\nota{Dato del proyecto}{En el CSV de cortes
+(\texttt{data/raw/cortes\_interagua\_raw.csv}) la columna
+\texttt{pidio\_almacenar} marca cuando el comunicado pide reservas.
+Esa bandera dispara la Regla~A.}
+
+\pitch{«Interagua ya dice dónde llenar recipientes. Nosotros convertimos
+eso en ``dónde ir a pedir que los tapen''.»}
+
+% ======================================================================
+\section{Evidencia: agua, mosquito y dengue}
+% ======================================================================
+
+\subsection{Lo que sí está publicado (fuerte)}
+
+\begin{longtable}{@{}p{7.2cm}p{4.8cm}@{}}
+\toprule
+\textbf{Hallazgo} & \textbf{Fuente}\\
+\midrule
+\endhead
+En Huaquillas (Ecuador), la interrupción del agua fue el \textbf{único}
+factor de riesgo significativo para \textit{Ae.~aegypti} en el hogar. &
+PLOS NTD (2021)\\
+\addlinespace
+En Machala, almacenar agua y el acceso irregular predijeron pupas; los
+\textbf{barriles} concentraron el 63--69\,\% de las pupas. &
+Stewart-Ibarra et al., PLOS ONE (2013)\\
+\addlinespace
+Riesgo de dengue urbano alto 3--5 meses después de sequía extrema, por
+recipientes improvisados; peor donde el desabastecimiento es frecuente. &
+Lowe et al., Lancet Planet.\ Health (2021)\\
+\bottomrule
+\end{longtable}
+
+La cadena que defiende la literatura es:
+
+\begin{center}
+\textbf{corte} $\rightarrow$ \textbf{almacenamiento destapado}
+$\rightarrow$ \textbf{criadero} $\rightarrow$ \textbf{mosquito}
+\end{center}
+
+Por eso ZANKU manda brigada a \emph{tapar recipientes}, no a «predecir
+el brote del barrio».
+
+\subsection{Lo que midió este hackatón (honestidad)}
+
+Con la $Y$ pública disponible (casos semanales \textbf{nacionales} /
+Guayas frente a cortes de Guayaquil):
+
+\begin{itemize}[leftmargin=1.4em]
+  \item Los cortes \textbf{no mejoraron} el pronóstico de casos
+        (varios modelos; a veces empeoran el MAE).
+  \item 21 rezagos de \texttt{corte\_hn} (0--20 semanas): el IC al
+        95\,\% cruza cero en todos.
+  \item El rezago de 3--5 meses de Lowe \textbf{no se replicó} a esa
+        escala.
+\end{itemize}
+
+\nota{Advertencia metodológica}{Huaquillas y Machala miden
+\textbf{mosquito en el hogar}. Lowe mide clima$\to$casos a escala de
+ciudad. Nosotros medimos \textbf{casos semanales del país} frente a
+cortes de una ciudad. Otra $Y$, otra escala: \textbf{no contradice}
+esos papers; tampoco los replica.}
+
+\subsection{¿La informalidad valida la propuesta?}
+
+No. Es un \textbf{amplificador}, no la prueba central.
+
+La propuesta no dice «hay informalidad $\Rightarrow$ hay dengue». Dice:
+\textbf{corte + pedido de almacenar $\Rightarrow$ recipientes $\Rightarrow$
+criadero}. Eso también ocurre en urbanización formal (Urdesa, Alborada):
+el comunicado pide reservas y se llena tanque o tina.
+
+Validar de verdad exige $Y$ de barrio: LIRAa / HI--CI--BI
+\emph{después} del corte, o dengue por parroquia (MSP). El censo INEC
+2022 (\% sin agua entubada, hacinamiento) aún no está integrado; no
+inventamos esa cifra.
+
+\pitch{«La evidencia ecuatoriana es agua$\to$mosquito en el hogar. Con
+datos públicos no demostramos corte$\to$casos semanales del país. Por
+eso el producto es cola operativa, no oráculo de brotes.»}
+
+% ======================================================================
+\section{La solución en una frase}
+% ======================================================================
+
+\textbf{El comunicado de corte de agua es la orden de visita.}
+
+\begin{figure}[H]
+\centering
+\footnotesize
+\begin{tabular}{@{}c@{}}
+Interagua / prensa (corte $\geq 8$\,h + almacenar)\\
+$\downarrow$\\
+Motor reglas A--D $\rightarrow$ cola priorizada\\
+$\downarrow$\\
+Jefe: mapa + repartir minizonas\\
+$\downarrow$\\
+Brigadista: ruta del día + inspección (larvas/pupas)\\
+$\downarrow$\\
+Panel: HI / CI / BI + cercos · Vecino: WhatsApp\\
+\end{tabular}
+\caption{Flujo operativo de ZANKU. Paralelo (no dibujado): OpenDengue
+$\rightarrow$ termómetro nacional de casos.}
+\end{figure}
+
+Dos preguntas, dos $Y$:
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Operativa:} ¿adónde ir hoy? $\rightarrow$ reglas sobre
+        cortes públicos.
+  \item \textbf{Nacional:} ¿cuántos casos tendrá Ecuador la semana que
+        viene? $\rightarrow$ GLM-NB / XGBoost sobre OpenDengue.
+\end{enumerate}
+
+% ======================================================================
+\section{Motor de cola (reglas A--D)}
+% ======================================================================
+
+Código: \texttt{web/lib/motor/reglas.ts}. Es un \textbf{proxy operativo},
+no un modelo calibrado de dengue por barrio.
+
+\begin{longtable}{@{}cp{3.2cm}Y@{}}
+\toprule
+\textbf{Regla} & \textbf{Condición} & \textbf{Acción / etiqueta}\\
+\midrule
+\endhead
+\textbf{A} & Corte $\geq 8$\,h, hace 0--14 días, y pidieron almacenar &
+\textbf{Cola de esta semana} / «zona riesgosa». Inspeccionar barriles y
+tinas; pedir que tapen.\\
+\textbf{B} & Corte hace 7--14 días sin cumplir A &
+\textbf{Ventana de criadero} / «zona media». Hipótesis biológica;
+\textbf{no validada} en Ecuador. Requiere confirmación humana.\\
+\textbf{C} & Lluvia / temporada sin corte & Minga de llantas. Sin
+catálogo de barrios: \textbf{no genera ítems}.\\
+\textbf{D} & Casos cantonales en alza (4 semanas) & Solo \textbf{bonus
+de prioridad}. No elige el barrio.\\
+\bottomrule
+\end{longtable}
+
+Orden de la cola: A $\rightarrow$ B $\rightarrow$ C; dentro de cada
+regla, por puntaje (más horas $\Rightarrow$ más arriba; D suma 5 puntos).
+
+\nota{Regla B}{Antes se usó la ventana 12--20 semanas (Lowe). Se cambió
+a 7--14 días por el ciclo del vector. Sigue marcada como hipótesis en
+código y en la UI.}
+
+\pitch{«La ruta sale del corte $\geq 8$\,h + almacenar, no de un mapa
+de probabilidad de brote.»}
+
+% ======================================================================
+\section{ZANKU: dos puertas}
+% ======================================================================
+
+La portada obliga a elegir rol. No hay un solo login genérico: así el
+demo del pitch no mezcla pantallas de campo con las de mando.
+
+\appfig{00-portada.png}{0.42}{Portada de ZANKU: App de campo (brigadista)
+y Panel de mando (jefe). Pie: Guayaquil; vecinos con avisos WhatsApp.}
+
+% ======================================================================
+\section{Recorrido del brigadista}
+% ======================================================================
+
+Menú inferior: \textbf{Mis zonas} · \textbf{Registros} ·
+\textbf{Perfil}. La inspección no es pestaña: se abre desde una
+minizona.
+
+\subsection{Entrada a campo}
+
+\appfig{01-login-brigadista.png}{0.42}{Login de campo. Demo:
+\texttt{brigada.ventana@gmail.com}.}
+
+\subsection{Mis zonas --- la jornada de hoy}
+
+El jefe reparte un \textbf{bloque} de celdas H3 ($\sim$160\,m). El
+brigadista solo ve el \textbf{cupo del día: 8 minizonas}
+($\sim$40 viviendas). El resto del bloque queda para otros días, para
+cubrir el perímetro sin cruzarse con otro compañero.
+
+Qué muestra la pantalla:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item Barra de avance (minizonas hechas y viviendas vs meta).
+  \item Mapa con paradas numeradas y km de caminata.
+  \item Lista: sector, metros a la siguiente, viviendas $n$/meta, si es
+        \textbf{cerco} (foco a $\sim$225\,m).
+  \item Colores: pendiente, cerco, cubierta.
+\end{itemize}
+
+Un toque resalta; dos toques o «Inspeccionar» abre el formulario.
+
+\appfig{02-mis-zonas.png}{0.48}{Mis zonas: cupo diario, mapa de ruta y
+lista de paradas (ejemplo Guasmo).}
+
+\pitch{«No mandamos al brigadista a ``todo el sur''. Le damos 8 celdas
+de $\sim$160\,m ordenadas para caminar hoy.»}
+
+\subsection{Inspección --- registrar una vivienda}
+
+Formulario en \textbf{4 pasos}. Si la casa está cerrada / renuente /
+deshabitada, se guarda solo el estado (cuenta para el denominador tipo
+LIRAa) y se salta hogar y recipientes.
+
+\subsubsection{Paso 1 --- Visita}
+
+Estado de la visita, código de vivienda, manzana, GPS. La minizona puede
+venir preasignada desde la ruta; el GPS confirma o corrige.
+
+\appfig{03-inspeccion-paso1.png}{0.48}{Paso 1: estado de visita y
+contexto del corte (acción + justificación de la Regla~A).}
+
+\subsubsection{Paso 2 --- Hogar}
+
+Habitantes, si tiene red, días sin agua, horas de agua al día, si
+almacena, \textbf{motivo} (corte programado / emergente / presión /
+costumbre), días con agua almacenada, tanquero.
+
+Aquí se ve la hipótesis en el predio: «¿esta casa llenó recipientes por
+el corte?»
+
+\appfig{04-inspeccion-paso2.png}{0.48}{Paso 2: contexto de agua y
+almacenamiento en el hogar.}
+
+\subsubsection{Paso 3 --- Recipientes}
+
+Uno por uno: tipo, uso, capacidad, tapado, con agua, ubicación,
+\textbf{larvas sí/no}, \textbf{pupas sí/no}, tratamiento. Se pueden
+añadir más recipientes.
+
+El brigadista actual ya hace esto a ojo (linterna, cucharón). No hace
+falta laboratorio ni clasificador de fotos.
+
+\appfig{05-inspeccion-paso3.png}{0.48}{Paso 3: captura entomológica por
+recipiente (tapado, agua, larvas, pupas, tratamiento).}
+
+\subsubsection{Paso 4 --- Acción}
+
+¿Se educó al hogar? ¿Se entregó material? ¿Requiere reinspección?
+Luego: \textbf{Guardar visita}.
+
+Si hay larvas o pupas, el sistema abre un \textbf{cerco} de minizonas
+vecinas ($\sim$225\,m) para la ruta.
+
+\appfig{06-inspeccion-paso4.png}{0.48}{Paso 4: educación, material y
+reinspección; botón «Guardar visita».}
+
+\nota{Umbrales OPS}{HI\,4 / CI\,3 / BI\,5. Con pocas casas el número
+del panel es ruido; no se vende como LIRAa oficial. La captura
+\textbf{sí} construye el dataset que hoy no existe a escala de barrio.}
+
+\subsection{Registros}
+
+Historial de \textbf{sus} visitas, agrupadas por minizona: código,
+estado, fecha.
+
+\appfig{07-registros.png}{0.42}{Mis registros: visitas del brigadista
+por minizona.}
+
+\subsection{Perfil}
+
+Nombre, rol, brigada. Aviso explícito: \textbf{ZANKU es online} (sin
+internet no guarda). Botón Salir.
+
+\appfig{08-perfil.png}{0.42}{Perfil de campo.}
+
+% ======================================================================
+\section{Recorrido del jefe de brigada}
+% ======================================================================
+
+Menú lateral: \textbf{Resumen} · \textbf{Mapa de riesgo} ·
+\textbf{Cola priorizada} · \textbf{Brigada} · \textbf{Alertas}.
+
+\subsection{Entrada a mando}
+
+\appfig{09-login-jefe.png}{0.55}{Login de mando. Demo:
+\texttt{jefe.ventana@gmail.com}.}
+
+\subsection{Resumen}
+
+Tablero del día y de las últimas dos semanas:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item Cobertura de minizonas; cercos cerrados; focos (viviendas con
+        larvas/pupas en 14\,d); brigadistas activos hoy.
+  \item Gráfico de viviendas registradas por día (\textbf{esfuerzo de
+        campo}, no «bajó el dengue»).
+  \item Últimos cortes reportados.
+  \item Semáforo \textbf{HI / CI / BI} vs umbrales OPS y \% de positivos
+        que son de \textbf{almacenamiento} (prueba directa de la
+        hipótesis en campo).
+  \item Avance por brigadista y cobertura por sector.
+  \item Exportar dataset CSV (nivel recipiente).
+\end{itemize}
+
+\appfig{10-panel-resumen.png}{0.95}{Panel Resumen: KPIs, cortes,
+índices Stegomyia y avance del equipo.}
+
+\pitch{«El jefe ve esfuerzo y criaderos, no una curva inventada de
+casos por manzana.»}
+
+\subsection{Mapa de riesgo}
+
+Mapa de Guayaquil + panel. Círculos de prioridad (zona riesgosa / media)
+según el motor. Hexágonos de minizonas y pines de visitas con GPS.
+
+El jefe elige un sector de la cola y puede:
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Generar cobertura:} malla de hexágonos; el radio lo pone
+        el \textbf{puntaje}, no un clic arbitrario.
+  \item \textbf{Repartir entre brigadistas:} bloques contiguos; los
+        cercos van primero.
+\end{enumerate}
+
+\appfig{11-mapa.png}{0.95}{Mapa de riesgo: sectores priorizados,
+minizonas y acciones de generar / repartir.}
+
+\subsection{Cola priorizada}
+
+Lista ordenada que salió de las reglas A/B. Filtros: zona riesgosa, zona
+media o todas. Cada ítem: prioridad, nombre, justificación. En B se
+avisa que \textbf{aún no entra sola a la ruta de caminata}.
+
+\appfig{12-cola.png}{0.85}{Cola priorizada: sectores A/B con
+justificación del motor.}
+
+\subsection{Brigada}
+
+Roster del equipo: teléfono, viviendas totales, si registró hoy, barra
+del bloque y chips de la \textbf{ruta de hoy} (cerco en rojo).
+
+\appfig{13-equipo.png}{0.85}{Vista Brigada: avance y ruta del día por
+persona.}
+
+\subsection{Alertas --- puente al vecino}
+
+Solo zonas \textbf{A}. Por sector: corte, duración y texto listo.
+Botones \textbf{WhatsApp} (abre mensaje) y \textbf{Copiar}.
+
+Ejemplo de mensaje (desde la UI / API): priorizar el barrio, acción de
+inspección de recipientes y justificación del corte --- sin prometer
+fumigación ni menos dengue.
+
+\appfig{14-alertas.png}{0.85}{Alertas: cortes que generan zona riesgosa
+y disparo a WhatsApp.}
+
+% ======================================================================
+\section{WhatsApp al ciudadano}
+% ======================================================================
+
+El vecino en zona A o B recibe un aviso claro. Los textos
+\textbf{no} prometen reducción de dengue ni fumigación confirmada.
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Zona A} (corte / cola de esta semana): tapa tanques;
+        vacía baldes o llantas; pueden pasar brigadistas a
+        \textbf{revisar recipientes}.
+  \item \textbf{Zona B} (7--14 días post-corte, hipótesis): cuidado en
+        casa; B \textbf{no} agenda sola la ruta.
+\end{itemize}
+
+Camino técnico: cola A $\rightarrow$ pestaña Alertas o n8n/Twilio
+$\rightarrow$ \texttt{GET /api/public/cortes}. Fallback en la app:
+\texttt{POST /api/public/whatsapp}.
+
+Texto canónico (código \texttt{web/lib/public/cortes.ts}):
+
+\begin{quote}
+\small
+\textit{AVISO — Sector (nombre). Se informa que esta semana hay corte
+de agua o solicitud de almacenamiento en su sector. Recomendación
+sanitaria: cubra tanques y vacíe baldes o llantas. Personal de brigada
+podría inspeccionar recipientes. Este comunicado no confirma
+fumigación ni reducción de dengue.}
+\end{quote}
+
+\appfig{15-whatsapp-mockup.png}{0.55}{Mock de avisos automáticos por
+barrio (ZANKU): el mensaje llega; el vecino no tiene que escribir.}
+
+\pitch{«Al vecino le llega el tip el día del corte. A la brigada le
+llega la misma zona en la cola.»}
+
+% ======================================================================
+\section{Termómetro nacional de dengue}
+% ======================================================================
+
+\textbf{Qué hace:} estima cuántos casos de dengue tendrá \textbf{Ecuador}
+la semana siguiente, con la serie semanal de OpenDengue / PAHO.
+
+\textbf{Cómo:} train 2021--2022, test 2023.
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{GLM-NB (AR1):} sigue la semana pasada + población.
+        MAE $\approx$ 87 casos/semana en 2023.
+  \item \textbf{XGBoost:} AR1+AR2+estación+clima. MAE $\approx$ 61.
+        Importancia: semana anterior $\sim$45\,\%, estación $\sim$24\,\%.
+\end{itemize}
+
+\textbf{Fiabilidad:} bueno como \textbf{carga a 7 días} («el país andará
+cerca de $X$ casos»). Flojo como \textbf{aviso de brote} (walk-forward
+decae; XGBoost solo marca 1 de 13 picos en ese split). No define barrio.
+No usa cortes para decidir la ruta.
+
+\pitch{«Tenemos un termómetro del país donde la $Y$ existe. La ruta del
+barrio sale del corte, no de ese modelo.»}
+
+% ======================================================================
+\section{Qué sí se defiende / qué no}
+% ======================================================================
+
+\begin{longtable}{@{}p{6.2cm}p{6.2cm}@{}}
+\toprule
+\textbf{Sí (pitch)} & \textbf{No (honestidad)}\\
+\midrule
+\endhead
+Cola operativa Regla~A desde cortes públicos & Predicción de dengue por
+barrio / parroquia\\
+Captura de recipientes $\rightarrow$ HI/CI/BI & LIRAa OPS con $n$ chico\\
+WhatsApp al vecino en zona A/B & Promesa de menos casos o fumigación\\
+MAE nacional 2023 (termómetro) & Alerta temprana de brote corroborada\\
+Pedido al MSP: dengue o LIRAa por parroquia & Que el rezago Lowe se
+replicó aquí\\
+App online con roles claros & Funcionamiento offline\\
+\bottomrule
+\end{longtable}
+
+Límites duros del dato de cortes 2023: de 21 cortes, \textbf{19 no
+publicaron horas}; la cola A casi no disparó. El cuello de botella
+operativo también es la calidad del comunicado (horas + sectores).
+
+% ======================================================================
+\section{Libreto de $\sim$90 segundos}
+% ======================================================================
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Problema.} Las brigadas van a ciegas respecto del
+        calendario de cortes. Salud no lee el aviso que Interagua ya
+        publica.
+  \item \textbf{Insight.} El corte pide almacenar; el tanque destapado
+        es el criadero más productivo y predecible (Huaquillas,
+        Machala).
+  \item \textbf{Solución.} Regla~A: $\geq 8$\,h + almacenar + 0--14\,d
+        $\Rightarrow$ cola de esta semana.
+  \item \textbf{Producto.} ZANKU: el brigadista camina 8 minizonas y
+        anota larvas; el jefe ve cola, mapa e índices; el vecino recibe
+        WhatsApp.
+  \item \textbf{Ciencia honesta.} Corte$\to$casos semanales del país: no
+        se sostuvo. Corte$\to$visita a tapar recipientes: sí se defiende.
+  \item \textbf{Cierre.} «Leemos un documento del Estado y lo convertimos
+        en la orden de visita de hoy.»
+\end{enumerate}
+
+\vspace{1em}
+\noindent\textit{Fin de la guía. En Overleaf: Compiler = pdfLaTeX,
+Main document = \texttt{main.tex} (carpeta \texttt{docs/overleaf-zanku-guia/}).
+Recompile dos veces para el índice.}
+
+\end{document}
