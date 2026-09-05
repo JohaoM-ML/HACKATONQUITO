@@ -7,9 +7,7 @@ export default function LoginPage() {
       <div className="ec-stripe" />
       <div className="mx-auto flex min-h-[calc(100dvh-4px)] w-full max-w-md flex-col justify-center px-5 py-10">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-primary font-heading text-sm font-bold text-white">
-            Z
-          </div>
+          <img src="/icons/zanku-circle.png" alt="Zanku" className="mx-auto mb-3 h-11 w-11 rounded-full" />
           <h1 className="font-heading text-2xl font-bold text-primary">ZANKU</h1>
           <p className="mt-1 text-sm text-muted-fg">Elegí tu puerta</p>
         </div>

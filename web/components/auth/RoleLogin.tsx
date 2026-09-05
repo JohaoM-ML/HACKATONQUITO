@@ -101,9 +101,7 @@ export function RoleLogin({
       <div className="ec-stripe" />
       <div className="mx-auto flex min-h-[calc(100dvh-4px)] w-full max-w-md flex-col justify-center px-5 py-10">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-primary font-heading text-sm font-bold text-white">
-            Z
-          </div>
+          <img src="/icons/zanku-circle.png" alt="Zanku" className="mx-auto mb-3 h-11 w-11 rounded-full" />
           <p className="text-[11px] font-bold uppercase tracking-wide text-muted-fg">
             {copy.kicker}
           </p>

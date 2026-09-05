@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   description:
     "Cola de brigadistas antidengue a partir de cortes de agua + captura entomológica (HI/CI/BI)",
   manifest: "/manifest.json",
+  icons: {
+    icon: [{ url: "/icons/zanku-circle.png", type: "image/png" }],
+    apple: [{ url: "/icons/zanku-circle-180.png", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

@@ -55,9 +55,7 @@ export function PanelShell({
       <div className="flex min-h-[calc(100dvh-4px)]">
         <aside className="hidden w-[240px] shrink-0 flex-col border-r border-border bg-card px-3 py-5 lg:flex">
           <div className="flex items-center gap-2.5 px-2 pb-6 pt-1">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary font-heading text-sm font-bold text-white">
-              Z
-            </div>
+            <img src="/icons/zanku-circle.png" alt="Zanku" className="h-9 w-9 shrink-0 rounded-full" />
             <div>
               <b className="block font-heading text-[13px] font-bold tracking-wide text-fg">
                 ZANKU
