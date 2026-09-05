@@ -1,4 +1,4 @@
--- VENTANA SECA — minizonas (muestreo por conglomerados) + cerco perifocal
+-- ZANKU — minizonas (muestreo por conglomerados) + cerco perifocal
 --
 -- Por qué existe esta tabla:
 -- Aedes aegypti rara vez se dispersa más de ~100 m desde donde emerge, así que un

@@ -1,4 +1,4 @@
--- VENTANA SECA — schema inicial + RLS + vista de índices entomológicos
+-- ZANKU — schema inicial + RLS + vista de índices entomológicos
 -- Roles: brigadista | jefe. brigada_id nunca se acepta del body; se deriva de la sesión.
 
 create extension if not exists "pgcrypto";
