@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EstadoCargando, EstadoError } from "@/components/estados/Estados";
 import { Card, CardHead, Pill, Progreso } from "@/components/panel/Tarjetas";
 import {
+  CapaMinizonas,
   CapaSectorRiesgo,
   CapaVisitas,
   type SectorPrioridad,
@@ -29,13 +30,13 @@ const MAPS_HELP =
 
 function ErrorMapsUI({ detalle }: { detalle?: string | null }) {
   return (
-    <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 bg-ios-fill-2 px-6 text-center">
-      <p className="font-heading text-base font-bold text-ios-label">
+    <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 bg-muted px-6 text-center">
+      <p className="font-heading text-base font-bold text-fg">
         No se pudo cargar Google Maps
       </p>
-      <p className="max-w-md text-sm text-ios-label-2">{MAPS_HELP}</p>
+      <p className="max-w-md text-sm text-muted-fg">{MAPS_HELP}</p>
       {detalle && (
-        <p className="max-w-md rounded-lg bg-white/80 px-3 py-2 text-left text-[11px] text-ios-label-3">
+        <p className="max-w-md rounded-lg bg-card px-3 py-2 text-left text-[11px] text-muted-fg">
           {detalle}
         </p>
       )}
@@ -104,6 +105,7 @@ export function MapaClient() {
   const [error, setError] = useState<string | null>(null);
   const [mapsError, setMapsError] = useState<string | null>(null);
   const [trabajando, setTrabajando] = useState(false);
+  const [mostrarHex, setMostrarHex] = useState(true);
 
   const cargar = useCallback(async () => {
     const supabase = createClient();
@@ -233,12 +235,21 @@ export function MapaClient() {
     <div className="space-y-4">
       <Card>
         <CardHead titulo="Sectores priorizados por el sistema" />
-        <p className="mb-2 text-[11.5px] text-ios-label-2">
+        <p className="mb-2 text-[11.5px] text-muted-fg">
           El jefe supervisa; el radio y el orden los decide el puntaje de corte de agua +
           almacenamiento (motor de reglas), no un clic manual.
         </p>
+        <label className="mb-3 flex cursor-pointer items-center gap-2 text-xs font-bold text-fg">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-primary"
+            checked={mostrarHex}
+            onChange={(e) => setMostrarHex(e.target.checked)}
+          />
+          Mostrar hexágonos (minizonas)
+        </label>
         {sectores.filter((s) => colaItems.some((c) => c.sector_id === s.id)).length === 0 ? (
-          <p className="py-4 text-center text-sm text-ios-label-2">
+          <p className="py-4 text-center text-sm text-muted-fg">
             Sin zonas riesgosas o medias activas por ahora.
           </p>
         ) : (
@@ -255,13 +266,13 @@ export function MapaClient() {
                     type="button"
                     onClick={() => setSectorSel(activo ? null : s.id)}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition",
-                      activo ? "bg-primary/10" : "hover:bg-ios-fill-2"
+                      "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition",
+                      activo ? "bg-primary/10" : "hover:bg-muted"
                     )}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13.5px] font-semibold">{s.nombre}</p>
-                      <p className="text-[11.5px] text-ios-label-2">
+                      <p className="truncate text-[13.5px] font-bold">{s.nombre}</p>
+                      <p className="text-[11.5px] text-muted-fg">
                         {c && Number(c.minizonas_total)
                           ? `${c.minizonas_cubiertas}/${c.minizonas_total} minizonas · ${c.pct_cobertura}%`
                           : "Sin generar todavía"}
@@ -283,26 +294,25 @@ export function MapaClient() {
         <Card>
           <CardHead titulo={sector.nombre} />
           {!colaSector?.regla ? (
-            <p className="text-sm text-ios-label-2">
+            <p className="text-sm text-muted-fg">
               Este sector no tiene prioridad activa en la cola: el sistema no genera
               cobertura hasta que el puntaje lo priorice.
             </p>
           ) : sinCobertura ? (
             <div className="space-y-3">
-              <p className="text-sm text-ios-label-2">{colaSector.justificacion}</p>
-              <div className="rounded-xl bg-ios-fill-2 p-3 text-xs text-ios-label-2">
-                Al generar, el sistema resuelve el centro (geocodificación o centro
-                público conocido) y elige el radio según{" "}
-                <b className="text-ios-label">
+              <p className="text-sm text-muted-fg">{colaSector.justificacion}</p>
+              <div className="rounded-lg bg-muted p-3 text-xs text-muted-fg">
+                Al generar, el sistema resuelve el centro y elige el radio según{" "}
+                <b className="text-fg">
                   {etiquetaZona(colaSector.regla)} · puntaje {colaSector.puntaje}
                 </b>
-                . Nada de esto lo marca el jefe a mano.
+                .
               </div>
               <button
                 type="button"
                 disabled={trabajando}
                 onClick={generarCobertura}
-                className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-40"
+                className="btn-primary"
               >
                 {trabajando ? "Generando…" : "Generar cobertura automática"}
               </button>
@@ -311,11 +321,11 @@ export function MapaClient() {
             <div className="space-y-3">
               <div>
                 <div className="mb-1 flex items-baseline justify-between">
-                  <span className="text-xs font-semibold text-ios-label-2">Cobertura</span>
+                  <span className="text-xs font-bold text-muted-fg">Cobertura</span>
                   <span className="font-heading text-sm font-bold">{cobSector!.pct_cobertura}%</span>
                 </div>
                 <Progreso pct={Number(cobSector!.pct_cobertura) || 0} />
-                <p className="mt-1 text-[11px] text-ios-label-2">
+                <p className="mt-1 text-[11px] text-muted-fg">
                   {cobSector!.minizonas_cubiertas} cubiertas · {cobSector!.minizonas_en_curso} en curso ·{" "}
                   {Number(cobSector!.minizonas_total) -
                     Number(cobSector!.minizonas_cubiertas) -
@@ -325,14 +335,13 @@ export function MapaClient() {
               </div>
 
               {Number(cobSector!.minizonas_cerco) > 0 && (
-                <div className="rounded-xl bg-risk-alto-bg p-3">
-                  <p className="text-xs font-semibold text-risk-alto">
+                <div className="rounded-lg bg-risk-alto-bg p-3">
+                  <p className="text-xs font-bold text-risk-alto">
                     Cercos perifocales: {cobSector!.cercos_cerrados}/{cobSector!.minizonas_cerco}{" "}
                     cerrados
                   </p>
-                  <p className="mt-0.5 text-[11px] text-ios-label-2">
-                    Minizonas abiertas alrededor de un foco confirmado, dentro del radio de ~225 m
-                    en que se dispersa el vector.
+                  <p className="mt-0.5 text-[11px] text-muted-fg">
+                    Minizonas abiertas alrededor de un foco confirmado (~225 m).
                   </p>
                 </div>
               )}
@@ -341,13 +350,12 @@ export function MapaClient() {
                 type="button"
                 disabled={trabajando}
                 onClick={repartir}
-                className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white disabled:opacity-40"
+                className="btn-primary"
               >
                 {trabajando ? "Repartiendo…" : "Repartir entre brigadistas"}
               </button>
-              <p className="text-[11px] text-ios-label-3">
-                El reparto es geográfico: cada brigadista recibe un bloque contiguo, ordenado por
-                vecino más cercano.
+              <p className="text-[11px] text-muted-fg">
+                El reparto es geográfico: cada brigadista recibe un bloque contiguo.
               </p>
             </div>
           )}
@@ -357,33 +365,35 @@ export function MapaClient() {
       {detalle && (
         <Card>
           <CardHead titulo={etiquetaMinizona(detalle.h3)} />
-          <p className="text-sm text-ios-label-2">
-            Estado: <b className="text-ios-label">{detalle.estado}</b> ·{" "}
+          <p className="text-sm text-muted-fg">
+            Estado: <b className="text-fg">{detalle.estado}</b> ·{" "}
             {detalle.origen === "cerco" ? "abierta por un foco vecino" : "parte de la malla"}
           </p>
-          <p className="mt-1 text-xs text-ios-label-3">
-            Meta: {detalle.meta_viviendas} viviendas inspeccionadas · {detalle.lat.toFixed(5)},{" "}
+          <p className="mt-1 text-xs text-muted-fg">
+            Meta: {detalle.meta_viviendas} viviendas · {detalle.lat.toFixed(5)},{" "}
             {detalle.lon.toFixed(5)}
           </p>
         </Card>
       )}
 
-      <div className="flex flex-wrap gap-3 px-1 text-[11px] text-ios-label-2">
-        <span className="w-full text-[10.5px] font-semibold uppercase tracking-wide text-ios-label-3">
-          Prioridad del sector (círculo)
+      <div className="flex flex-wrap gap-3 px-1 text-[11px] text-muted-fg">
+        <span className="w-full text-[10.5px] font-bold uppercase tracking-wide text-muted-fg">
+          Leyenda
         </span>
         {[
-          ["#DC2626", "Zona riesgosa"],
-          ["#CA8A04", "Zona media"],
+          ["#DC2626", "Zona riesgosa / cerco"],
+          ["#CA8A04", "Zona media / en curso"],
+          ["#16A34A", "Minizona cubierta"],
+          ["#1E40AF", "Minizona pendiente"],
         ].map(([color, label]) => (
           <span key={label} className="flex items-center gap-1.5">
-            <i className="h-2.5 w-2.5 rounded-full opacity-60" style={{ background: color }} />
+            <i className="h-2.5 w-2.5 rounded-full opacity-70" style={{ background: color }} aria-hidden />
             {label}
           </span>
         ))}
       </div>
 
-      {msg && <p className="px-1 text-xs font-medium text-primary">{msg}</p>}
+      {msg && <p className="px-1 text-xs font-bold text-primary">{msg}</p>}
     </div>
   );
 
@@ -392,12 +402,12 @@ export function MapaClient() {
       <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
         <Card className="flex min-h-[420px] flex-col items-center justify-center text-center">
           <p className="font-heading font-bold">Falta la clave de Google Maps</p>
-          <p className="mt-1 max-w-sm text-sm text-ios-label-2">
-            Definí <code className="rounded bg-ios-fill px-1">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>{" "}
-            en <code className="rounded bg-ios-fill px-1">.env.local</code> para ver el mapa real.
+          <p className="mt-1 max-w-sm text-sm text-muted-fg">
+            Definí <code className="rounded bg-muted px-1">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>{" "}
+            en <code className="rounded bg-muted px-1">.env.local</code> para ver el mapa real.
             Todo lo demás del panel funciona sin ella.
           </p>
-          <p className="mt-3 max-w-sm text-xs text-ios-label-3">{MAPS_HELP}</p>
+          <p className="mt-3 max-w-sm text-xs text-muted-fg">{MAPS_HELP}</p>
         </Card>
         {panelLateral}
       </div>
@@ -434,9 +444,13 @@ export function MapaClient() {
                 />
               ) : null}
               <CapaSectorRiesgo sectores={sectoresPrioridad} onSeleccionar={setSectorSel} />
-              {/* Grilla de hexágonos operativa oculta por ahora a pedido: con el
-                  círculo de prioridad no aportaba y confundía más de lo que ayudaba.
-                  Sigue generándose y repartiéndose igual por debajo — solo no se dibuja. */}
+              {mostrarHex && (
+                <CapaMinizonas
+                  minizonas={visibles}
+                  seleccionadaId={detalle?.id}
+                  onSeleccionar={setDetalle}
+                />
+              )}
               <CapaVisitas visitas={visitasVisibles} />
             </MapaOError>
           </APIProvider>

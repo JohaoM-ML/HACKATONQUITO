@@ -26,7 +26,7 @@ const COPY: Record<
   brigadista: {
     kicker: "Puerta de campo",
     title: "App de campo",
-    subtitle: "Mis zonas, mapa de hexágonos e inspección",
+    subtitle: "Mis zonas, mapa e inspección en terreno",
     demoLabel: "Entrar con demo de brigadista",
     wrongRole: "Esta puerta es del brigadista. Entrá por Panel de mando.",
     otherHref: "/jefe",
@@ -97,93 +97,94 @@ export function RoleLogin({
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-phone flex-col justify-center bg-ios-bg px-6 shadow-2xl sm:my-6 sm:min-h-[calc(100dvh-3rem)] sm:rounded-[32px]">
-      <div className="mb-6 text-center">
-        <div className="mx-auto mb-3 h-1.5 w-24 rounded-full bg-gradient-to-r from-ec-yellow via-ec-blue to-ec-red" />
-        <p className="font-heading text-[11px] font-semibold uppercase tracking-wide text-ios-label-3">
-          {copy.kicker}
-        </p>
-        <h1 className="font-heading text-2xl font-bold text-primary">VENTANA SECA</h1>
-        <p className="mt-1 font-heading text-base font-semibold text-ios-label">{copy.title}</p>
-        <p className="mt-1 text-sm text-ios-label-2">{copy.subtitle}</p>
-      </div>
-
-      <button
-        type="button"
-        disabled={loading}
-        onClick={() => entrar(DEMO[rol].email, DEMO[rol].password)}
-        className="btn-primary cursor-pointer"
-      >
-        {copy.demoLabel}
-      </button>
-      <p className="mt-2 text-center text-[11px] text-ios-label-3">
-        {DEMO[rol].email}
-      </p>
-
-      <div className="my-4 flex items-center gap-3 text-[11px] text-ios-label-3">
-        <span className="h-px flex-1 bg-ios-sep" />
-        o con correo
-        <span className="h-px flex-1 bg-ios-sep" />
-      </div>
-
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <label className="label-field" htmlFor="email">
-            Correo
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            className="input-field"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-          />
-        </div>
-        <div>
-          <label className="label-field" htmlFor="password">
-            Contraseña
-          </label>
-          <input
-            id="password"
-            type="password"
-            required
-            minLength={6}
-            className="input-field"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-          />
-        </div>
-        {error && (
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-ios-red" role="alert">
-              {error}
-            </p>
-            {error === copy.wrongRole && (
-              <Link href={copy.otherHref} className="text-sm font-semibold text-primary">
-                {copy.otherLabel}
-              </Link>
-            )}
+    <div className="min-h-dvh bg-bg">
+      <div className="ec-stripe" />
+      <div className="mx-auto flex min-h-[calc(100dvh-4px)] w-full max-w-md flex-col justify-center px-5 py-10">
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-primary font-heading text-sm font-bold text-white">
+            Z
           </div>
-        )}
-        <button type="submit" className="btn-primary cursor-pointer" disabled={loading}>
-          {loading ? "Entrando…" : "Entrar"}
-        </button>
-      </form>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-muted-fg">
+            {copy.kicker}
+          </p>
+          <h1 className="font-heading text-2xl font-bold text-primary">ZANKU</h1>
+          <p className="mt-1 font-heading text-base font-bold text-fg">{copy.title}</p>
+          <p className="mt-1 text-sm text-muted-fg">{copy.subtitle}</p>
+        </div>
 
-      <p className="mt-6 text-center text-sm text-ios-label-2">
-        <Link href="/" className="font-semibold text-primary">
-          Volver al inicio
-        </Link>
-      </p>
-      <p className="mt-2 text-center text-sm text-ios-label-2">
-        ¿Sin cuenta?{" "}
-        <Link href="/registro" className="font-semibold text-primary">
-          Registrarse
-        </Link>
-      </p>
+        <form onSubmit={onSubmit} className="card space-y-4">
+          <div>
+            <label className="label-field" htmlFor="email">
+              Correo
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              className="input-field"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+            />
+          </div>
+          <div>
+            <label className="label-field" htmlFor="password">
+              Contraseña
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              minLength={6}
+              className="input-field"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+          </div>
+          {error && (
+            <div className="space-y-1">
+              <p className="text-sm font-bold text-risk-alto" role="alert">
+                {error}
+              </p>
+              {error === copy.wrongRole && (
+                <Link href={copy.otherHref} className="text-sm font-bold text-accent">
+                  {copy.otherLabel}
+                </Link>
+              )}
+            </div>
+          )}
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? "Entrando…" : "Entrar"}
+          </button>
+        </form>
+
+        <div className="my-4 flex items-center gap-3 text-[11px] text-muted-fg">
+          <span className="h-px flex-1 bg-border" />
+          demo hackathon
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <button
+          type="button"
+          disabled={loading}
+          onClick={() => entrar(DEMO[rol].email, DEMO[rol].password)}
+          className="btn-secondary"
+        >
+          {copy.demoLabel}
+        </button>
+        <p className="mt-2 text-center text-[11px] text-muted-fg">{DEMO[rol].email}</p>
+
+        <p className="mt-6 text-center text-sm text-muted-fg">
+          <Link href="/" className="font-bold text-accent">
+            Volver al inicio
+          </Link>
+          {" · "}
+          <Link href="/registro" className="font-bold text-accent">
+            Registrarse
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

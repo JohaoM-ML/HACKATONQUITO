@@ -53,19 +53,29 @@ function Semaforo({
   nombre: string;
 }) {
   const ok = valor == null ? null : valor <= umbral;
+  const estado =
+    ok === null ? "Sin dato" : ok ? "Bajo umbral OPS" : "Sobre umbral OPS";
   return (
-    <div className="text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-ios-label-2">{label}</p>
+    <div className="rounded-lg border border-border bg-bg px-2 py-3 text-center">
+      <p className="text-[11px] font-bold uppercase tracking-wide text-muted-fg">{label}</p>
       <p
         className={cn(
           "font-heading text-[26px] font-bold leading-tight",
-          ok === null ? "text-ios-label-3" : ok ? "text-risk-bajo" : "text-risk-alto"
+          ok === null ? "text-muted-fg" : ok ? "text-risk-bajo" : "text-risk-alto"
         )}
       >
         {valor ?? "—"}
       </p>
-      <p className="text-[11px] text-ios-label-3">umbral OPS {umbral}</p>
-      <p className="mt-0.5 text-[10px] leading-tight text-ios-label-3">{nombre}</p>
+      <p className="text-[11px] font-bold text-fg">umbral OPS {umbral}</p>
+      <p
+        className={cn(
+          "mt-1 text-[10px] font-bold leading-tight",
+          ok === null ? "text-muted-fg" : ok ? "text-risk-bajo" : "text-risk-alto"
+        )}
+      >
+        {estado}
+      </p>
+      <p className="mt-0.5 text-[10px] leading-tight text-muted-fg">{nombre}</p>
     </div>
   );
 }
@@ -231,14 +241,14 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
           <CardHead
             titulo="Viviendas registradas por día"
             extra={
-              <span className="text-[11.5px] text-ios-label-2">Fuente: registros de la brigada</span>
+              <span className="text-[11.5px] text-muted-fg">Fuente: registros de la brigada</span>
             }
           />
           <div className="mb-1.5 flex items-baseline gap-2.5">
             <span className="font-heading text-[26px] font-bold">{visitas.length}</span>
-            <span className="text-xs text-ios-label-2">viviendas en los últimos 14 días</span>
+            <span className="text-xs text-muted-fg">viviendas en los últimos 14 días</span>
           </div>
-          <p className="mb-2.5 text-xs text-ios-label-2">
+          <p className="mb-2.5 text-xs text-muted-fg">
             Mide esfuerzo de campo y cobertura, no reducción de transmisión: para eso harían falta
             datos de casos por barrio, que hoy no son públicos.
           </p>
@@ -255,24 +265,24 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
             }
           />
           {cortes.length === 0 ? (
-            <p className="py-5 text-center text-sm text-ios-label-2">Sin cortes registrados.</p>
+            <p className="py-5 text-center text-sm text-muted-fg">Sin cortes registrados.</p>
           ) : (
             <div>
               {cortes.slice(0, 6).map((c) => (
                 <div
                   key={c.id}
-                  className="flex items-start gap-2.5 border-b border-ios-sep py-2.5 last:border-0 last:pb-0 first:pt-0"
+                  className="flex items-start gap-2.5 border-b border-border py-2.5 last:border-0 last:pb-0 first:pt-0"
                 >
                   <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-risk-alto" />
                   <div className="min-w-0 flex-1">
                     <b className="block truncate text-[13px] font-semibold">
                       {c.sectores?.nombre ?? "Sector sin nombre"}
                     </b>
-                    <span className="text-[11.5px] text-ios-label-2">
+                    <span className="text-[11.5px] text-muted-fg">
                       Corte {c.duracion_horas ? `· ${c.duracion_horas}` : "· duración no publicada"}
                     </span>
                   </div>
-                  <span className="shrink-0 whitespace-nowrap text-[11px] text-ios-label-3">
+                  <span className="shrink-0 whitespace-nowrap text-[11px] text-muted-fg">
                     {haceCuanto(c.fecha_inicio)}
                   </span>
                 </div>
@@ -290,18 +300,18 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
             <Semaforo label="CI" nombre="Índice de recipientes" valor={promedio("ci")} umbral={3} />
             <Semaforo label="BI" nombre="Índice de Breteau" valor={promedio("bi")} umbral={5} />
           </div>
-          <p className="mt-3 text-xs text-ios-label-2">
+          <p className="mt-3 text-xs text-muted-fg">
             Promedio de los sectores con registros. En rojo, por encima del umbral OPS.
           </p>
-          <div className="mt-3 border-t border-ios-sep pt-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-ios-label-2">
+          <div className="mt-3 border-t border-border pt-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-fg">
               Positivos que son de almacenamiento
             </p>
             <p className="font-heading text-2xl font-bold text-accent">
               {promedio("pct_positivos_almacenamiento") ?? "—"}
               {promedio("pct_positivos_almacenamiento") != null ? "%" : ""}
             </p>
-            <p className="text-xs text-ios-label-2">
+            <p className="text-xs text-muted-fg">
               Prueba directa de la hipótesis cortes → almacenamiento → criadero.
             </p>
           </div>
@@ -317,7 +327,7 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
             }
           />
           {roster.length === 0 ? (
-            <p className="py-5 text-center text-sm text-ios-label-2">
+            <p className="py-5 text-center text-sm text-muted-fg">
               Aún no hay brigadistas registrados en esta brigada.
             </p>
           ) : (
@@ -327,18 +337,18 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
                 return (
                   <div
                     key={b.id}
-                    className="grid grid-cols-[auto_1.4fr_1fr_auto] items-center gap-3.5 border-b border-ios-sep py-3 last:border-0 last:pb-0 first:pt-0"
+                    className="grid grid-cols-[auto_1.4fr_1fr_auto] items-center gap-3.5 border-b border-border py-3 last:border-0 last:pb-0 first:pt-0"
                   >
                     <Avatar texto={iniciales(b.nombre)} />
                     <div className="min-w-0">
                       <p className="truncate text-[13.5px] font-semibold">{b.nombre}</p>
-                      <p className="text-[11.5px] text-ios-label-2">
+                      <p className="text-[11.5px] text-muted-fg">
                         {b.visitasHoy} viviendas hoy
                       </p>
                     </div>
                     <div>
                       <Progreso pct={pct} />
-                      <p className="mt-1 text-[11px] text-ios-label-2">
+                      <p className="mt-1 text-[11px] text-muted-fg">
                         {b.hoy} hoy · {b.hechas}/{b.asignadas} en su bloque
                       </p>
                     </div>
@@ -361,7 +371,7 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
           }
         />
         {cobertura.length === 0 ? (
-          <p className="py-5 text-center text-sm text-ios-label-2">Sin sectores cargados.</p>
+          <p className="py-5 text-center text-sm text-muted-fg">Sin sectores cargados.</p>
         ) : (
           <div>
             {[...cobertura]
@@ -373,7 +383,7 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
                 return (
                   <div
                     key={c.sector_id}
-                    className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 border-b border-ios-sep py-3 last:border-0 last:pb-0 first:pt-0"
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 border-b border-border py-3 last:border-0 last:pb-0 first:pt-0"
                   >
                     <Avatar
                       texto={iniciales(c.sector_nombre)}
@@ -381,7 +391,7 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
                     />
                     <div className="min-w-0">
                       <p className="truncate text-[13.5px] font-semibold">{c.sector_nombre}</p>
-                      <p className="text-[11.5px] text-ios-label-2">
+                      <p className="text-[11.5px] text-muted-fg">
                         {total
                           ? `${cub} / ${total} minizonas · ${c.zona || "Sur"}`
                           : "Sin malla delimitada"}
@@ -407,17 +417,11 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
       </Card>
 
       <div className="flex flex-wrap gap-3">
-        <a
-          href="/api/export/dataset"
-          className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white"
-        >
+        <a href="/api/export/dataset" className="btn-primary w-auto px-5">
           Exportar dataset CSV
         </a>
-        <Link
-          href="/mapa"
-          className="rounded-xl bg-ios-fill px-5 py-3 text-sm font-semibold text-ios-label"
-        >
-          Ver hexágonos en Google Maps
+        <Link href="/mapa" className="btn-secondary w-auto px-5">
+          Abrir mapa de riesgo y hexágonos
         </Link>
       </div>
     </div>

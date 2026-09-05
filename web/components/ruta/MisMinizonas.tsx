@@ -103,8 +103,8 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
   if (loading) {
     return (
       <div className="card animate-pulse space-y-2">
-        <div className="h-4 w-40 rounded bg-ios-fill" />
-        <div className="h-[240px] rounded-xl bg-ios-fill" />
+        <div className="h-4 w-40 rounded bg-muted" />
+        <div className="h-[320px] rounded-lg bg-muted" />
       </div>
     );
   }
@@ -112,8 +112,8 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
   if (!items.length) {
     return (
       <div className="card">
-        <p className="font-heading font-bold text-ios-label">Sin minizonas asignadas</p>
-        <p className="mt-1 text-sm text-ios-label-2">
+        <p className="font-heading font-bold text-fg">Sin minizonas asignadas</p>
+        <p className="mt-1 text-sm text-muted-fg">
           El jefe aún no te repartió celdas (~160 m). Cuando lo haga, aparecerán aquí con mapa.
         </p>
       </div>
@@ -133,8 +133,8 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
   if (!hoy.length) {
     return (
       <div className="card">
-        <p className="font-heading font-bold text-ios-label">Tramo cubierto</p>
-        <p className="mt-1 text-sm text-ios-label-2">
+        <p className="font-heading font-bold text-fg">Tramo cubierto</p>
+        <p className="mt-1 text-sm text-muted-fg">
           Las {bloque.length} minizonas de tu bloque ya están cubiertas. El jefe puede
           asignarte otro tramo del perímetro.
         </p>
@@ -146,21 +146,21 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
     <div className="space-y-3">
       <div className="card space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-semibold text-ios-label-2">Hoy · minizonas del día</span>
+          <span className="font-semibold text-muted-fg">Hoy · minizonas del día</span>
           <span className="font-heading font-bold text-primary">
             {hechasHoy}/{META_MINIZONAS_DIA}
           </span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-ios-fill">
+        <div className="h-2 overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full bg-primary transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
-        <p className="text-xs font-medium text-ios-label-2">
+        <p className="text-xs font-medium text-muted-fg">
           Viviendas {vivHoy}/{metaHoy} en el tramo de hoy
         </p>
-        <p className="text-xs leading-relaxed text-ios-label-3">
+        <p className="text-xs leading-relaxed text-muted-fg">
           Meta diaria: {META_MINIZONAS_DIA} minizonas (~40 viviendas).
           {restoBloque > 0
             ? ` El resto de tu bloque (${restoBloque}) queda para otros días para cubrir el perímetro sin cruzarte con la brigada.`
@@ -174,6 +174,20 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
           onSeleccionar={onSeleccionarMapa}
           onDistanciaRuta={setDistanciaReal}
         />
+        <div className="flex flex-wrap gap-3 text-[11px] text-muted-fg">
+          <span className="flex items-center gap-1.5">
+            <i className="h-2 w-2 rounded-full bg-primary" aria-hidden />
+            Pendiente
+          </span>
+          <span className="flex items-center gap-1.5">
+            <i className="h-2 w-2 rounded-full bg-risk-alto" aria-hidden />
+            Cerco
+          </span>
+          <span className="flex items-center gap-1.5">
+            <i className="h-2 w-2 rounded-full bg-risk-bajo" aria-hidden />
+            Cubierta
+          </span>
+        </div>
       </div>
 
       <ul className="space-y-2">
@@ -209,7 +223,7 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
                         ? "bg-risk-bajo-bg text-risk-bajo"
                         : cerco
                           ? "bg-risk-alto-bg text-risk-alto"
-                          : "bg-ios-fill text-ios-label-2"
+                          : "bg-muted text-muted-fg"
                     )}
                   >
                     {i + 1}
@@ -223,11 +237,11 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-ios-label-3">
+                    <p className="text-xs text-muted-fg">
                       {nombres[m.sector_id] || "Sector"}
                       {aSiguiente != null && ` · ${aSiguiente} m a la siguiente`}
                     </p>
-                    <p className="mt-1 text-xs font-medium text-ios-label-2">
+                    <p className="mt-1 text-xs font-medium text-muted-fg">
                       Viviendas {nViv}/{meta}
                       {m.estado === "cubierta" ? " · cubierta" : ""}
                     </p>

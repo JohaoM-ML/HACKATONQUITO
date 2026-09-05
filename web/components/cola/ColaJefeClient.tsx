@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EstadoCargando, EstadoVacio } from "@/components/estados/Estados";
 import { Avatar, Card, Pill } from "@/components/panel/Tarjetas";
@@ -38,7 +39,10 @@ export function ColaJefeClient() {
   if (loading) return <EstadoCargando />;
   if (!items.length) {
     return (
-      <EstadoVacio titulo="Cola vacía" descripcion="Ejecuta el seed de cortes para generar ítems." />
+      <EstadoVacio
+        titulo="Cola vacía"
+        descripcion="Cuando haya cortes priorizados, aparecerán aquí ordenados por puntaje."
+      />
     );
   }
 
@@ -63,21 +67,17 @@ export function ColaJefeClient() {
           return (
             <div
               key={it.id}
-              className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 border-b border-ios-sep py-3 last:border-0 last:pb-0 first:pt-0"
+              className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 border-b border-border py-3 first:pt-0 last:border-0 last:pb-0"
             >
-              <Avatar
-                texto={inicial(nombre)}
-                tono={it.regla === "A" ? "alto" : "medio"}
-              />
+              <Avatar texto={inicial(nombre)} tono={it.regla === "A" ? "alto" : "medio"} />
               <div className="min-w-0">
-                <p className="truncate text-[13.5px] font-semibold">
+                <p className="truncate text-[13.5px] font-bold">
                   {it.prioridad}. {nombre}
                 </p>
-                <p className="mt-0.5 line-clamp-2 text-[11.5px] text-ios-label-2">
-                  {it.justificacion}
-                </p>
+                <p className="mt-0.5 line-clamp-2 text-[11.5px] text-muted-fg">{it.justificacion}</p>
                 {it.hipotesis && (
-                  <p className="mt-1 text-[11px] font-semibold text-risk-medio">
+                  <p className="mt-1 flex items-center gap-1 text-[11px] font-bold text-risk-medio">
+                    <AlertTriangle size={12} aria-hidden />
                     Zona media — aún no entra a la ruta de caminata
                   </p>
                 )}

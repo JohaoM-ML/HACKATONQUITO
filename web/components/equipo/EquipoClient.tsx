@@ -75,7 +75,7 @@ export function EquipoClient({ brigadaId }: { brigadaId: string | null }) {
     return (
       <EstadoVacio
         titulo="Sin brigadistas"
-        descripcion="Pide a tu equipo que se registre con el rol brigadista y tu brigada."
+        descripcion="Pedí a tu equipo que se registre con el rol brigadista y tu brigada."
       />
     );
   }
@@ -83,7 +83,9 @@ export function EquipoClient({ brigadaId }: { brigadaId: string | null }) {
   return (
     <div className="space-y-4">
       {rows.map((r) => {
-        const bloque = celdasEnOrden(r.minizonas.map((a) => ({ orden: a.orden, minizonas: a.minizonas })));
+        const bloque = celdasEnOrden(
+          r.minizonas.map((a) => ({ orden: a.orden, minizonas: a.minizonas }))
+        );
         const cubiertas = bloque.filter((m) => m.estado === "cubierta").length;
         const hoy = rutaDelDia(bloque).length;
         const pct = bloque.length ? (cubiertas / bloque.length) * 100 : 0;
@@ -92,14 +94,14 @@ export function EquipoClient({ brigadaId }: { brigadaId: string | null }) {
             <div className="flex flex-wrap items-center gap-3.5">
               <Avatar texto={iniciales(r.nombre)} />
               <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-semibold">{r.nombre}</p>
-                <p className="text-[11.5px] text-ios-label-2">
+                <p className="text-[14px] font-bold">{r.nombre}</p>
+                <p className="text-[11.5px] text-muted-fg">
                   {r.telefono || "sin teléfono"} · {r.visitas} viviendas en total
                 </p>
               </div>
               <div className="w-40">
                 <Progreso pct={pct} />
-                <p className="mt-1 text-[11px] text-ios-label-2">
+                <p className="mt-1 text-[11px] text-muted-fg">
                   {hoy} hoy · {cubiertas}/{bloque.length} en su bloque
                 </p>
               </div>
@@ -109,17 +111,22 @@ export function EquipoClient({ brigadaId }: { brigadaId: string | null }) {
             </div>
 
             {bloque.length > 0 && (
-              <div className="mt-3.5 border-t border-ios-sep pt-3">
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ios-label-2">
-                  Ruta de hoy{bloque.length > hoy ? ` · ${bloque.length - cubiertas - hoy} más en su bloque` : ""}
+              <div className="mt-3.5 border-t border-border pt-3">
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-muted-fg">
+                  Ruta de hoy
+                  {bloque.length > hoy
+                    ? ` · ${bloque.length - cubiertas - hoy} más en su bloque`
+                    : ""}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {rutaDelDia(bloque).map((m, i) => (
                     <span
                       key={m.id}
                       className={
-                        "rounded-lg px-2 py-1 text-[11px] font-semibold " +
-                        (m.origen === "cerco" ? "bg-risk-alto-bg text-risk-alto" : "bg-ios-fill text-ios-label-2")
+                        "rounded-lg px-2 py-1 text-[11px] font-bold " +
+                        (m.origen === "cerco"
+                          ? "bg-risk-alto-bg text-risk-alto"
+                          : "bg-muted text-muted-fg")
                       }
                       title={m.origen === "cerco" ? "Cerco de un foco" : "Malla del sector"}
                     >
