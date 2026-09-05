@@ -1,4 +1,4 @@
-# Migraciones Supabase — VENTANA SECA
+# Migraciones Supabase — ZANKU
 
 Proyecto: `ventana-seca` (ref `mfmseatpeepadupfhmtd`)
 

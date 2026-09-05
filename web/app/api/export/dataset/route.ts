@@ -53,7 +53,7 @@ export async function GET() {
 
   const { data: visitas, error } = await supabase
     .from("visitas")
-    .select("*, sectores(nombre, zona), minizonas(h3, origen), recipientes(*)")
+    .select("*, sectores(nombre, zona), minizonas!visitas_minizona_id_fkey(h3, origen), recipientes(*)")
     .order("fecha_hora", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -131,7 +131,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="ventana-seca-dataset-recipientes.csv"',
+      "Content-Disposition": 'attachment; filename="zanku-dataset-recipientes.csv"',
     },
   });
 }
