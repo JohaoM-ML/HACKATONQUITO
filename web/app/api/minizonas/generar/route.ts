@@ -1,11 +1,53 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { centroide, mallaDeSector, META_VIVIENDAS_MINIZONA } from "@/lib/geo/minizonas";
+import {
+  CENTROS_PUBLICOS,
+  centroide,
+  mallaDeSector,
+  META_VIVIENDAS_MINIZONA,
+  radioAutomatico,
+  type LatLon,
+} from "@/lib/geo/minizonas";
+
+// Caja de Guayaquil: descarta resultados que el geocodificador ubique en otra ciudad.
+const CAJA = { latMin: -2.45, latMax: -1.95, lonMin: -80.1, lonMax: -79.7 };
+
+async function geocodificar(nombre: string, key: string): Promise<LatLon | null> {
+  const q = encodeURIComponent(`${nombre}, Guayaquil, Guayas, Ecuador`);
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${q}&key=${key}`;
+  const res = await fetch(url);
+  const json = await res.json();
+  if (json.status !== "OK" || !json.results?.length) return null;
+
+  const loc = json.results[0].geometry?.location;
+  if (!loc) return null;
+  if (loc.lat < CAJA.latMin || loc.lat > CAJA.latMax || loc.lng < CAJA.lonMin || loc.lng > CAJA.lonMax) {
+    return null;
+  }
+  return { lat: loc.lat as number, lon: loc.lng as number };
+}
 
 /**
- * Delimita un sector: el jefe marca un centro y un radio, y aquí se genera la malla
- * de minizonas que lo cubre. Reemplaza la necesidad de tener polígonos de barrio
- * oficiales, que en Guayaquil no están publicados.
+ * Resuelve el centro de un sector sin coordenadas: primero geocodifica el nombre,
+ * y si no hay clave o el resultado no cae en Guayaquil, usa el centro público conocido.
+ * Si tampoco hay eso, se deja sin resolver — preferible un hueco visible a un dato
+ * inventado (mismo criterio que scripts/seed-minizonas.ts).
+ */
+async function resolverCentro(sector: { slug: string; nombre: string; lat: number | null; lon: number | null }) {
+  if (sector.lat != null && sector.lon != null) return { lat: sector.lat, lon: sector.lon };
+
+  const gkey = process.env.GOOGLE_MAPS_SERVER_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const geo = gkey ? await geocodificar(sector.nombre, gkey) : null;
+  if (geo) return geo;
+
+  return CENTROS_PUBLICOS[sector.slug] ?? CENTROS_PUBLICOS[sector.nombre] ?? null;
+}
+
+/**
+ * Genera (o completa) la cobertura de un sector: el sistema decide dónde y qué tan
+ * grande, a partir del puntaje del motor de reglas (corte + almacenamiento). El jefe
+ * ya no marca centro ni radio a mano — solo dispara la generación y supervisa el
+ * resultado en el mapa.
  */
 export async function POST(req: Request) {
   const supabase = createClient();
@@ -20,23 +62,51 @@ export async function POST(req: Request) {
     .eq("id", user.id)
     .maybeSingle();
   if (perfil?.rol !== "jefe") {
-    return NextResponse.json({ error: "Solo el jefe delimita sectores" }, { status: 403 });
+    return NextResponse.json({ error: "Solo el jefe puede disparar la generación" }, { status: 403 });
   }
 
-  const { sector_id, lat, lon, radio_m } = await req.json();
-  if (!sector_id || typeof lat !== "number" || typeof lon !== "number" || !radio_m) {
-    return NextResponse.json({ error: "Faltan sector_id, lat, lon o radio_m" }, { status: 400 });
-  }
-  if (radio_m > 2000) {
+  const { sector_id } = await req.json();
+  if (!sector_id) return NextResponse.json({ error: "Falta sector_id" }, { status: 400 });
+
+  const { data: sector } = await supabase
+    .from("sectores")
+    .select("id, slug, nombre, lat, lon")
+    .eq("id", sector_id)
+    .maybeSingle();
+  if (!sector) return NextResponse.json({ error: "Sector no encontrado" }, { status: 404 });
+
+  // El puntaje manda: sin regla activa (A/B) no hay nada que priorizar todavía.
+  const { data: colaItem } = await supabase
+    .from("cola_items")
+    .select("regla, puntaje")
+    .eq("sector_id", sector_id)
+    .not("regla", "is", null)
+    .order("puntaje", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!colaItem?.regla) {
     return NextResponse.json(
-      { error: "Radio máximo 2000 m: más allá la malla es inmanejable para una brigada" },
+      { error: "Este sector no tiene prioridad activa en la cola: nada que generar todavía." },
       { status: 400 }
     );
   }
 
-  const celdas = mallaDeSector({ lat, lon }, radio_m);
+  const centro = await resolverCentro(sector);
+  if (!centro) {
+    return NextResponse.json(
+      {
+        error:
+          "No se pudo ubicar el sector automáticamente (sin geocodificar y sin centro público conocido). Queda pendiente en vez de inventar coordenadas.",
+      },
+      { status: 422 }
+    );
+  }
 
-  await supabase.from("sectores").update({ lat, lon, radio_m }).eq("id", sector_id);
+  const radio_m = radioAutomatico(colaItem.regla, colaItem.puntaje);
+  const celdas = mallaDeSector(centro, radio_m);
+
+  await supabase.from("sectores").update({ lat: centro.lat, lon: centro.lon, radio_m }).eq("id", sector_id);
 
   const filas = celdas.map((h3) => {
     const c = centroide(h3);
@@ -57,5 +127,12 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  return NextResponse.json({ ok: true, generadas: filas.length });
+  return NextResponse.json({
+    ok: true,
+    generadas: filas.length,
+    radio_m,
+    regla: colaItem.regla,
+    puntaje: colaItem.puntaje,
+    centro,
+  });
 }

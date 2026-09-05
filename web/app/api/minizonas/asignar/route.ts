@@ -15,6 +15,11 @@ import type { Minizona } from "@/types";
  * ~40 viviendas) lo hace el cliente en MisMinizonas. Así el jefe no reasigna cada
  * mañana y cada persona sigue cubriendo su tramo del perímetro.
  *
+ * Un brigadista con trabajo pendiente en OTRO sector no entra a este reparto: no
+ * tiene sentido que la misma persona termine con un bloque en el sur y otro en el
+ * norte el mismo día. Sigue disponible para un sector nuevo recién cuando termina
+ * (o le liberan) el que ya tiene.
+ *
  * Las minizonas de cerco van primero: son las que rodean un foco confirmado.
  */
 export async function POST(req: Request) {
@@ -56,6 +61,34 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, asignadas: 0, motivo: "no hay minizonas pendientes" });
   }
 
+  const { data: asignacionesVigentes } = await supabase
+    .from("asignaciones_minizona")
+    .select("brigadista_id, minizonas(sector_id, estado)")
+    .in(
+      "brigadista_id",
+      brigadistas.map((b) => b.id)
+    );
+
+  const ocupadosEnOtroSector = new Set(
+    (asignacionesVigentes || [])
+      .filter((a) => {
+        const m = a.minizonas as unknown as { sector_id: string; estado: string } | null;
+        return m && m.sector_id !== sector_id && m.estado !== "cubierta";
+      })
+      .map((a) => a.brigadista_id)
+  );
+  const disponibles = brigadistas.filter((b) => !ocupadosEnOtroSector.has(b.id));
+
+  if (!disponibles.length) {
+    return NextResponse.json(
+      {
+        error:
+          "Todos los brigadistas de la brigada ya tienen trabajo pendiente en otro sector. Deja que terminen ese tramo antes de repartir uno nuevo.",
+      },
+      { status: 400 }
+    );
+  }
+
   const lista = minizonas as Minizona[];
   const cercos = ordenarPorCercania(lista.filter((m) => m.origen === "cerco"));
   const malla = ordenarPorCercania(
@@ -64,10 +97,10 @@ export async function POST(req: Request) {
   );
   const ordenadas = [...cercos, ...malla];
 
-  const n = brigadistas.length;
+  const n = disponibles.length;
   const porPersona = Math.ceil(ordenadas.length / n);
 
-  const filas = brigadistas.flatMap((b, i) =>
+  const filas = disponibles.flatMap((b, i) =>
     ordenadas
       .slice(i * porPersona, (i + 1) * porPersona)
       .map((m, orden) => ({ minizona_id: m.id, brigadista_id: b.id, orden, estado: "pendiente" }))

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EstadoCargando, EstadoVacio } from "@/components/estados/Estados";
 import { Avatar, Card, Pill } from "@/components/panel/Tarjetas";
+import { etiquetaZona } from "@/lib/motor/reglas";
 import type { ColaItem } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +52,7 @@ export function ColaJefeClient() {
             className={cn("chip flex-1", filtro === f && "chip-active")}
             onClick={() => setFiltro(f)}
           >
-            {f === "todas" ? "Todas" : `Regla ${f}`}
+            {f === "todas" ? "Todas" : etiquetaZona(f)}
           </button>
         ))}
       </div>
@@ -77,13 +78,11 @@ export function ColaJefeClient() {
                 </p>
                 {it.hipotesis && (
                   <p className="mt-1 text-[11px] font-semibold text-risk-medio">
-                    Hipótesis — no entra a la ruta de caminata
+                    Zona media — aún no entra a la ruta de caminata
                   </p>
                 )}
               </div>
-              <Pill tono={it.regla === "A" ? "alto" : "medio"}>
-                {it.label_regla || `Regla ${it.regla}`}
-              </Pill>
+              <Pill tono={it.regla === "A" ? "alto" : "medio"}>{etiquetaZona(it.regla)}</Pill>
             </div>
           );
         })}

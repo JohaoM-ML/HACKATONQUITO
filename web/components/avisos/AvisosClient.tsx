@@ -35,12 +35,12 @@ export function AvisosClient() {
 
   if (loading) return <EstadoCargando />;
   if (!items.length) {
-    return <EstadoVacio titulo="Sin avisos" descripcion="No hay barrios Regla A." />;
+    return <EstadoVacio titulo="Sin avisos" descripcion="No hay zonas riesgosas activas." />;
   }
 
   return (
     <Card>
-      <CardHead titulo="Cortes que disparan Regla A" />
+      <CardHead titulo="Cortes que generan una zona riesgosa" />
       <div>
         {items.map((it) => {
           const nombre = it.sectores?.nombre || "sector";

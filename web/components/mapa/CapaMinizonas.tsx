@@ -60,6 +60,65 @@ export function CapaMinizonas({
   return fitBounds ? <FitBounds minizonas={minizonas} /> : null;
 }
 
+export type SectorPrioridad = {
+  sector_id: string;
+  lat: number;
+  lon: number;
+  radio_m: number;
+  regla: "A" | "B" | "C";
+  puntaje: number;
+  label: string;
+};
+
+/** Mismo color que usa la cola/Pill para cada regla — rojo = zona riesgosa, ámbar = zona media. */
+function colorPrioridad(regla: SectorPrioridad["regla"]) {
+  if (regla === "A") return { fill: "#DC2626", stroke: "#991B1B" };
+  if (regla === "B") return { fill: "#CA8A04", stroke: "#92650A" };
+  return { fill: "#94A3B8", stroke: "#64748B" };
+}
+
+/**
+ * Capa de supervisión: un círculo translúcido por sector, coloreado por el puntaje real
+ * del motor de reglas (corte de agua + almacenamiento), no por el estado operativo de
+ * sus hexágonos. Va por debajo de la malla de minizonas — el jefe ve primero "dónde
+ * importa" y, al entrar al sector, ve abajo "cómo se está caminando".
+ */
+export function CapaSectorRiesgo({
+  sectores,
+  onSeleccionar,
+}: {
+  sectores: SectorPrioridad[];
+  onSeleccionar?: (sectorId: string) => void;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || typeof google === "undefined") return;
+
+    const circulos = sectores.map((s) => {
+      const { fill, stroke } = colorPrioridad(s.regla);
+      const circulo = new google.maps.Circle({
+        center: { lat: s.lat, lng: s.lon },
+        radius: s.radio_m,
+        fillColor: fill,
+        fillOpacity: 0.16,
+        strokeColor: stroke,
+        strokeOpacity: 0.55,
+        strokeWeight: 1.5,
+        map,
+        zIndex: 0,
+        clickable: !!onSeleccionar,
+      });
+      if (onSeleccionar) circulo.addListener("click", () => onSeleccionar(s.sector_id));
+      return circulo;
+    });
+
+    return () => circulos.forEach((c) => c.setMap(null));
+  }, [map, sectores, onSeleccionar]);
+
+  return null;
+}
+
 export type VisitaPin = {
   id: string;
   sector_id?: string | null;
@@ -94,47 +153,6 @@ export function CapaVisitas({ visitas }: { visitas: VisitaPin[] }) {
 
     return () => overlays.forEach((c) => c.setMap(null));
   }, [map, visitas]);
-
-  return null;
-}
-
-/** Círculo que muestra el radio elegido para el sector mientras el jefe lo delimita. */
-export function CapaRadio({
-  centro,
-  radioM,
-}: {
-  centro: { lat: number; lng: number } | null;
-  radioM: number;
-}) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!map || !centro || typeof google === "undefined") return;
-    const circulo = new google.maps.Circle({
-      center: centro,
-      radius: radioM,
-      fillColor: "#1E3A8A",
-      fillOpacity: 0.06,
-      strokeColor: "#1E3A8A",
-      strokeWeight: 1.5,
-      strokeOpacity: 0.5,
-      map,
-    });
-    const punto = new google.maps.Circle({
-      center: centro,
-      radius: 12,
-      fillColor: "#1E3A8A",
-      fillOpacity: 1,
-      strokeColor: "#fff",
-      strokeWeight: 2,
-      map,
-    });
-    map.panTo(centro);
-    return () => {
-      circulo.setMap(null);
-      punto.setMap(null);
-    };
-  }, [map, centro, radioM]);
 
   return null;
 }

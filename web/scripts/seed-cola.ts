@@ -11,7 +11,7 @@ import path from "path";
 import { createClient } from "@supabase/supabase-js";
 import { clasificarBarrio, ordenarCola } from "../lib/motor/reglas";
 
-const ROOT = path.resolve(__dirname, "../../..");
+const ROOT = path.resolve(__dirname, "../..");
 const COLA_PATH = path.join(ROOT, "data", "cola.json");
 
 async function main() {

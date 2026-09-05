@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EstadoCargando, EstadoError } from "@/components/estados/Estados";
 import { Avatar, Card, CardHead, KpiCard, Pill, Progreso } from "@/components/panel/Tarjetas";
 import { GraficoArea, type PuntoSerie } from "@/components/panel/GraficoArea";
+import { celdasEnOrden, rutaDelDia } from "@/lib/geo/minizonas";
 import type { CoberturaSector, IndicesSector, Perfil } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -40,7 +41,17 @@ function haceCuanto(iso: string) {
   return `hace ${dias} d`;
 }
 
-function Semaforo({ valor, umbral, label }: { valor: number | null; umbral: number; label: string }) {
+function Semaforo({
+  valor,
+  umbral,
+  label,
+  nombre,
+}: {
+  valor: number | null;
+  umbral: number;
+  label: string;
+  nombre: string;
+}) {
   const ok = valor == null ? null : valor <= umbral;
   return (
     <div className="text-center">
@@ -54,6 +65,7 @@ function Semaforo({ valor, umbral, label }: { valor: number | null; umbral: numb
         {valor ?? "—"}
       </p>
       <p className="text-[11px] text-ios-label-3">umbral OPS {umbral}</p>
+      <p className="mt-0.5 text-[10px] leading-tight text-ios-label-3">{nombre}</p>
     </div>
   );
 }
@@ -64,7 +76,9 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
   const [visitas, setVisitas] = useState<VisitaLite[]>([]);
   const [cortes, setCortes] = useState<CorteLite[]>([]);
   const [brigadistas, setBrigadistas] = useState<{ id: string; nombre: string }[]>([]);
-  const [asignaciones, setAsignaciones] = useState<{ brigadista_id: string; estado: string }[]>([]);
+  const [asignaciones, setAsignaciones] = useState<
+    { brigadista_id: string; orden: number | null; minizonas: { estado: string } | null }[]
+  >([]);
   const [nA, setNA] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +106,7 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
           .select("id, nombre")
           .eq("rol", "brigadista")
           .eq("brigada_id", perfil.brigada_id ?? ""),
-        supabase.from("asignaciones_minizona").select("brigadista_id, estado"),
+        supabase.from("asignaciones_minizona").select("brigadista_id, orden, minizonas(estado)"),
         supabase.from("cola_items").select("*", { count: "exact", head: true }).eq("regla", "A"),
       ]);
 
@@ -102,7 +116,7 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
       setVisitas((vis.data as unknown as VisitaLite[]) || []);
       setCortes((cor.data as unknown as CorteLite[]) || []);
       setBrigadistas(brig.data || []);
-      setAsignaciones(asig.data || []);
+      setAsignaciones((asig.data as unknown as typeof asignaciones) || []);
       setNA(colaA.count || 0);
       setLoading(false);
     }
@@ -157,14 +171,19 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
   };
 
   // --- Roster ---
+  // "hechas"/"asignadas" son el bloque completo (multi-día); "hoy" es el cupo real del
+  // día (META_MINIZONAS_DIA = 8), la misma cuenta que ve el brigadista en su ruta.
   const roster = brigadistas.map((b) => {
     const mias = asignaciones.filter((a) => a.brigadista_id === b.id);
-    const hechas = mias.filter((a) => a.estado === "completada").length;
+    const bloque = celdasEnOrden(mias.map((a) => ({ orden: a.orden, minizonas: a.minizonas })));
+    const hechas = bloque.filter((m) => m.estado === "cubierta").length;
+    const hoy = rutaDelDia(bloque).length;
     const visitasDeHoy = visitasHoy.filter((v) => v.brigadista_id === b.id).length;
     return {
       ...b,
-      asignadas: mias.length,
+      asignadas: bloque.length,
       hechas,
+      hoy,
       visitasHoy: visitasDeHoy,
       activo: visitasDeHoy > 0,
     };
@@ -203,7 +222,7 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
           color="green"
           label="Brigadistas activos hoy"
           valor={`${activosHoy} / ${brigadistas.length}`}
-          nota={`${visitasHoy.length} viviendas registradas hoy · ${nA} sectores en Regla A`}
+          nota={`${visitasHoy.length} viviendas registradas hoy · ${nA} zonas riesgosas`}
         />
       </div>
 
@@ -265,11 +284,11 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
 
       <div className="grid gap-4 xl:grid-cols-[1fr_1.6fr]">
         <Card>
-          <CardHead titulo="Índices Stegomyia" />
+          <CardHead titulo="Presencia de zancudo (HI/CI/BI)" />
           <div className="grid grid-cols-3 gap-2">
-            <Semaforo label="HI" valor={promedio("hi")} umbral={4} />
-            <Semaforo label="CI" valor={promedio("ci")} umbral={3} />
-            <Semaforo label="BI" valor={promedio("bi")} umbral={5} />
+            <Semaforo label="HI" nombre="Índice de vivienda" valor={promedio("hi")} umbral={4} />
+            <Semaforo label="CI" nombre="Índice de recipientes" valor={promedio("ci")} umbral={3} />
+            <Semaforo label="BI" nombre="Índice de Breteau" valor={promedio("bi")} umbral={5} />
           </div>
           <p className="mt-3 text-xs text-ios-label-2">
             Promedio de los sectores con registros. En rojo, por encima del umbral OPS.
@@ -320,7 +339,7 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
                     <div>
                       <Progreso pct={pct} />
                       <p className="mt-1 text-[11px] text-ios-label-2">
-                        {b.hechas} / {b.asignadas} minizonas
+                        {b.hoy} hoy · {b.hechas}/{b.asignadas} en su bloque
                       </p>
                     </div>
                     <Pill tono={b.activo ? "on" : "off"}>{b.activo ? "Activo" : "Sin registros"}</Pill>

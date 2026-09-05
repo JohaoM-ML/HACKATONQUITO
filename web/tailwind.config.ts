@@ -39,8 +39,11 @@ const config: Config = {
         risk: {
           alto: "#DC2626",
           "alto-bg": "#FCE8E7",
-          medio: "#C2410C",
-          "medio-bg": "#FCE9DD",
+          // Antes #C2410C (un rojo-ladrillo casi igual a "alto" — no se distinguían
+          // bien ni en el mapa ni en las píldoras). Ahora es un ámbar claramente
+          // amarillo, como pidió el jefe: rojo = riesgo alto, amarillo = medio.
+          medio: "#CA8A04",
+          "medio-bg": "#FEF3C7",
           bajo: "#16A34A",
           "bajo-bg": "#E4F6EA",
         },

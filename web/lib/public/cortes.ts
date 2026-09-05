@@ -105,7 +105,7 @@ export async function fetchCortesPublicos(
 
   return {
     ok: true,
-    fuente: "Anuncios Interagua (cortes) + cola operativa Regla A — VENTANA SECA",
+    fuente: "Anuncios Interagua (cortes) + cola operativa de zonas riesgosas — VENTANA SECA",
     aviso:
       "Datos públicos de cortes de agua y cola operativa. No afirman ni garantizan reducción de casos de dengue.",
     actualizado: new Date().toISOString(),
@@ -135,7 +135,7 @@ export function buildWhatsAppReply(data: CortesPublicPayload): string {
 
   if (data.cola_regla_a.length > 0) {
     lineas.push("");
-    lineas.push("Prioridad operativa (Regla A):");
+    lineas.push("Zonas riesgosas prioritarias:");
     for (const q of data.cola_regla_a.slice(0, 4)) {
       const sector = q.sector || "sector";
       const accion = q.accion || "revisar recipientes";

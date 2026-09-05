@@ -41,10 +41,52 @@ export const META_VIVIENDAS_MINIZONA = 5;
  */
 export const META_MINIZONAS_DIA = 8;
 
-/** Radios ofrecidos al jefe al delimitar un sector, en metros. */
-export const RADIOS_SECTOR = [300, 500, 800, 1200] as const;
+/**
+ * Radios que puede asignar el sistema al delimitar un sector, en metros.
+ * Calibrados para que el tramo generado sea recorrible por la brigada asignada
+ * en, como mucho, un día de trabajo (META_MINIZONAS_DIA = 8 celdas/brigadista):
+ * 600 m ≈ 65 celdas (todo el equipo en un día), 150 m ≈ 4 celdas (una persona,
+ * media jornada). Antes llegaban a 1200 m (~260 celdas): imposible de cubrir.
+ */
+export const RADIOS_SECTOR = [150, 250, 400, 600] as const;
+
+/**
+ * Centros públicos aproximados para sectores que no se pueden geocodificar
+ * (sin clave de Google o resultado fuera de Guayaquil). El jefe ya no corrige esto
+ * a mano; si un sector no aparece aquí y tampoco geocodifica, queda "sin ubicar"
+ * en vez de inventarle coordenadas — ver `resolverCentro` en la API de generación.
+ */
+export const CENTROS_PUBLICOS: Record<string, LatLon> = {
+  "cristo-del-consuelo": { lat: -2.2184, lon: -79.9182 },
+  fertisa: { lat: -2.2368, lon: -79.9004 },
+  guasmo: { lat: -2.2465, lon: -79.8942 },
+  "isla-trinitaria": { lat: -2.2258, lon: -79.9106 },
+  "la-floresta": { lat: -2.2319, lon: -79.8881 },
+  "las-malvinas": { lat: -2.2147, lon: -79.9053 },
+  "Cristo del Consuelo": { lat: -2.2184, lon: -79.9182 },
+  Fertisa: { lat: -2.2368, lon: -79.9004 },
+  Guasmo: { lat: -2.2465, lon: -79.8942 },
+  "Isla Trinitaria": { lat: -2.2258, lon: -79.9106 },
+  "La Floresta": { lat: -2.2319, lon: -79.8881 },
+  "Las Malvinas": { lat: -2.2147, lon: -79.9053 },
+};
 
 export type LatLon = { lat: number; lon: number };
+
+/**
+ * Radio de cobertura que decide el sistema, a partir del puntaje real del motor de
+ * reglas (corte de agua + almacenamiento + bonus de tendencia). Ya no lo elige el jefe:
+ * el jefe supervisa el resultado, no lo configura.
+ *
+ * Regla A (corte confirmado + almacenamiento pedido) cubre más terreno porque el riesgo
+ * ya está confirmado. Regla B es una hipótesis sin validar (ver reglas.ts): se cubre un
+ * radio menor, más exploratorio, hasta que una visita la confirme o la descarte.
+ */
+export function radioAutomatico(regla: "A" | "B" | "C" | null, puntaje: number): number {
+  if (regla === "A") return puntaje >= 90 ? RADIOS_SECTOR[3] : RADIOS_SECTOR[2];
+  if (regla === "B") return puntaje >= 45 ? RADIOS_SECTOR[1] : RADIOS_SECTOR[0];
+  return RADIOS_SECTOR[0];
+}
 
 /** Celda H3 que contiene un punto GPS. */
 export function celdaDesde(lat: number, lon: number): string {
@@ -115,6 +157,31 @@ export function ordenarPorCercania<T extends LatLon>(puntos: T[], inicio?: LatLo
     actual = elegido;
   }
   return ruta;
+}
+
+/**
+ * Ordena las celdas asignadas a una persona por el campo `orden` que dejó el reparto;
+ * si todavía no tiene orden (asignación vieja), cae a vecino más cercano.
+ * Compartido entre la vista del brigadista y los resúmenes del jefe (panel/equipo)
+ * para que "cuántas le tocan hoy" salga igual en todos lados.
+ */
+export function celdasEnOrden<T>(items: { orden: number | null; minizonas: T | null }[]): T[] {
+  const filas = items.filter(
+    (i): i is { orden: number | null; minizonas: T } => i.minizonas != null
+  );
+  if (!filas.length) return [];
+  if (filas.some((i) => i.orden == null)) {
+    // Solo pasa con asignaciones muy viejas, de antes de guardar `orden`.
+    return ordenarPorCercania(filas.map((i) => i.minizonas) as (T & LatLon)[]) as T[];
+  }
+  return [...filas]
+    .sort((a, b) => (a.orden as number) - (b.orden as number))
+    .map((i) => i.minizonas);
+}
+
+/** Primeras META_MINIZONAS_DIA celdas aún no cubiertas, en orden de caminata del bloque. */
+export function rutaDelDia<T extends { estado: string }>(celdas: T[]): T[] {
+  return celdas.filter((m) => m.estado !== "cubierta").slice(0, META_MINIZONAS_DIA);
 }
 
 /** Largo total de un recorrido, para mostrarle al brigadista cuánto va a caminar. */

@@ -13,28 +13,12 @@
  * NEXT_PUBLIC_GOOGLE_MAPS_API_KEY si la clave no está restringida por referrer).
  */
 import { createClient } from "@supabase/supabase-js";
-import { centroide, mallaDeSector, META_VIVIENDAS_MINIZONA } from "../lib/geo/minizonas";
+import { CENTROS_PUBLICOS, centroide, mallaDeSector, META_VIVIENDAS_MINIZONA } from "../lib/geo/minizonas";
 
 const RADIO_DEFECTO = Number(process.argv[2]) || 500;
 
 // Caja de Guayaquil: descarta resultados que el geocodificador ubique en otra ciudad.
 const CAJA = { latMin: -2.45, latMax: -1.95, lonMin: -80.1, lonMax: -79.7 };
-
-/** Centros públicos aproximados. El jefe puede re-delimitar en /mapa. */
-const CENTROS_PUBLICOS: Record<string, { lat: number; lon: number }> = {
-  "cristo-del-consuelo": { lat: -2.2184, lon: -79.9182 },
-  fertisa: { lat: -2.2368, lon: -79.9004 },
-  guasmo: { lat: -2.2465, lon: -79.8942 },
-  "isla-trinitaria": { lat: -2.2258, lon: -79.9106 },
-  "la-floresta": { lat: -2.2319, lon: -79.8881 },
-  "las-malvinas": { lat: -2.2147, lon: -79.9053 },
-  "Cristo del Consuelo": { lat: -2.2184, lon: -79.9182 },
-  Fertisa: { lat: -2.2368, lon: -79.9004 },
-  Guasmo: { lat: -2.2465, lon: -79.8942 },
-  "Isla Trinitaria": { lat: -2.2258, lon: -79.9106 },
-  "La Floresta": { lat: -2.2319, lon: -79.8881 },
-  "Las Malvinas": { lat: -2.2147, lon: -79.9053 },
-};
 
 async function geocodificar(nombre: string, key: string) {
   const q = encodeURIComponent(`${nombre}, Guayaquil, Guayas, Ecuador`);

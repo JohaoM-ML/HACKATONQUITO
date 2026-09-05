@@ -8,7 +8,7 @@ export default async function ColaPage() {
     <PanelShell
       perfil={perfil}
       title="Cola priorizada"
-      subtitle="Reglas A y B del motor, con su justificación y trazabilidad"
+      subtitle="Zonas riesgosas y medias detectadas por el sistema, con su justificación y trazabilidad"
     >
       <ColaJefeClient />
     </PanelShell>

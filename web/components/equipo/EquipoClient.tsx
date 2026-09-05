@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EstadoCargando, EstadoVacio } from "@/components/estados/Estados";
 import { Avatar, Card, Pill, Progreso } from "@/components/panel/Tarjetas";
-import { etiquetaMinizona } from "@/lib/geo/minizonas";
+import { celdasEnOrden, etiquetaMinizona, rutaDelDia } from "@/lib/geo/minizonas";
 import type { Minizona, Perfil } from "@/types";
 
 type Asignada = { orden: number | null; estado: string; minizonas: Minizona | null };
@@ -83,8 +83,10 @@ export function EquipoClient({ brigadaId }: { brigadaId: string | null }) {
   return (
     <div className="space-y-4">
       {rows.map((r) => {
-        const cubiertas = r.minizonas.filter((m) => m.minizonas?.estado === "cubierta").length;
-        const pct = r.minizonas.length ? (cubiertas / r.minizonas.length) * 100 : 0;
+        const bloque = celdasEnOrden(r.minizonas.map((a) => ({ orden: a.orden, minizonas: a.minizonas })));
+        const cubiertas = bloque.filter((m) => m.estado === "cubierta").length;
+        const hoy = rutaDelDia(bloque).length;
+        const pct = bloque.length ? (cubiertas / bloque.length) * 100 : 0;
         return (
           <Card key={r.id}>
             <div className="flex flex-wrap items-center gap-3.5">
@@ -98,7 +100,7 @@ export function EquipoClient({ brigadaId }: { brigadaId: string | null }) {
               <div className="w-40">
                 <Progreso pct={pct} />
                 <p className="mt-1 text-[11px] text-ios-label-2">
-                  {cubiertas} / {r.minizonas.length} minizonas cubiertas
+                  {hoy} hoy · {cubiertas}/{bloque.length} en su bloque
                 </p>
               </div>
               <Pill tono={r.visitasHoy > 0 ? "on" : "off"}>
@@ -106,32 +108,24 @@ export function EquipoClient({ brigadaId }: { brigadaId: string | null }) {
               </Pill>
             </div>
 
-            {r.minizonas.length > 0 && (
+            {bloque.length > 0 && (
               <div className="mt-3.5 border-t border-ios-sep pt-3">
                 <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ios-label-2">
-                  Ruta asignada
+                  Ruta de hoy{bloque.length > hoy ? ` · ${bloque.length - cubiertas - hoy} más en su bloque` : ""}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {r.minizonas.map((m, i) =>
-                    m.minizonas ? (
-                      <span
-                        key={m.minizonas.id}
-                        className={
-                          "rounded-lg px-2 py-1 text-[11px] font-semibold " +
-                          (m.minizonas.estado === "cubierta"
-                            ? "bg-risk-bajo-bg text-risk-bajo"
-                            : m.minizonas.origen === "cerco"
-                              ? "bg-risk-alto-bg text-risk-alto"
-                              : m.minizonas.estado === "en_curso"
-                                ? "bg-risk-medio-bg text-risk-medio"
-                                : "bg-ios-fill text-ios-label-2")
-                        }
-                        title={m.minizonas.origen === "cerco" ? "Cerco de un foco" : "Malla del sector"}
-                      >
-                        {i + 1}. {etiquetaMinizona(m.minizonas.h3)}
-                      </span>
-                    ) : null
-                  )}
+                  {rutaDelDia(bloque).map((m, i) => (
+                    <span
+                      key={m.id}
+                      className={
+                        "rounded-lg px-2 py-1 text-[11px] font-semibold " +
+                        (m.origen === "cerco" ? "bg-risk-alto-bg text-risk-alto" : "bg-ios-fill text-ios-label-2")
+                      }
+                      title={m.origen === "cerco" ? "Cerco de un foco" : "Malla del sector"}
+                    >
+                      {i + 1}. {etiquetaMinizona(m.h3)}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}

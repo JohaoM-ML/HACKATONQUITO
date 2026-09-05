@@ -259,7 +259,7 @@ export function clasificarBarrio(
       justificacion:
         `Corte de ${durTxt} hace ${dias} días. ` +
         `Interagua/prensa reportó pedido de almacenar. ` +
-        `Regla A: cola de esta semana.` +
+        `Zona riesgosa: cola de esta semana.` +
         (aplicaD ? " Bonus D: casos provinciales en alza (no define el barrio)." : ""),
       puntaje,
       evidencias,
@@ -281,8 +281,8 @@ export function clasificarBarrio(
       accion: "Revisar recipientes con agua almacenada del corte (hipótesis, no hecho EC).",
       justificacion:
         `Corte hace ${dias} días (ventana 7–14 d = ciclo huevo→adulto de Aedes aegypti). ` +
-        `No cumple A: ${horas == null ? "duración desconocida" : horas < 8 ? `duración ${horas} h < 8 h` : "sin pedido explícito de almacenar"}. ` +
-        `Regla B = hipótesis biológica; NO validada con datos ecuatorianos en este proyecto ` +
+        `No cumple zona riesgosa: ${horas == null ? "duración desconocida" : horas < 8 ? `duración ${horas} h < 8 h` : "sin pedido explícito de almacenar"}. ` +
+        `Zona media = hipótesis biológica; NO validada con datos ecuatorianos en este proyecto ` +
         `(lags 0–20 sem de corte_hn sin efecto significativo en results/lag_effects.csv). ` +
         `Requiere confirmación humana antes de priorizar como hallazgo.`,
       puntaje,
@@ -297,7 +297,7 @@ export function clasificarBarrio(
       origen_dato: Array.from(new Set([...origen_dato, "inferido"])),
       aplica_d: aplicaD,
       hipotesis: true,
-      label_regla: "VENTANA DE CRIADERO (hipótesis)",
+      label_regla: "VENTANA DE CRIADERO",
       requiere_confirmacion_humana: true,
     };
   }
@@ -321,6 +321,17 @@ export function clasificarBarrio(
     aplica_d: aplicaD,
     hipotesis: false,
   };
+}
+
+/**
+ * Nombre que ve el jefe para cada regla — sin jerga interna del motor ("hipótesis",
+ * "label_regla" crudo). El detalle técnico sigue disponible en `justificacion` y
+ * `puntaje`; esto es solo la etiqueta corta de la UI.
+ */
+export function etiquetaZona(regla: "A" | "B" | "C" | null): string {
+  if (regla === "A") return "Zona riesgosa";
+  if (regla === "B") return "Zona media";
+  return "Sin prioridad";
 }
 
 export function ordenarCola<T extends Clasificacion & { nombre?: string }>(items: T[]): T[] {

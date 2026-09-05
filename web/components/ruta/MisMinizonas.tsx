@@ -7,31 +7,16 @@ import { createClient } from "@/lib/supabase/client";
 import { MapaBrigadista } from "@/components/ruta/MapaBrigadista";
 import {
   META_MINIZONAS_DIA,
+  celdasEnOrden,
   distanciaM,
   etiquetaMinizona,
   largoRutaM,
-  ordenarPorCercania,
+  rutaDelDia,
 } from "@/lib/geo/minizonas";
 import type { Minizona } from "@/types";
 import { cn } from "@/lib/utils";
 
 type Asignada = { orden: number | null; estado: string; minizonas: Minizona | null };
-
-function celdasEnOrden(items: Asignada[]): Minizona[] {
-  const filas = items.filter((i): i is Asignada & { minizonas: Minizona } => Boolean(i.minizonas));
-  if (!filas.length) return [];
-  if (filas.some((i) => i.orden == null)) {
-    return ordenarPorCercania(filas.map((i) => i.minizonas));
-  }
-  return [...filas]
-    .sort((a, b) => (a.orden as number) - (b.orden as number))
-    .map((i) => i.minizonas);
-}
-
-/** Primeras 8 celdas aún no cubiertas, en orden de caminata del bloque. */
-function rutaDelDia(celdas: Minizona[]): Minizona[] {
-  return celdas.filter((m) => m.estado !== "cubierta").slice(0, META_MINIZONAS_DIA);
-}
 
 /**
  * Jornada del brigadista: solo el cupo diario (8 minizonas), no el bloque entero.
