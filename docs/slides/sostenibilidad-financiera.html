@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZANKU — Sostenibilidad financiera · Guayaquil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <style>
+    /* ===========================================
+       THEME — replica de la diapositiva original
+       =========================================== */
+    :root {
+      --navy: #0b2744;
+      --navy-deep: #081c33;
+      --ice: #d5e8f6;
+      --ice-deep: #c5dcf0;
+      --paper: #ffffff;
+      --ink: #0b2744;
+      --muted: #4d6578;
+      --amber: #c97820;
+      --good: #1f6b4a;
+      --stage-bg: #081c33;
+      --slide-bg: #ffffff;
+      --font-display: "Source Serif 4", Georgia, serif;
+      --font-body: "Source Sans 3", sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ===========================================
+       FIXED 16:9 STAGE (viewport-base.css)
+       =========================================== */
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--stage-bg, #000);
+    }
+    .deck-viewport {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: var(--stage-bg, #000);
+    }
+    .deck-stage {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      transform-origin: 0 0;
+      background: var(--slide-bg, #fff);
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      display: block;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      background: var(--slide-bg, #fff);
+      font-family: var(--font-body);
+      color: var(--ink);
+    }
+    .slide.active, .slide.visible {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 1;
+    }
+    img, video, canvas, svg { max-width: 100%; max-height: 100%; }
+    .deck-controls {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: #c5dcf0;
+      background: rgba(8, 28, 51, 0.72);
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+    .deck-controls button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      font: inherit;
+      cursor: pointer;
+      padding: 2px 8px;
+    }
+    @media print {
+      html, body { width: 1920px; height: auto; overflow: visible; background: #fff; }
+      .deck-viewport { position: static; overflow: visible; background: #fff; }
+      .deck-stage { position: static; width: auto; height: auto; transform: none !important; background: none; }
+      .slide {
+        position: relative;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        width: 1920px;
+        height: 1080px;
+        break-after: page;
+        page-break-after: always;
+      }
+      .slide:last-child { break-after: auto; page-break-after: auto; }
+      .deck-controls { display: none !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+      }
+    }
+
+    /* ===========================================
+       SLIDE CHROME
+       =========================================== */
+    .band {
+      background: var(--navy);
+      color: #fff;
+    }
+    .head {
+      padding: 36px 72px 28px;
+    }
+    .head h1 {
+      font-family: var(--font-display);
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+    }
+    .head p {
+      margin-top: 10px;
+      font-size: 22px;
+      font-weight: 400;
+      color: #d5e8f6;
+      max-width: 1680px;
+      line-height: 1.35;
+    }
+    .body {
+      padding: 22px 72px 168px;
+    }
+    .foot {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 26px 72px 28px;
+      background: var(--navy-deep);
+      color: #fff;
+    }
+    .foot p {
+      font-size: 22px;
+      line-height: 1.4;
+    }
+    .foot strong { color: #fff; }
+    .amber { color: var(--amber); font-weight: 700; }
+    .good { color: var(--good); font-weight: 700; }
+
+    /* === VALUE CARDS === */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 22px;
+    }
+    .card {
+      background: var(--ice);
+      border-radius: 10px;
+      padding: 22px 24px 20px;
+      min-height: 168px;
+    }
+    .card .ico {
+      width: 36px;
+      height: 36px;
+      margin-bottom: 10px;
+      color: var(--navy);
+    }
+    .card h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    .card p {
+      font-size: 17px;
+      line-height: 1.35;
+      color: var(--ink);
+    }
+
+    /* === PILLS === */
+    .pills {
+      display: flex;
+      gap: 16px;
+      margin: 22px 0 16px;
+    }
+    .pill {
+      background: var(--ice);
+      color: var(--navy);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 10px 18px;
+      border-radius: 8px;
+    }
+
+    /* === TABLE === */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 20px;
+    }
+    thead th {
+      background: var(--navy);
+      color: #fff;
+      text-align: left;
+      font-weight: 700;
+      font-size: 18px;
+      padding: 12px 18px;
+    }
+    thead th:nth-child(2),
+    thead th:nth-child(3),
+    tbody td:nth-child(2),
+    tbody td:nth-child(3) { text-align: right; }
+    tbody td {
+      padding: 13px 18px;
+      border-bottom: 1px solid #e4eef5;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) { background: #f4f9fc; }
+    .comp {
+      font-weight: 700;
+      font-size: 20px;
+    }
+    .hint {
+      display: block;
+      margin-top: 3px;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .price {
+      color: var(--amber);
+      font-weight: 700;
+      font-size: 22px;
+    }
+    .real {
+      font-weight: 700;
+      font-size: 20px;
+    }
+    .note {
+      margin-top: 12px;
+      font-size: 15px;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 1780px;
+    }
+
+    /* === SLIDE 2 extras === */
+    .split {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 22px;
+    }
+    .mini {
+      background: var(--ice);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .mini h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .mini p, .mini li {
+      font-size: 16px;
+      line-height: 1.4;
+      color: var(--ink);
+    }
+    .mini ul { padding-left: 18px; }
+    .mini li { margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <div class="deck-viewport">
+    <div class="deck-stage" id="stage">
+
+      <!-- ===========================================
+           SLIDE 1 — formato original, cifras nuevas
+           =========================================== -->
+      <section class="slide visible" data-slide="1">
+        <header class="band head">
+          <h1>Sostenibilidad financiera</h1>
+          <p>No solo es barato — genera algo que hoy no existe: evidencia propia de qué funciona. Canal ciudadano: app WhatsApp Business (la verde), no Twilio ni Cloud API.</p>
+        </header>
+        <div class="body">
+          <div class="cards">
+            <article class="card">
+              <svg class="ico" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                <path d="M10 34c6-10 8-16 8-22" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                <circle cx="18" cy="10" r="3.2" fill="currentColor"/>
+                <path d="M18 14c8 4 12 12 14 20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                <circle cx="33" cy="36" r="3.2" fill="currentColor"/>
+                <circle cx="10" cy="36" r="2.4" fill="currentColor"/>
+              </svg>
+              <h3>Rutas optimizadas</h3>
+              <p>La misma brigada cubre más manzanas de riesgo, sin contratar más personal. En Guayaquil ya recorren ~150 manzanas/día: ZANKU reordena, no duplica nómina.</p>
+            </article>
+            <article class="card">
+              <svg class="ico" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                <rect x="12" y="8" width="24" height="32" rx="3" stroke="currentColor" stroke-width="2.4"/>
+                <path d="M18 18h12M18 24h12M18 30h8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+              <h3>Evidencia propia, por vivienda</h3>
+              <p>Cada visita registra qué acción se hizo — tapar, larvicida, malla — y el resultado en la reinspección. El HI/CI/BI sale del campo, no de Twilio.</p>
+            </article>
+            <article class="card">
+              <svg class="ico" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                <path d="M24 8c8 6 12 12 12 18a12 12 0 1 1-24 0c0-6 4-12 12-18z" stroke="currentColor" stroke-width="2.4"/>
+                <circle cx="24" cy="26" r="4" fill="currentColor"/>
+              </svg>
+              <h3>Decide con datos, no a ciegas</h3>
+              <p>Por primera vez el municipio sabe qué intervención reduce más rápido el riesgo en cada tipo de barrio — y el tip del corte sale del panel al WhatsApp del jefe.</p>
+            </article>
+          </div>
+
+          <div class="pills">
+            <span class="pill">1. Implementación + capacitación · pago único</span>
+            <span class="pill">2. Licencia anual · pago recurrente</span>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Componente</th>
+                <th>Tu costo real</th>
+                <th>Precio sugerido</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="comp">Implementación + capacitación</span>
+                  <span class="hint">Endurecer app (RLS, backups) · convenio LOPDP · diccionario de sectores Interagua · 2 jornadas · perfil WhatsApp Business. Fee Meta = $0.</span>
+                </td>
+                <td class="real">$2.000 – $5.200</td>
+                <td class="price">$4.000 – $7.000</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="comp">Licencia anual</span>
+                  <span class="hint">Base hasta 10 brigadistas. Vercel + Supabase + ~20 h/mes de mantenimiento. Las brigadas las pone el Municipio / MSP — no van en esta línea.</span>
+                </td>
+                <td class="real">$4.100 – $8.000/año</td>
+                <td class="price">$10.000 – $15.000/año</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="comp">WhatsApp Business (app, no API)</span>
+                  <span class="hint">El panel copia el aviso; el jefe lo pega en la app verde. $0 por mensaje. Lista de difusión: máx. 256, y solo si te tienen guardado. Se escala por líder de sector.</span>
+                </td>
+                <td class="real">$0 / aviso · $0–192/año</td>
+                <td class="price">Incluido</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="comp">Por brigadista adicional</span>
+                  <span class="hint">Supabase Pro cubre 100 mil MAU. Un brigadista más no abre servidor ni licencia de WhatsApp.</span>
+                </td>
+                <td class="real">Casi $0 extra real</td>
+                <td class="price">$150 – $300/año c/u</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="note">Infraestructura real verificada (Guayaquil, sep 2026): Vercel Pro $20/mes + Supabase Pro $25/mes + dominio $15/año + WhatsApp Business app $0/mensaje (número municipal $0, o línea dedicada $16/mes) ≈ $555–$750/año. Sin Twilio, sin Cloud API, sin n8n. El resto del costo es mantenimiento humano, no servidores.</p>
+        </div>
+        <footer class="foot">
+          <p>Un distrito piloto cuesta <strong>$14.000–$22.000 el primer año</strong> (implementación + 1ª licencia). El Municipio de <strong>Guayaquil</strong> ya gasta entre $120.000 y $200.000 al año solo en toldos mosquiteros (40.000 unidades/año) — ZANKU completo es <span class="amber">menos del 15%</span> de un solo insumo que ya compran. No se contrata una segunda brigada.</p>
+        </footer>
+      </section>
+
+      <!-- ===========================================
+           SLIDE 2 — mismo formato, desglose Guayaquil
+           =========================================== -->
+      <section class="slide" data-slide="2">
+        <header class="band head">
+          <h1>Desglose real · cantón Guayaquil</h1>
+          <p>3.007.696 habitantes (INEC 2026) · 16 parroquias urbanas. El software casi no se mueve al pasar de un distrito a la ciudad. El salto lo hace el personal — y solo si decides pagarlo tú.</p>
+        </header>
+        <div class="body">
+          <div class="pills">
+            <span class="pill">Capa sobre brigadas existentes</span>
+            <span class="pill">WhatsApp Business · $0 / aviso</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Modelo de implementación</th>
+                <th>Quién paga al brigadista</th>
+                <th>Costo año 1 (sin IVA)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="comp">Capa software</span>
+                  <span class="hint">Vercel + Supabase + número municipal de WhatsApp Business. El jefe del centro pega el aviso. Mes 0: endurecer app y 1 jornada.</span>
+                </td>
+                <td>Municipio / MSP (ya existe)</td>
+                <td class="price">~$2.500 – $4.200</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="comp">Equipo de proyecto</span>
+                  <span class="hint">Lo que conviene cotizar: 1 coordinador ($1.200 bruto → $1.524 cargado) + 20 h/mes de Next.js + línea dedicada $16/mes. Piloto 3 meses ≈ $12.000.</span>
+                </td>
+                <td>Municipio / MSP (ya existe)</td>
+                <td class="price">~$32.000</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="comp">Brigada propia</span>
+                  <span class="hint">15 brigadistas × $700 + 1 jefe × $1.400 + IESS/13º/14º + transporte. Quitar Twilio no baja esto: es nómina, no mensajes. El pitch no pide esto.</span>
+                </td>
+                <td>Tú · 16 contratos nuevos</td>
+                <td class="price">~$230.000</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="split" style="margin-top: 20px;">
+            <div class="mini">
+              <h3>SaaS mensual (el mismo de 1 distrito o de 16 parroquias)</h3>
+              <ul>
+                <li>Vercel Pro $20 + Supabase Pro $25 + dominio $1,25 ≈ <strong>$46/mes</strong></li>
+                <li>WhatsApp Business: $0/aviso · $0 si usan el número del centro · $16 si hay línea ZANKU</li>
+                <li>Tope operativo: 256 contactos por lista de difusión. Grupos de barrio: sin tope, hay que moderar.</li>
+                <li>Chat 1:1 a 15 mil hogares no cabe en la app. Automatizar la app (Baileys / “API no oficial”) no está en esta cuenta.</li>
+              </ul>
+            </div>
+            <div class="mini">
+              <h3>Contra qué se paga solo</h3>
+              <p>Un día de 16 personas mal dirigidas ≈ $320. El stack de ~$46–62/mes se paga si evitas ese día una vez cada cuatro meses. El Municipio ya hizo 268 mil intervenciones ene–jul 2026. ZANKU no compra motomochilas: compra que las 150 manzanas del día sean las del corte de Interagua.</p>
+            </div>
+          </div>
+        </div>
+        <footer class="foot">
+          <p>Precio al Municipio (slide 1): <strong>$14.000–$22.000</strong> el primer distrito. Costo interno si solo se vende la capa: <strong>~$3.200/año</strong>. Si el proyecto pone coordinador: <strong>~$32.000/año</strong>. Recrear la brigada: no. IVA 15% solo sobre SaaS y honorarios si se factura a RUC.</p>
+        </footer>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="deck-controls" aria-label="Navegación">
+    <button type="button" id="prev">←</button>
+    <span id="pos">1 / 2</span>
+    <button type="button" id="next">→</button>
+  </div>
+
+  <script>
+    (function () {
+      const viewport = document.querySelector(".deck-viewport");
+      const stage = document.getElementById("stage");
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      let i = 0;
+
+      function fit() {
+        const s = Math.min(viewport.clientWidth / 1920, viewport.clientHeight / 1080);
+        const x = (viewport.clientWidth - 1920 * s) / 2;
+        const y = (viewport.clientHeight - 1080 * s) / 2;
+        stage.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      }
+
+      function show(n) {
+        i = (n + slides.length) % slides.length;
+        slides.forEach((el, idx) => {
+          const on = idx === i;
+          el.classList.toggle("active", on);
+          el.classList.toggle("visible", on);
+        });
+        document.getElementById("pos").textContent = (i + 1) + " / " + slides.length;
+      }
+
+      window.addEventListener("resize", fit);
+      document.getElementById("prev").addEventListener("click", () => show(i - 1));
+      document.getElementById("next").addEventListener("click", () => show(i + 1));
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          show(i + 1);
+        }
+        if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          show(i - 1);
+        }
+      });
+      fit();
+      show(0);
+    })();
+  </script>
+</body>
+</html>
