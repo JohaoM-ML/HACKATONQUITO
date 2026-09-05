@@ -115,7 +115,7 @@ error. El producto se queda, por tanto, en lo que sí se puede defender:
 ruteo operativo (Regla A) + termómetro nacional (MAE), y un oficio al MSP
 por dengue o LIRAa por parroquia/sector.
 
-El entregable es una PWA \textit{offline} con cola A--D, un panel de
+El entregable es una PWA Next.js + Supabase (online) con cola A--D, un panel de
 jefe, y un pipeline de experimentos reproducible
 (\texttt{scripts/run\_experiments.py} y extensiones). El DLNM+INLA a
 escala de manzana sigue siendo el objetivo de un piloto con convenio, no
@@ -629,7 +629,7 @@ nacional: GLM-NB / XGBoost en Python (\texttt{scripts/}). INLA a
 manzana: fuera del MVP.\\
 API / backend & Servicio ligero que expone la cola priorizada por
 distrito; costo de servidor marginal.\\
-App de brigada & PWA \textit{offline-first} (IndexedDB), cola descargable,
+App de brigada & PWA Next.js + Supabase (login por roles), cola en Postgres,
 captura por predio, sincronización oportunista al reconectar.\\
 Panel distrital & Cobertura de manzanas de alto riesgo visitadas antes del
 pico; exportación imprimible.\\
@@ -763,7 +763,7 @@ Tres piezas, ninguna de ellas hardware:
         hipótesis; C no emite ítems).
   \item \textbf{Pronóstico nacional} (MAE) documentado; no define la
         ruta.
-  \item \textbf{PWA} cola + predio + panel de jefe, demostrable en modo
+  \item \textbf{PWA} cola + captura entomológica (HI/CI/BI) + panel de jefe, demostrable en modo
         avión.
 \end{enumerate}
 No se promete validación del rezago de Lowe ni mapa de manzanas.
@@ -901,7 +901,7 @@ servicio intermitente —la norma, no la excepción—, lo que abre Piura
 \textbf{Horizonte} & \textbf{Actividad y criterio de avance}\\
 \midrule
 \endhead
-Hackatón & Cola A--D + PWA + MAE nacional. Criterio: no fingir $Y$ de
+Hackatón & Cola A--D + PWA Next.js/Supabase + MAE nacional. Criterio: no fingir $Y$ de
 barrio; documentar que el rezago de cortes no aparece a escala
 disponible.\\
 Mes 1 & Oficio DNVE (EPI-1 cantón/parroquia) + Control Vectorial
@@ -961,7 +961,7 @@ histórico de brigada y la relación institucional.\\
 
 \begin{enumerate}[leftmargin=1.6em]
   \item \textbf{No reconstruye algo que ya existe.} Ecuador ya tiene
-  pronóstico hidrológico nacional, malla offline resuelta y apps de
+  pronóstico hidrológico nacional, captura entomológica en campo (HI/CI/BI) y apps de
   reporte ciudadano probadas (y fallidas). La mayoría de propuestas del
   hackatón reconstruirán una de esas tres.
   \item \textbf{Probamos la hipótesis incómoda y reportamos el no.} Los

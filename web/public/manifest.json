@@ -1,0 +1,18 @@
+{
+  "name": "VENTANA SECA",
+  "short_name": "VentanaSeca",
+  "description": "Brigadas antidengue · cola por cortes + captura entomológica",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#1E3A8A",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

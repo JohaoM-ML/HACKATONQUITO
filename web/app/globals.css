@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --tab-h: 61px;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-ios-sep text-ios-label font-sans antialiased;
+  min-height: 100dvh;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex min-h-tap w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-base font-semibold text-white disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex min-h-tap w-full items-center justify-center rounded-xl bg-ios-fill px-4 py-3 text-base font-semibold text-ios-label disabled:opacity-50;
+  }
+  .chip {
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-xl border-2 border-ios-sep bg-white px-3 py-2 text-sm font-semibold text-ios-label-2 transition;
+  }
+  .chip-active {
+    @apply border-primary bg-primary/10 text-primary;
+  }
+  .card {
+    @apply rounded-2xl bg-ios-card p-4 shadow-sm;
+  }
+  .input-field {
+    @apply w-full rounded-xl border border-ios-sep bg-white px-4 py-3 text-base outline-none focus:border-primary;
+  }
+  .label-field {
+    @apply mb-1.5 block text-sm font-semibold text-ios-label-2;
+  }
+}
