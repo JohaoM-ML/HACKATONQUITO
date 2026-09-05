@@ -20,6 +20,11 @@ const DICT = {
   motivo_almacenamiento: "corte_programado|corte_emergente|presion_baja|costumbre|no_aplica",
   dias_almacenada: "días con agua almacenada",
   recibio_tanquero: "bool",
+  accion_eliminar_tapar: "bool — vació, destruyó o tapó criaderos",
+  accion_larvicida: "bool — aplicó larvicida",
+  accion_malla: "bool — instaló malla",
+  accion_entrenar_hogar: "bool — educó / entrenó al hogar",
+  accion_entregar_material: "bool — entregó folleto, tapa o kit",
   recipiente_tipo: "tipo Stegomyia",
   uso: "almacenamiento_consumo|almacenamiento_limpieza|desecho|decorativo",
   capacidad_l: "menos_20|20_100|100_500|mas_500",
@@ -31,6 +36,10 @@ const DICT = {
   n_pupas: "1_10|11_50|mas_50",
   tratado: "larvicida|eliminado|tapado|ninguno",
 };
+
+function incluyeAccion(acciones: unknown, clave: string): boolean {
+  return Array.isArray(acciones) && acciones.includes(clave);
+}
 
 function csvEscape(v: unknown): string {
   if (v == null) return "";
@@ -97,6 +106,11 @@ export async function GET() {
       motivo_almacenamiento: v.motivo_almacenamiento,
       dias_almacenada: v.dias_almacenada,
       recibio_tanquero: v.recibio_tanquero,
+      accion_eliminar_tapar: incluyeAccion(v.acciones, "eliminar_tapar"),
+      accion_larvicida: incluyeAccion(v.acciones, "larvicida"),
+      accion_malla: incluyeAccion(v.acciones, "malla"),
+      accion_entrenar_hogar: incluyeAccion(v.acciones, "entrenar_hogar"),
+      accion_entregar_material: incluyeAccion(v.acciones, "entregar_material"),
     };
 
     const recips = (v.recipientes as Record<string, unknown>[]) || [];

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EstadoCargando, EstadoVacio } from "@/components/estados/Estados";
 import { etiquetaMinizona } from "@/lib/geo/minizonas";
-import type { Visita } from "@/types";
+import { ACCIONES_VISITA, type AccionVisita, type Visita } from "@/types";
 
 type VisitaRow = Visita & {
   sectores?: { nombre: string } | null;
@@ -90,6 +90,22 @@ export function MisRegistrosClient({ brigadistaId }: { brigadistaId: string }) {
                 <p className="text-xs text-muted-fg">
                   {new Date(v.fecha_hora).toLocaleString("es-EC")}
                 </p>
+                {v.acciones?.length ? (
+                  <ul className="mt-2 flex flex-wrap gap-1.5">
+                    {ACCIONES_VISITA.filter((a) =>
+                      (v.acciones as AccionVisita[]).includes(a.value)
+                    ).map((a) => (
+                      <li
+                        key={a.value}
+                        className="rounded bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary"
+                      >
+                        {a.label}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-[11px] text-muted-fg">Sin acciones marcadas</p>
+                )}
               </li>
             ))}
           </ul>

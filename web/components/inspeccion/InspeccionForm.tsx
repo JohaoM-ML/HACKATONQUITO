@@ -6,8 +6,15 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { celdaDesde, etiquetaMinizona } from "@/lib/geo/minizonas";
 import {
+  inferirAccionesDesdeRecipientes,
+  mergeAcciones,
+} from "@/lib/inspeccion/acciones";
+import { AccionesChecklist } from "@/components/inspeccion/AccionesChecklist";
+import {
+  ACCIONES_VISITA,
   TIPOS_RECIPIENTE,
   USOS_RECIPIENTE,
+  type AccionVisita,
   type EstadoVisita,
   type MotivoAlmacenamiento,
   type Recipiente,
@@ -107,10 +114,14 @@ export function InspeccionForm(props: Props) {
   const [recipientes, setRecipientes] = useState<Recipiente[]>([emptyRecip()]);
   const [idxRec, setIdxRec] = useState(0);
 
-  // Nivel 4
-  const [educo, setEduco] = useState(true);
-  const [material, setMaterial] = useState(false);
+  // Nivel 4 — checklist de intervenciones (covariable para reinfestación)
+  const [acciones, setAcciones] = useState<AccionVisita[]>([]);
+  const [accionesTocadas, setAccionesTocadas] = useState(false);
   const [reinspeccion, setReinspeccion] = useState(false);
+  const sugeridas = useMemo(
+    () => inferirAccionesDesdeRecipientes(recipientes),
+    [recipientes]
+  );
 
   const actual = recipientes[idxRec];
 
@@ -203,9 +214,10 @@ export function InspeccionForm(props: Props) {
       motivo_almacenamiento: estadoVisita === "inspeccionada" ? (almacena ? motivo : "no_aplica") : null,
       dias_almacenada: estadoVisita === "inspeccionada" && almacena ? diasAlmacenada : null,
       recibio_tanquero: estadoVisita === "inspeccionada" ? tanquero : null,
-      se_educo_hogar: educo,
-      material_entregado: material,
+      se_educo_hogar: acciones.includes("entrenar_hogar"),
+      material_entregado: acciones.includes("entregar_material"),
       requiere_reinspeccion: reinspeccion,
+      acciones,
     };
 
     const { data: visita, error: vErr } = await supabase
@@ -275,7 +287,7 @@ export function InspeccionForm(props: Props) {
             { n: 1, label: "Visita" },
             { n: 2, label: "Hogar" },
             { n: 3, label: "Recipientes" },
-            { n: 4, label: "Acción" },
+            { n: 4, label: "Acciones" },
           ].map(({ n, label }) => (
             <div key={n} className="flex-1">
               <div
@@ -343,6 +355,10 @@ export function InspeccionForm(props: Props) {
               La visita ya está ligada a esta minizona. Capturá GPS para confirmar o corregir.
             </p>
           )}
+          <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-relaxed text-fg">
+            Al final vas a marcar las <span className="font-bold text-primary">acciones que ejecutaste</span>
+            {" "}(tapar, larvicida, malla, entrenar, material). Eso permite comparar hogares.
+          </p>
         </div>
       )}
 
@@ -622,6 +638,28 @@ export function InspeccionForm(props: Props) {
 
       {paso === 4 && (
         <div className="space-y-4">
+          <AccionesChecklist
+            value={acciones}
+            sugeridas={sugeridas}
+            onChange={(next) => {
+              setAccionesTocadas(true);
+              setAcciones(next);
+            }}
+          />
+          <div>
+            <label className="label-field">¿Requiere reinspección?</label>
+            <ChipGroup
+              value={reinspeccion ? "si" : "no"}
+              onChange={(v) => setReinspeccion(v === "si")}
+              options={[
+                { value: "si", label: "Sí" },
+                { value: "no", label: "No" },
+              ]}
+            />
+            <p className="mt-1.5 text-xs text-muted-fg">
+              Si volvés a este hogar, se podrá ver si las acciones de hoy bajaron criaderos.
+            </p>
+          </div>
           <div className="card bg-bg">
             <p className="text-[11px] font-bold uppercase tracking-wide text-muted-fg">
               Resumen antes de guardar
@@ -649,45 +687,20 @@ export function InspeccionForm(props: Props) {
                   </li>
                 </>
               )}
+              <li>
+                <span className="text-muted-fg">Acciones:</span>{" "}
+                {acciones.length
+                  ? ACCIONES_VISITA.filter((a) => acciones.includes(a.value))
+                      .map((a) => a.label)
+                      .join(" · ")
+                  : "ninguna"}
+              </li>
               {minizonaMsg && (
                 <li>
                   <span className="text-muted-fg">Minizona:</span> {minizonaMsg}
                 </li>
               )}
             </ul>
-          </div>
-          <div>
-            <label className="label-field">¿Se educó al hogar?</label>
-            <ChipGroup
-              value={educo ? "si" : "no"}
-              onChange={(v) => setEduco(v === "si")}
-              options={[
-                { value: "si", label: "Sí" },
-                { value: "no", label: "No" },
-              ]}
-            />
-          </div>
-          <div>
-            <label className="label-field">¿Material entregado?</label>
-            <ChipGroup
-              value={material ? "si" : "no"}
-              onChange={(v) => setMaterial(v === "si")}
-              options={[
-                { value: "si", label: "Sí" },
-                { value: "no", label: "No" },
-              ]}
-            />
-          </div>
-          <div>
-            <label className="label-field">¿Requiere reinspección?</label>
-            <ChipGroup
-              value={reinspeccion ? "si" : "no"}
-              onChange={(v) => setReinspeccion(v === "si")}
-              options={[
-                { value: "si", label: "Sí" },
-                { value: "no", label: "No" },
-              ]}
-            />
           </div>
         </div>
       )}
@@ -706,8 +719,12 @@ export function InspeccionForm(props: Props) {
             className="btn-primary flex-1"
             disabled={!puedeContinuar}
             onClick={() => {
-              if (paso === 1 && estadoVisita !== "inspeccionada") setPaso(4);
-              else setPaso((p) => p + 1);
+              const siguiente =
+                paso === 1 && estadoVisita !== "inspeccionada" ? 4 : paso + 1;
+              if (siguiente === 4 && !accionesTocadas) {
+                setAcciones((prev) => mergeAcciones(prev, inferirAccionesDesdeRecipientes(recipientes)));
+              }
+              setPaso(siguiente);
             }}
           >
             Siguiente

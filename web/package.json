@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:motor": "npx tsx lib/motor/reglas.test.ts && npx tsx lib/public/cortes.test.ts",
+    "test:motor": "npx tsx lib/motor/reglas.test.ts && npx tsx lib/public/cortes.test.ts && npx tsx lib/inspeccion/acciones.test.ts",
     "check:geo": "npx tsx scripts/check-geo.ts",
     "seed:cola": "npx tsx scripts/seed-cola.ts",
     "seed:minizonas": "npx tsx scripts/seed-minizonas.ts"

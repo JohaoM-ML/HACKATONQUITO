@@ -162,6 +162,8 @@ export interface Visita {
   material_entregado: boolean | null;
   requiere_reinspeccion: boolean | null;
   notas: string | null;
+  /** Intervenciones hechas en el predio. Sirve para comparar reinfestación. */
+  acciones: AccionVisita[];
 }
 
 export interface Recipiente {
@@ -219,3 +221,33 @@ export const USOS_RECIPIENTE: { value: UsoRecipiente; label: string }[] = [
   { value: "desecho", label: "Desecho" },
   { value: "decorativo", label: "Decorativo" },
 ];
+
+export const ACCIONES_VISITA = [
+  {
+    value: "eliminar_tapar",
+    label: "Eliminar o tapar recipiente",
+    detalle: "Vaciar, destruir o tapar criaderos en el predio.",
+  },
+  {
+    value: "larvicida",
+    label: "Aplicar larvicida",
+    detalle: "Tratar agua que el hogar todavía usa.",
+  },
+  {
+    value: "malla",
+    label: "Instalar malla",
+    detalle: "Cubrir tanque, cisterna o ventanas.",
+  },
+  {
+    value: "entrenar_hogar",
+    label: "Entrenar al hogar",
+    detalle: "Explicar criaderos y cómo evitarlos.",
+  },
+  {
+    value: "entregar_material",
+    label: "Entregar material",
+    detalle: "Folleto, tapa, malla o kit al hogar.",
+  },
+] as const;
+
+export type AccionVisita = (typeof ACCIONES_VISITA)[number]["value"];

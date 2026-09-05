@@ -7,7 +7,7 @@ import { EstadoCargando, EstadoError } from "@/components/estados/Estados";
 import { Avatar, Card, CardHead, KpiCard, Pill, Progreso } from "@/components/panel/Tarjetas";
 import { GraficoArea, type PuntoSerie } from "@/components/panel/GraficoArea";
 import { celdasEnOrden, rutaDelDia } from "@/lib/geo/minizonas";
-import type { CoberturaSector, IndicesSector, Perfil } from "@/types";
+import { ACCIONES_VISITA, type AccionVisita, type CoberturaSector, type IndicesSector, type Perfil } from "@/types";
 import { cn } from "@/lib/utils";
 
 type VisitaLite = {
@@ -15,6 +15,7 @@ type VisitaLite = {
   fecha_hora: string;
   estado_visita: string;
   brigadista_id: string;
+  acciones: AccionVisita[] | null;
   recipientes: { positivo_larvas: boolean | null; positivo_pupas: boolean | null }[];
 };
 
@@ -103,7 +104,7 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
         supabase.from("indices_sector").select("*").order("semana", { ascending: false }),
         supabase
           .from("visitas")
-          .select("id, fecha_hora, estado_visita, brigadista_id, recipientes(positivo_larvas, positivo_pupas)")
+          .select("id, fecha_hora, estado_visita, brigadista_id, acciones, recipientes(positivo_larvas, positivo_pupas)")
           .gte("fecha_hora", desde)
           .order("fecha_hora", { ascending: true }),
         supabase
@@ -197,6 +198,13 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
       visitasHoy: visitasDeHoy,
       activo: visitasDeHoy > 0,
     };
+  });
+
+  const inspeccionadas = visitas.filter((v) => v.estado_visita === "inspeccionada");
+  const mixAcciones = ACCIONES_VISITA.map((a) => {
+    const n = inspeccionadas.filter((v) => v.acciones?.includes(a.value)).length;
+    const pct = inspeccionadas.length ? Math.round((100 * n) / inspeccionadas.length) : 0;
+    return { ...a, n, pct };
   });
 
   return (
@@ -360,6 +368,38 @@ export function PanelClient({ perfil }: { perfil: Perfil }) {
           )}
         </Card>
       </div>
+
+      <Card>
+        <CardHead
+          titulo="Acciones de campo (14 d)"
+          extra={
+            <span className="text-[11.5px] text-muted-fg">
+              {inspeccionadas.length} viviendas inspeccionadas
+            </span>
+          }
+        />
+        <p className="mb-3 text-xs leading-relaxed text-muted-fg">
+          Qué hizo la brigada en cada predio. En reinspecciones se puede comparar si un
+          hogar con larvicida + malla + educación queda más tiempo sin criaderos que
+          otro donde solo se entregó un folleto. El CSV exporta una columna por acción.
+        </p>
+        <div className="space-y-2.5">
+          {mixAcciones.map((a) => (
+            <div key={a.value} className="grid grid-cols-[1fr_auto] items-center gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-[13px] font-semibold">{a.label}</p>
+                <div className="mt-1">
+                  <Progreso pct={a.pct} />
+                </div>
+              </div>
+              <p className="shrink-0 text-right text-[12px] font-bold text-fg">
+                {a.n}
+                <span className="ml-1 font-semibold text-muted-fg">{a.pct}%</span>
+              </p>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       <Card>
         <CardHead

@@ -278,6 +278,64 @@
       font-size: 11px;
     }
 
+    .wa-url {
+      color: #027eb5;
+      word-break: break-all;
+    }
+
+    .link-card {
+      display: block;
+      margin-top: 8px;
+      overflow: hidden;
+      border-radius: 6px;
+      background: #f0f2f5;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .link-card:hover { background: #e9edef; }
+    .link-card:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .link-thumb {
+      display: grid;
+      place-items: center;
+      height: 92px;
+      background:
+        radial-gradient(circle at 34% 48%, #25f4ee 0 16%, transparent 17%),
+        radial-gradient(circle at 64% 52%, #fe2c55 0 16%, transparent 17%),
+        #111;
+      color: #fff;
+    }
+
+    .link-thumb svg { width: 34px; height: 34px; }
+
+    .link-copy {
+      display: grid;
+      gap: 2px;
+      padding: 8px 10px 9px;
+    }
+
+    .link-copy strong {
+      font-size: 13.5px;
+      line-height: 1.25;
+      color: #111b21;
+    }
+
+    .link-copy em {
+      font-style: normal;
+      font-size: 12.5px;
+      color: #667781;
+    }
+
+    .link-copy small {
+      font-size: 11.5px;
+      letter-spacing: 0.01em;
+      color: #8696a0;
+    }
+
     .composer {
       display: flex;
       align-items: center;
@@ -602,6 +660,35 @@
         gridBtn.textContent = "Ver las 4";
         showTab(map[event.key]);
       }
+    });
+
+    const TIKTOK_URL = "https://www.tiktok.com/";
+
+    function tiktokBubble(time) {
+      return `
+        <div class="row">
+          <div class="bubble">
+            <p><a class="wa-url" href="${TIKTOK_URL}" target="_blank" rel="noopener noreferrer">${TIKTOK_URL}</a></p>
+            <a class="link-card" href="${TIKTOK_URL}" target="_blank" rel="noopener noreferrer">
+              <span class="link-thumb" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v13.72L19.5 12 8 5.14z"/></svg>
+              </span>
+              <span class="link-copy">
+                <strong>Video en TikTok</strong>
+                <em>Cómo tapar tanques y vaciar baldes</em>
+                <small>tiktok.com</small>
+              </span>
+            </a>
+            <div class="meta">${time}</div>
+          </div>
+        </div>`;
+    }
+
+    document.querySelectorAll(".chat").forEach((chat) => {
+      const lastMeta = chat.querySelector(".row:last-of-type .meta");
+      const time = lastMeta ? lastMeta.textContent.trim() : "";
+      chat.insertAdjacentHTML("beforeend", tiktokBubble(time));
+      chat.scrollTop = chat.scrollHeight;
     });
   </script>
 </body>
