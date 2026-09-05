@@ -56,7 +56,7 @@ export interface Sector {
 export type EstadoMinizona = "pendiente" | "en_curso" | "cubierta";
 export type OrigenMinizona = "malla" | "cerco";
 
-/** Celda H3 res 10 (~160 m). Unidad de muestreo a escala de vuelo del vector. */
+/** Celda H3 res 8 (~1.1 km en el ecuador). Unidad de muestreo en el mapa de ciudad. */
 export interface Minizona {
   id: string;
   sector_id: string;

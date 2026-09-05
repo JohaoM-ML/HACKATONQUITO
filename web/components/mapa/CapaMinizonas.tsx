@@ -10,13 +10,13 @@ import type { Minizona } from "@/types";
  * Colores por estado. Una minizona de cerco sin cubrir se pinta en rojo porque es la
  * que más urge: rodea un foco confirmado y el perímetro sigue abierto.
  */
-function estilo(m: Minizona) {
+function estiloEstado(m: Minizona) {
   if (m.origen === "cerco" && m.estado !== "cubierta") {
-    return { fill: "#DC2626", stroke: "#991B1B", opacity: 0.55 };
+    return { fill: "#DC2626", opacity: 0.52 };
   }
-  if (m.estado === "cubierta") return { fill: "#16A34A", stroke: "#15803D", opacity: 0.48 };
-  if (m.estado === "en_curso") return { fill: "#A16207", stroke: "#7C4A05", opacity: 0.42 };
-  return { fill: "#1E3A8A", stroke: "#16296B", opacity: 0.32 };
+  if (m.estado === "cubierta") return { fill: "#16A34A", opacity: 0.46 };
+  if (m.estado === "en_curso") return { fill: "#CA8A04", opacity: 0.44 };
+  return { fill: "#1E3A8A", opacity: 0.38 };
 }
 
 export function CapaMinizonas({
@@ -24,6 +24,8 @@ export function CapaMinizonas({
   seleccionadaId,
   onSeleccionar,
   fitBounds = false,
+  colorPorSectorId,
+  modo = "estado",
 }: {
   minizonas: Minizona[];
   /** Resalta el hex activo (stroke más grueso). */
@@ -31,6 +33,9 @@ export function CapaMinizonas({
   onSeleccionar?: (m: Minizona) => void;
   /** Si true, ajusta el mapa a los centroides (útil si no hay FitBounds aparte). */
   fitBounds?: boolean;
+  /** Color de relleno por sector (vista de ciudad). */
+  colorPorSectorId?: Record<string, string>;
+  modo?: "estado" | "sector";
 }) {
   const map = useMap();
 
@@ -38,15 +43,24 @@ export function CapaMinizonas({
     if (!map || typeof google === "undefined") return;
 
     const poligonos = minizonas.map((m) => {
-      const { fill, stroke, opacity } = estilo(m);
+      const porSector =
+        modo === "sector" ? colorPorSectorId?.[m.sector_id] : undefined;
+      const base = estiloEstado(m);
+      const fill =
+        m.origen === "cerco" && m.estado !== "cubierta"
+          ? base.fill
+          : m.estado === "cubierta"
+            ? base.fill
+            : porSector || base.fill;
       const activa = seleccionadaId === m.id;
       const poly = new google.maps.Polygon({
         paths: contorno(m.h3),
         fillColor: fill,
-        fillOpacity: activa ? Math.min(opacity + 0.15, 0.7) : opacity,
-        strokeColor: activa ? "#0F172A" : stroke,
-        strokeWeight: activa ? 2.6 : 1.2,
-        strokeOpacity: 0.9,
+        fillOpacity: activa ? Math.min(base.opacity + 0.18, 0.72) : base.opacity,
+        strokeColor: activa ? "#0F172A" : "#FFFFFF",
+        strokeWeight: activa ? 2.4 : 1.1,
+        strokeOpacity: activa ? 0.95 : 0.8,
+        geodesic: true,
         map,
         zIndex: activa ? 2 : 1,
       });
@@ -55,7 +69,7 @@ export function CapaMinizonas({
     });
 
     return () => poligonos.forEach((p) => p.setMap(null));
-  }, [map, minizonas, seleccionadaId, onSeleccionar]);
+  }, [map, minizonas, seleccionadaId, onSeleccionar, colorPorSectorId, modo]);
 
   return fitBounds ? <FitBounds minizonas={minizonas} /> : null;
 }

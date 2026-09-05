@@ -18,10 +18,9 @@ import {
 } from "@/components/mapa/CapaMinizonas";
 import { FitBounds } from "@/components/mapa/FitBounds";
 import { etiquetaMinizona, RADIOS_SECTOR } from "@/lib/geo/minizonas";
+import { CENTRO_GUAYAQUIL, colorDeSector } from "@/lib/geo/guayaquil";
 import type { CoberturaSector, Minizona, Sector } from "@/types";
 import { cn } from "@/lib/utils";
-
-const CENTRO_GUAYAQUIL = { lat: -2.1894, lng: -79.8891 };
 
 const MAPS_HELP =
   "Revisá en Google Cloud: 1) facturación activa, 2) Maps JavaScript API habilitada, 3) restricción de referrer HTTP que incluya http://localhost:3000/* (y tu dominio de deploy).";
@@ -46,11 +45,13 @@ function ErrorMapsUI({ detalle }: { detalle?: string | null }) {
 function MapaOError({
   children,
   defaultCenter,
+  defaultZoom = 12,
   onMapClick,
   loadError,
 }: {
   children: ReactNode;
   defaultCenter: { lat: number; lng: number };
+  defaultZoom?: number;
   onMapClick: (latLng: { lat: number; lng: number } | null) => void;
   loadError: string | null;
 }) {
@@ -78,7 +79,7 @@ function MapaOError({
   return (
     <Map
       defaultCenter={defaultCenter}
-      defaultZoom={13}
+      defaultZoom={defaultZoom}
       gestureHandling="greedy"
       disableDefaultUI={false}
       mapTypeControl={false}
@@ -100,7 +101,7 @@ export function MapaClient() {
   const [visitas, setVisitas] = useState<VisitaPin[]>([]);
   const [sectorSel, setSectorSel] = useState<string | null>(null);
   const [centro, setCentro] = useState<{ lat: number; lng: number } | null>(null);
-  const [radio, setRadio] = useState<number>(500);
+  const [radio, setRadio] = useState<number>(4000);
   const [detalle, setDetalle] = useState<Minizona | null>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
@@ -150,6 +151,15 @@ export function MapaClient() {
     [visitas, sectorSel]
   );
 
+  const colorPorSectorId = useMemo(() => {
+    const mapa: Record<string, string> = {};
+    for (const s of sectores) {
+      const color = colorDeSector(s.slug);
+      if (color) mapa[s.id] = color;
+    }
+    return mapa;
+  }, [sectores]);
+
   const delimitar =
     !!sectorSel && (!cobSector || !Number(cobSector.minizonas_total));
 
@@ -178,7 +188,25 @@ export function MapaClient() {
       }),
     });
     const json = await res.json();
-    setMsg(res.ok ? `Malla generada: ${json.generadas} minizonas de ~160 m.` : json.error);
+    setMsg(res.ok ? `Malla generada: ${json.generadas} minizonas de ~1 km.` : json.error);
+    setTrabajando(false);
+    await cargar();
+  }
+
+  async function generarCiudad() {
+    setTrabajando(true);
+    setMsg(null);
+    const res = await fetch("/api/minizonas/generar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ alcance: "ciudad" }),
+    });
+    const json = await res.json();
+    setMsg(
+      res.ok
+        ? `Panal de Guayaquil: ${json.generadas} hexágonos sobre el casco urbano.`
+        : json.error
+    );
     setTrabajando(false);
     await cargar();
   }
@@ -211,6 +239,18 @@ export function MapaClient() {
     <div className="space-y-4">
       <Card>
         <CardHead titulo="Sectores" />
+        <button
+          type="button"
+          disabled={trabajando}
+          onClick={generarCiudad}
+          className="mb-3 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-white disabled:opacity-40"
+        >
+          {trabajando ? "Generando…" : "Cubrir Guayaquil urbano"}
+        </button>
+        <p className="mb-3 text-[11px] leading-relaxed text-ios-label-3">
+          Panal continuo de ~1 km desde Pascuales hasta el Guasmo. El foco operativo es
+          Guayaquil.
+        </p>
         <div className="max-h-[280px] space-y-1 overflow-y-auto">
           {sectores.map((s) => {
             const c = cobertura.find((x) => x.sector_id === s.id);
@@ -268,7 +308,7 @@ export function MapaClient() {
                           : "border-ios-sep text-ios-label-2"
                       )}
                     >
-                      {r} m
+                      {r >= 1000 ? `${r / 1000} km` : `${r} m`}
                     </button>
                   ))}
                 </div>
@@ -311,8 +351,7 @@ export function MapaClient() {
                     cerrados
                   </p>
                   <p className="mt-0.5 text-[11px] text-ios-label-2">
-                    Minizonas abiertas alrededor de un foco confirmado, dentro del radio de ~225 m
-                    en que se dispersa el vector.
+                    Minizonas abiertas alrededor de un foco confirmado (celda + 6 vecinas).
                   </p>
                 </div>
               )}
@@ -349,13 +388,18 @@ export function MapaClient() {
       )}
 
       <div className="flex flex-wrap gap-3 px-1 text-[11px] text-ios-label-2">
-        {[
-          ["#1E3A8A", "Pendiente"],
-          ["#A16207", "En curso"],
-          ["#16A34A", "Cubierta"],
-          ["#DC2626", "Cerco abierto"],
-          ["#0EA5E9", "Visita"],
-        ].map(([color, label]) => (
+        {(sectorSel
+          ? [
+              ["#1E3A8A", "Pendiente"],
+              ["#CA8A04", "En curso"],
+              ["#16A34A", "Cubierta"],
+              ["#DC2626", "Cerco abierto"],
+              ["#0EA5E9", "Visita"],
+            ]
+          : sectores
+              .map((s) => [colorDeSector(s.slug) || "#1E3A8A", s.nombre] as const)
+              .concat([["#0EA5E9", "Visita"]])
+        ).map(([color, label]) => (
           <span key={label} className="flex items-center gap-1.5">
             <i className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
             {label}
@@ -412,7 +456,11 @@ export function MapaClient() {
               }}
             >
               {visibles.length > 0 ? (
-                <FitBounds minizonas={visibles} padding={56} />
+                <FitBounds
+                  minizonas={visibles}
+                  padding={48}
+                  maxZoom={sectorSel ? 14 : 12}
+                />
               ) : centro && !delimitar ? (
                 <FitBounds puntos={[{ lat: centro.lat, lng: centro.lng }]} />
               ) : null}
@@ -420,6 +468,8 @@ export function MapaClient() {
                 minizonas={visibles}
                 onSeleccionar={setDetalle}
                 seleccionadaId={detalle?.id}
+                colorPorSectorId={colorPorSectorId}
+                modo={sectorSel ? "estado" : "sector"}
               />
               <CapaVisitas visitas={visitasVisibles} />
               <CapaRadio centro={delimitar ? centro : null} radioM={radio} />

@@ -8,7 +8,7 @@ export default async function MapaPage() {
     <PanelShell
       perfil={perfil}
       title="Mapa de riesgo"
-      subtitle="Minizonas de ~160 m, la escala a la que se dispersa Aedes aegypti"
+      subtitle="Guayaquil urbano · panal de ~1 km"
     >
       <MapaClient />
     </PanelShell>

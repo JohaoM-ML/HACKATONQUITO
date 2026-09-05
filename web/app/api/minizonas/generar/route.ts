@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { centroide, mallaDeSector, META_VIVIENDAS_MINIZONA } from "@/lib/geo/minizonas";
+import { SECTORES_GUAYAQUIL } from "@/lib/geo/guayaquil";
+import {
+  centroide,
+  mallaDeGuayaquil,
+  mallaDeSector,
+  META_VIVIENDAS_MINIZONA,
+} from "@/lib/geo/minizonas";
 
 /**
- * Delimita un sector: el jefe marca un centro y un radio, y aquí se genera la malla
- * de minizonas que lo cubre. Reemplaza la necesidad de tener polígonos de barrio
- * oficiales, que en Guayaquil no están publicados.
+ * Delimita un sector (centro + radio) o regenera el panal del casco urbano
+ * de Guayaquil (`alcance: "ciudad"`).
  */
 export async function POST(req: Request) {
   const supabase = createClient();
@@ -23,15 +28,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Solo el jefe delimita sectores" }, { status: 403 });
   }
 
-  const { sector_id, lat, lon, radio_m } = await req.json();
+  const body = await req.json();
+
+  if (body.alcance === "ciudad") {
+    return generarCiudad(supabase);
+  }
+
+  const { sector_id, lat, lon, radio_m } = body;
   if (!sector_id || typeof lat !== "number" || typeof lon !== "number" || !radio_m) {
     return NextResponse.json({ error: "Faltan sector_id, lat, lon o radio_m" }, { status: 400 });
   }
-  if (radio_m > 2000) {
-    return NextResponse.json(
-      { error: "Radio máximo 2000 m: más allá la malla es inmanejable para una brigada" },
-      { status: 400 }
-    );
+  if (radio_m > 8000) {
+    return NextResponse.json({ error: "Radio máximo 8000 m" }, { status: 400 });
   }
 
   const celdas = mallaDeSector({ lat, lon }, radio_m);
@@ -50,7 +58,6 @@ export async function POST(req: Request) {
     };
   });
 
-  // h3 es único global: si la celda ya existe (por un cerco previo) se respeta.
   const { error } = await supabase
     .from("minizonas")
     .upsert(filas, { onConflict: "h3", ignoreDuplicates: true });
@@ -58,4 +65,53 @@ export async function POST(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true, generadas: filas.length });
+}
+
+async function generarCiudad(
+  supabase: ReturnType<typeof createClient>
+) {
+  for (const s of SECTORES_GUAYAQUIL) {
+    const { error } = await supabase.from("sectores").upsert(
+      {
+        slug: s.slug,
+        nombre: s.nombre,
+        zona: s.zona,
+        lat: s.lat,
+        lon: s.lon,
+        radio_m: 4000,
+      },
+      { onConflict: "slug" }
+    );
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  const { data: sectores, error: sErr } = await supabase
+    .from("sectores")
+    .select("id, slug");
+  if (sErr) return NextResponse.json({ error: sErr.message }, { status: 400 });
+
+  const idPorSlug = new Map((sectores || []).map((s) => [s.slug, s.id]));
+
+  await supabase.from("visitas").update({ minizona_id: null }).not("minizona_id", "is", null);
+  await supabase.from("minizonas").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+  const filas = mallaDeGuayaquil()
+    .map((c) => {
+      const sector_id = idPorSlug.get(c.slug);
+      if (!sector_id) return null;
+      return {
+        sector_id,
+        h3: c.h3,
+        lat: c.lat,
+        lon: c.lon,
+        origen: "malla" as const,
+        meta_viviendas: META_VIVIENDAS_MINIZONA,
+      };
+    })
+    .filter((f): f is NonNullable<typeof f> => !!f);
+
+  const { error } = await supabase.from("minizonas").insert(filas);
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  return NextResponse.json({ ok: true, generadas: filas.length, alcance: "ciudad" });
 }

@@ -10,7 +10,7 @@ const DICT = {
   codigo_vivienda: "Código local",
   lat: "Latitud GPS",
   lon: "Longitud GPS",
-  minizona_h3: "Celda H3 res 10 (~160 m de ancho). Agrupador para el efecto aleatorio del GLMM",
+  minizona_h3: "Celda H3 res 8 (~1.1 km de ancho en Guayaquil). Agrupador para el efecto aleatorio del GLMM",
   minizona_origen: "malla|cerco — cerco = abierta por un foco a menos de ~225 m",
   n_habitantes: "Habitantes en vivienda",
   tiene_conexion_red: "bool",

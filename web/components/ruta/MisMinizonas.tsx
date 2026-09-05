@@ -121,7 +121,7 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
       <div className="card">
         <p className="font-heading font-bold text-ios-label">Sin minizonas asignadas</p>
         <p className="mt-1 text-sm text-ios-label-2">
-          El jefe aún no te repartió celdas (~160 m). Cuando lo haga, aparecerán aquí con mapa.
+          El jefe aún no te repartió celdas (~1 km). Cuando lo haga, aparecerán aquí con mapa.
         </p>
       </div>
     );
@@ -168,11 +168,11 @@ export function MisMinizonas({ brigadistaId }: { brigadistaId: string }) {
           Viviendas {vivHoy}/{metaHoy} en el tramo de hoy
         </p>
         <p className="text-xs leading-relaxed text-ios-label-3">
-          Meta diaria: {META_MINIZONAS_DIA} minizonas (~40 viviendas).
+          Meta diaria: {META_MINIZONAS_DIA} minizonas (~25 viviendas).
           {restoBloque > 0
             ? ` El resto de tu bloque (${restoBloque}) queda para otros días para cubrir el perímetro sin cruzarte con la brigada.`
             : null}{" "}
-          Ruta de {(metros / 1000).toFixed(1)} km · celdas de ~160 m. Tocá un hex para
+          Ruta de {(metros / 1000).toFixed(1)} km · celdas de ~1 km. Tocá un hex para
           resaltar; otra vez para inspeccionar.
         </p>
         <MapaBrigadista

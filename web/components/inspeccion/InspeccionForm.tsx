@@ -263,7 +263,7 @@ export function InspeccionForm(props: Props) {
         {preligada && props.minizonaH3 && (
           <p className="mt-1 text-sm font-semibold text-primary">
             Minizona {etiquetaMinizona(props.minizonaH3)}
-            {props.minizonaOrigen === "cerco" ? " · cerco ~225 m" : " · celda ~160 m"}
+            {props.minizonaOrigen === "cerco" ? " · cerco perifocal" : " · celda ~1 km"}
           </p>
         )}
         {props.accion && <p className="mt-1 text-sm font-medium text-primary">{props.accion}</p>}

@@ -24,7 +24,7 @@ En Supabase Dashboard → Authentication → Providers: desactivar confirmación
 ## Google Maps (panel del jefe)
 
 El formulario del brigadista usa el GPS del teléfono. Google Maps va solo en `/mapa`
-(hexágonos H3 de ~160 m + cerco perifocal).
+(hexágonos H3 de ~1 km sobre Guayaquil urbano + cerco perifocal).
 
 1. En Google Cloud habilita **Maps JavaScript API**.
 2. Crea una clave restringida por referrer (`http://localhost:3000/*`).
