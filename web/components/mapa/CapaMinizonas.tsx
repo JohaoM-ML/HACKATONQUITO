@@ -15,8 +15,8 @@ function estilo(m: Minizona) {
     return { fill: "#DC2626", stroke: "#991B1B", opacity: 0.55 };
   }
   if (m.estado === "cubierta") return { fill: "#16A34A", stroke: "#15803D", opacity: 0.48 };
-  if (m.estado === "en_curso") return { fill: "#A16207", stroke: "#7C4A05", opacity: 0.42 };
-  return { fill: "#1E3A8A", stroke: "#16296B", opacity: 0.32 };
+  if (m.estado === "en_curso") return { fill: "#CA8A04", stroke: "#92650A", opacity: 0.42 };
+  return { fill: "#1E40AF", stroke: "#1E3A8A", opacity: 0.32 };
 }
 
 export function CapaMinizonas({

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { EstadoCargando, EstadoVacio } from "@/components/estados/Estados";
 import { Card, CardHead } from "@/components/panel/Tarjetas";
@@ -35,7 +36,12 @@ export function AvisosClient() {
 
   if (loading) return <EstadoCargando />;
   if (!items.length) {
-    return <EstadoVacio titulo="Sin avisos" descripcion="No hay zonas riesgosas activas." />;
+    return (
+      <EstadoVacio
+        titulo="Sin avisos"
+        descripcion="No hay zonas riesgosas activas para contactar por WhatsApp."
+      />
+    );
   }
 
   return (
@@ -58,21 +64,24 @@ export function AvisosClient() {
           return (
             <div
               key={it.id}
-              className="flex items-start gap-2.5 border-b border-ios-sep py-3 last:border-0 last:pb-0 first:pt-0"
+              className="flex items-start gap-2.5 border-b border-border py-3 first:pt-0 last:border-0 last:pb-0"
             >
-              <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-risk-alto" />
+              <span
+                className="mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-risk-alto-bg text-risk-alto"
+                aria-hidden
+              >
+                <MessageCircle size={12} />
+              </span>
               <div className="min-w-0 flex-1">
-                <b className="block truncate text-[13px] font-semibold">{nombre}</b>
-                <span className="text-[11.5px] text-ios-label-2">
+                <b className="block truncate text-[13px] font-bold">{nombre}</b>
+                <span className="text-[11.5px] text-muted-fg">
                   Corte reportado
                   {corte?.duracion_horas ? ` · ${corte.duracion_horas}` : ""}
                 </span>
-                <p className="mt-1 line-clamp-2 text-[11.5px] text-ios-label-2">
-                  {it.justificacion}
-                </p>
+                <p className="mt-1 line-clamp-2 text-[11.5px] text-muted-fg">{it.justificacion}</p>
                 <div className="mt-2 flex gap-2">
                   <a
-                    className="rounded-lg bg-primary px-3 py-1.5 text-[12px] font-semibold text-white"
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-bold text-white"
                     href={`https://wa.me/?text=${msg}`}
                     target="_blank"
                     rel="noreferrer"
@@ -81,14 +90,14 @@ export function AvisosClient() {
                   </a>
                   <button
                     type="button"
-                    className="rounded-lg bg-ios-fill px-3 py-1.5 text-[12px] font-semibold text-ios-label"
+                    className="cursor-pointer rounded-lg bg-muted px-3 py-1.5 text-[12px] font-bold text-fg"
                     onClick={() => navigator.clipboard.writeText(decodeURIComponent(msg))}
                   >
                     Copiar
                   </button>
                 </div>
               </div>
-              <span className="shrink-0 whitespace-nowrap text-[11px] text-ios-label-3">
+              <span className="shrink-0 whitespace-nowrap text-[11px] text-muted-fg">
                 {haceCuanto(corte?.fecha_inicio || it.fecha_eval)}
               </span>
             </div>

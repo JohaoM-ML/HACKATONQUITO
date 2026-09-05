@@ -15,7 +15,7 @@ export function GraficoArea({ datos }: { datos: PuntoSerie[] }) {
 
   if (datos.length < 2) {
     return (
-      <div className="flex h-[190px] items-center justify-center text-sm text-ios-label-2">
+      <div className="flex h-[190px] items-center justify-center text-sm text-muted-fg">
         Aún no hay suficientes días con registros para dibujar la tendencia.
       </div>
     );
@@ -36,8 +36,8 @@ export function GraficoArea({ datos }: { datos: PuntoSerie[] }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full overflow-visible">
       <defs>
         <linearGradient id="fadeArea" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1E3A8A" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#1E3A8A" stopOpacity="0" />
+          <stop offset="0%" stopColor="#1E40AF" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#1E40AF" stopOpacity="0" />
         </linearGradient>
       </defs>
 
@@ -49,7 +49,7 @@ export function GraficoArea({ datos }: { datos: PuntoSerie[] }) {
       <path
         d={`M${linea}`}
         fill="none"
-        stroke="#1E3A8A"
+        stroke="#1E40AF"
         strokeWidth={2.5}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -57,7 +57,7 @@ export function GraficoArea({ datos }: { datos: PuntoSerie[] }) {
 
       {puntos.map((p) => (
         <g key={p.etiqueta}>
-          <circle cx={p.x} cy={p.y} r={4} fill="#fff" stroke="#1E3A8A" strokeWidth={2.5}>
+          <circle cx={p.x} cy={p.y} r={4} fill="#fff" stroke="#1E40AF" strokeWidth={2.5}>
             <title>{p.detalle ?? `${p.etiqueta}: ${p.valor}`}</title>
           </circle>
           <text x={p.x} y={botY + 22} textAnchor="middle" fontSize={10} fill="#475569">

@@ -6,13 +6,13 @@ import { FitBounds } from "@/components/mapa/FitBounds";
 import type { Minizona } from "@/types";
 
 const CENTRO_GUAYAQUIL = { lat: -2.1894, lng: -79.8891 };
-const COLOR_RUTA = "#1E3A8A";
+const COLOR_RUTA = "#1E40AF";
 
 function colorParada(m: Minizona) {
   if (m.estado === "cubierta") return "#16A34A";
   if (m.origen === "cerco") return "#DC2626";
   if (m.estado === "en_curso") return "#CA8A04";
-  return "#1E3A8A";
+  return "#1E40AF";
 }
 
 /**
@@ -154,7 +154,7 @@ export function MapaBrigadista({
 
   if (!apiKey) {
     return (
-      <div className="flex h-[240px] items-center justify-center rounded-xl bg-ios-fill px-4 text-center text-xs text-ios-label-3">
+      <div className="flex h-[320px] items-center justify-center rounded-lg bg-muted px-4 text-center text-xs text-muted-fg">
         Definí NEXT_PUBLIC_GOOGLE_MAPS_API_KEY para ver el mapa de tus celdas.
       </div>
     );
@@ -166,7 +166,7 @@ export function MapaBrigadista({
   };
 
   return (
-    <div className="h-[240px] w-full overflow-hidden rounded-xl ring-1 ring-ios-sep">
+    <div className="h-[320px] w-full overflow-hidden rounded-lg ring-1 ring-border">
       <APIProvider apiKey={apiKey}>
         <Map
           defaultCenter={centro ?? CENTRO_GUAYAQUIL}

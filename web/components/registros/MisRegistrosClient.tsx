@@ -71,8 +71,8 @@ export function MisRegistrosClient({ brigadistaId }: { brigadistaId: string }) {
       {grupos.map((g) => (
         <section key={g.key} className="space-y-2">
           <div className="px-1">
-            <p className="font-heading text-sm font-bold text-ios-label">{g.titulo}</p>
-            <p className="text-[11px] text-ios-label-3">
+            <p className="font-heading text-sm font-bold text-fg">{g.titulo}</p>
+            <p className="text-[11px] text-muted-fg">
               {g.subtitulo} · {g.visitas.length} visita{g.visitas.length === 1 ? "" : "s"}
             </p>
           </div>
@@ -80,14 +80,14 @@ export function MisRegistrosClient({ brigadistaId }: { brigadistaId: string }) {
             {g.visitas.map((v) => (
               <li key={v.id} className="card">
                 <div className="flex justify-between gap-2">
-                  <p className="font-heading text-sm font-bold">
+                  <p className="font-heading text-sm font-bold text-fg">
                     {v.codigo_vivienda || "sin código"}
                   </p>
-                  <span className="text-[11px] font-semibold capitalize text-ios-label-3">
+                  <span className="text-[11px] font-bold capitalize text-muted-fg">
                     {v.estado_visita}
                   </span>
                 </div>
-                <p className="text-xs text-ios-label-2">
+                <p className="text-xs text-muted-fg">
                   {new Date(v.fecha_hora).toLocaleString("es-EC")}
                 </p>
               </li>

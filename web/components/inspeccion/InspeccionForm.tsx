@@ -268,18 +268,36 @@ export function InspeccionForm(props: Props) {
         )}
         {props.accion && <p className="mt-1 text-sm font-medium text-primary">{props.accion}</p>}
         {props.justificacion && (
-          <p className="mt-2 text-xs leading-relaxed text-ios-label-2">{props.justificacion}</p>
+          <p className="mt-2 text-xs leading-relaxed text-muted-fg">{props.justificacion}</p>
         )}
-        <div className="mt-3 flex gap-1">
-          {[1, 2, 3, 4].map((p) => (
-            <div
-              key={p}
-              className={cn("h-1.5 flex-1 rounded-full", p <= paso ? "bg-primary" : "bg-ios-fill")}
-            />
+        <div className="mt-3 flex gap-1.5">
+          {[
+            { n: 1, label: "Visita" },
+            { n: 2, label: "Hogar" },
+            { n: 3, label: "Recipientes" },
+            { n: 4, label: "Acción" },
+          ].map(({ n, label }) => (
+            <div key={n} className="flex-1">
+              <div
+                className={cn(
+                  "h-1.5 rounded-full",
+                  n <= paso ? "bg-primary" : "bg-muted"
+                )}
+                aria-hidden
+              />
+              <p
+                className={cn(
+                  "mt-1 truncate text-center text-[10px] font-bold",
+                  n === paso ? "text-primary" : n < paso ? "text-fg" : "text-muted-fg"
+                )}
+              >
+                {n}. {label}
+              </p>
+            </div>
           ))}
         </div>
-        <p className="mt-1 text-[11px] text-ios-label-3">
-          Paso {paso}/4 · {["Visita", "Hogar", "Recipientes", "Acción"][paso - 1]}
+        <p className="sr-only">
+          Paso {paso} de 4
         </p>
       </div>
 
@@ -311,17 +329,17 @@ export function InspeccionForm(props: Props) {
             {preligada ? "Confirmar / actualizar GPS" : "Capturar GPS"} · {gpsMsg}
           </button>
           {minizonaMsg && (
-            <p className="text-xs text-ios-label-2">
+            <p className="text-xs text-muted-fg">
               Minizona <span className="font-semibold">{minizonaMsg}</span>
             </p>
           )}
           {gpsOverride && (
-            <p className="text-[11px] text-ios-orange">
+            <p className="text-[11px] text-risk-medio">
               El GPS cayó en otra celda: se usará esa ubicación al guardar (override).
             </p>
           )}
           {preligada && !gps && (
-            <p className="text-[11px] text-ios-label-3">
+            <p className="text-[11px] text-muted-fg">
               La visita ya está ligada a esta minizona. Capturá GPS para confirmar o corregir.
             </p>
           )}
@@ -413,7 +431,7 @@ export function InspeccionForm(props: Props) {
                   className="w-full"
                 />
                 {diasAlmacenada >= 7 && (
-                  <p className="mt-1 text-xs font-semibold text-ios-orange">
+                  <p className="mt-1 text-xs font-semibold text-risk-medio">
                     ≥7 días ≈ ciclo huevo→adulto de Aedes
                   </p>
                 )}
@@ -435,7 +453,7 @@ export function InspeccionForm(props: Props) {
       )}
 
       {paso === 2 && estadoVisita !== "inspeccionada" && (
-        <p className="card text-sm text-ios-label-2">
+        <p className="card text-sm text-muted-fg">
           Visita no inspeccionada: se salta el contexto del hogar y los recipientes. Solo se registra el
           estado (denominador LIRAa).
         </p>
@@ -599,11 +617,45 @@ export function InspeccionForm(props: Props) {
       )}
 
       {paso === 3 && estadoVisita !== "inspeccionada" && (
-        <p className="card text-sm text-ios-label-2">Sin recipientes: la vivienda no fue inspeccionada.</p>
+        <p className="card text-sm text-muted-fg">Sin recipientes: la vivienda no fue inspeccionada.</p>
       )}
 
       {paso === 4 && (
         <div className="space-y-4">
+          <div className="card bg-bg">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-muted-fg">
+              Resumen antes de guardar
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-fg">
+              <li>
+                <span className="text-muted-fg">Estado:</span> {estadoVisita}
+              </li>
+              {codigo && (
+                <li>
+                  <span className="text-muted-fg">Código:</span> {codigo}
+                </li>
+              )}
+              {estadoVisita === "inspeccionada" && (
+                <>
+                  <li>
+                    <span className="text-muted-fg">Habitantes:</span> {nHab}
+                  </li>
+                  <li>
+                    <span className="text-muted-fg">Almacena agua:</span>{" "}
+                    {almacena ? "Sí" : "No"}
+                  </li>
+                  <li>
+                    <span className="text-muted-fg">Recipientes:</span> {recipientes.length}
+                  </li>
+                </>
+              )}
+              {minizonaMsg && (
+                <li>
+                  <span className="text-muted-fg">Minizona:</span> {minizonaMsg}
+                </li>
+              )}
+            </ul>
+          </div>
           <div>
             <label className="label-field">¿Se educó al hogar?</label>
             <ChipGroup
@@ -640,7 +692,7 @@ export function InspeccionForm(props: Props) {
         </div>
       )}
 
-      {error && <p className="text-sm font-medium text-ios-red">{error}</p>}
+      {error && <p className="text-sm font-medium text-risk-alto">{error}</p>}
 
       <div className="flex gap-2 pb-4">
         {paso > 1 && (

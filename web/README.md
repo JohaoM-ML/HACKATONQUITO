@@ -1,4 +1,4 @@
-# VENTANA SECA — web app
+# ZANKU — web app
 
 Next.js 14 + Supabase. Roles: brigadista / jefe. Captura entomológica → índices HI/CI/BI.
 

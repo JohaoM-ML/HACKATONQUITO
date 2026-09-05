@@ -4,7 +4,8 @@ import { fetchCortesPublicos } from "@/lib/public/cortes";
 /**
  * GET /api/public/cortes
  * Público (sin auth) para n8n / WhatsApp vecinos.
- * Cortes Interagua + cola Regla A — no afirma reducción de dengue.
+ * Cortes Interagua + cola A/B. Query opcional ?sector= para aviso del barrio.
+ * No afirma reducción de dengue ni fumigación.
  */
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,9 +18,10 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders });
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const payload = await fetchCortesPublicos();
+    const sector = new URL(req.url).searchParams.get("sector") || undefined;
+    const payload = await fetchCortesPublicos(undefined, { sector });
     return NextResponse.json(payload, { headers: corsHeaders });
   } catch (e) {
     return NextResponse.json(
