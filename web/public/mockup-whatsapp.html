@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZANKU — comunicados WhatsApp a la ciudadanía</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #020617;
+      --muted: #475569;
+      --paper: #f4f1ea;
+      --card: #fffdf8;
+      --line: #d6d1c4;
+      --primary: #1e40af;
+      --accent: #0369a1;
+      --wa-bar: #008069;
+      --wa-in: #ffffff;
+      --wa-meta: #667781;
+      --phone: #111827;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 420px at 8% -10%, #dbeafe 0%, transparent 55%),
+        var(--paper);
+    }
+
+    .stripe {
+      height: 4px;
+      background: linear-gradient(90deg, #ffd100 0 33%, #0033a0 33% 66%, #ef3340 66%);
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    header.page { display: grid; gap: 8px; margin-bottom: 22px; }
+
+    .kicker {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 58ch;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin: 22px 0 18px;
+    }
+
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .tab, .view-btn {
+      min-height: 44px;
+      padding: 8px 14px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--ink);
+      border-radius: 999px;
+      font: inherit;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+    }
+
+    .tab:hover, .view-btn:hover { border-color: #94a3b8; }
+    .tab:focus-visible, .view-btn:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+    }
+    .tab[aria-selected="true"] {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .view-btn[aria-pressed="true"] {
+      background: #0f172a;
+      border-color: #0f172a;
+      color: #fff;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(240px, 320px) 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .note {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 18px 16px;
+    }
+
+    .note h2 { margin: 0 0 8px; font-size: 18px; }
+    .note p, .note li {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14.5px;
+      line-height: 1.45;
+    }
+    .note ul { margin: 10px 0 0; padding-left: 18px; }
+    .note li + li { margin-top: 6px; }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #075985;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .phones { display: grid; justify-items: center; }
+    .story { display: none; }
+    .story.is-on { display: block; }
+
+    body.is-grid .stage { grid-template-columns: 1fr; }
+    body.is-grid .note { display: none; }
+    body.is-grid .phones {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+    body.is-grid .story { display: block; }
+    body.is-grid .phone { transform: scale(0.82); transform-origin: top center; }
+
+    .story-label {
+      display: none;
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    body.is-grid .story-label { display: block; }
+
+    .phone {
+      width: 360px;
+      background: var(--phone);
+      border-radius: 36px;
+      padding: 12px 10px 14px;
+      box-shadow: 0 24px 50px rgba(15, 23, 42, 0.22);
+    }
+
+    .screen {
+      overflow: hidden;
+      border-radius: 28px;
+      background: #efeae2;
+    }
+
+    .status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px 4px;
+      background: var(--wa-bar);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .wa-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px 10px;
+      background: var(--wa-bar);
+      color: #fff;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1e3a8a;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex: none;
+    }
+
+    .who { display: grid; gap: 1px; min-width: 0; }
+    .who strong { font-size: 16px; line-height: 1.15; }
+    .who span { font-size: 12px; color: #d1fae5; }
+
+    .chat {
+      height: 560px;
+      padding: 10px 8px 12px;
+      overflow: auto;
+      background-color: #e8e0d5;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(0,0,0,0.035) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 72% 64%, rgba(0,0,0,0.03) 0 1px, transparent 1.5px);
+      background-size: 28px 28px;
+      overscroll-behavior: contain;
+    }
+
+    .day, .sys {
+      width: max-content;
+      max-width: 92%;
+      margin: 6px auto 12px;
+      padding: 4px 10px;
+      border-radius: 7px;
+      text-align: center;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .day { background: #fff8c4; color: #5b5340; }
+    .sys { background: #dbeafe; color: #1e3a8a; }
+
+    .row { display: flex; justify-content: flex-start; margin: 0 4px 8px; }
+
+    .bubble {
+      max-width: 88%;
+      padding: 8px 10px 6px;
+      border-radius: 8px;
+      border-top-left-radius: 2px;
+      background: var(--wa-in);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+
+    .bubble p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.4;
+      color: #111b21;
+    }
+
+    .bubble p + p { margin-top: 8px; }
+
+    .meta {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
+      color: var(--wa-meta);
+      font-size: 11px;
+    }
+
+    .composer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 8px 12px;
+      background: #ece5dd;
+      color: #64748b;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    footer.page { margin-top: 22px; color: var(--muted); font-size: 13px; }
+    footer.page code {
+      font-size: 12.5px;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    @media (max-width: 880px) {
+      .stage { grid-template-columns: 1fr; }
+      .phones { justify-items: center; }
+      body.is-grid .phones { grid-template-columns: 1fr 1fr; }
+      body.is-grid .phone { transform: none; width: 100%; max-width: 360px; }
+    }
+
+    @media (max-width: 640px) {
+      body.is-grid .phones { grid-template-columns: 1fr; }
+      .phone { width: min(360px, 100%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tab, .view-btn { transition: none; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .toolbar, .stripe { display: none; }
+      body.is-grid .phones { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stripe" aria-hidden="true"></div>
+  <div class="wrap">
+    <header class="page">
+      <p class="kicker">Demostración pública · comunicados por sector</p>
+      <h1>El ciudadano recibe el aviso. No debe responder.</h1>
+      <p class="lead">
+        ZANKU envía un comunicado formal según la cola de la semana.
+        El mensaje informa y recomienda; no pide reporte ni respuesta.
+        Cuatro momentos, cuatro sectores.
+      </p>
+    </header>
+
+    <div class="toolbar">
+      <div class="tabs" role="tablist" aria-label="Avisos automáticos">
+        <button class="tab" role="tab" id="tab-corte" aria-controls="story-corte" aria-selected="true" data-tab="corte">1 · Corte</button>
+        <button class="tab" role="tab" id="tab-brigada" aria-controls="story-brigada" aria-selected="false" data-tab="brigada">2 · Brigada</button>
+        <button class="tab" role="tab" id="tab-despues" aria-controls="story-despues" aria-selected="false" data-tab="despues">3 · Después</button>
+        <button class="tab" role="tab" id="tab-recuerdo" aria-controls="story-recuerdo" aria-selected="false" data-tab="recuerdo">4 · Recordatorio</button>
+      </div>
+      <button class="view-btn" id="grid-btn" type="button" aria-pressed="false">Ver las 4</button>
+    </div>
+
+    <div class="stage">
+      <aside class="note" id="note" aria-live="polite">
+        <span class="badge">Comunicado 1</span>
+        <h2 id="note-title">Aviso de corte · Guasmo</h2>
+        <p id="note-body">Lunes. El sector está en cola A: corte o solicitud de almacenamiento esta semana. El comunicado indica la medida preventiva en el hogar. No requiere respuesta.</p>
+        <ul id="note-list">
+          <li>Envío automático por sector.</li>
+          <li>Recomendación: tanque, balde, llanta.</li>
+          <li>El ciudadano no debe escribir.</li>
+        </ul>
+      </aside>
+
+      <div class="phones">
+        <article class="story is-on" id="story-corte" data-tab="corte">
+          <p class="story-label">1 · Corte</p>
+          <div class="phone" aria-label="Aviso automático de corte en el Guasmo">
+            <div class="screen">
+              <div class="status"><span>06:12</span><span>ZANKU</span></div>
+              <div class="wa-head">
+                <div class="avatar">Z</div>
+                <div class="who">
+                  <strong>ZANKU Avisos</strong>
+                  <span>Comunicado oficial</span>
+                </div>
+              </div>
+              <div class="chat">
+                <div class="day">Lunes</div>
+                <div class="sys">Comunicado oficial · sector Guasmo</div>
+                <div class="row"><div class="bubble">
+                  <p>AVISO A LA CIUDADANÍA — Sector Guasmo.</p>
+                  <p>Se informa que esta semana se registrará un corte del servicio de agua potable en su sector.</p>
+                  <div class="meta">06:12</div>
+                </div></div>
+                <div class="row"><div class="bubble">
+                  <p>Recomendación sanitaria: cubra herméticamente tanques y cisternas. Vacíe y voltee baldes, llantas y demás recipientes que acumulen agua.</p>
+                  <div class="meta">06:12</div>
+                </div></div>
+                <div class="row"><div class="bubble">
+                  <p>Este es un comunicado informativo. No requiere respuesta.</p>
+                  <div class="meta">06:12</div>
+                </div></div>
+              </div>
+              <div class="composer">Comunicado informativo · no requiere respuesta</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="story" id="story-brigada" data-tab="brigada" hidden>
+          <p class="story-label">2 · Brigada</p>
+          <div class="phone" aria-label="Aviso automático de brigada en Pascuales">
+            <div class="screen">
+              <div class="status"><span>08:40</span><span>ZANKU</span></div>
+              <div class="wa-head">
+                <div class="avatar">Z</div>
+                <div class="who">
+                  <strong>ZANKU Avisos</strong>
+                  <span>Comunicado oficial</span>
+                </div>
+              </div>
+              <div class="chat">
+                <div class="day">Miércoles</div>
+                <div class="sys">Comunicado oficial · sector Pascuales</div>
+                <div class="row"><div class="bubble">
+                  <p>COMUNICADO — Sector Pascuales.</p>
+                  <p>Se notifica que personal de brigada podría realizar inspección de recipientes de almacenamiento de agua en su cuadra el día de hoy.</p>
+                  <div class="meta">08:40</div>
+                </div></div>
+                <div class="row"><div class="bubble">
+                  <p>La visita tiene por objeto la revisión de tanques, baldes y recipientes. No constituye fumigación confirmada.</p>
+                  <div class="meta">08:40</div>
+                </div></div>
+                <div class="row"><div class="bubble">
+                  <p>Se solicita facilitar el acceso al patio y mostrar los recipientes. Mensaje informativo; no requiere respuesta.</p>
+                  <div class="meta">08:40</div>
+                </div></div>
+              </div>
+              <div class="composer">Comunicado informativo · no requiere respuesta</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="story" id="story-despues" data-tab="despues" hidden>
+          <p class="story-label">3 · Después</p>
+          <div class="phone" aria-label="Aviso automático post-corte en Mapasingue">
+            <div class="screen">
+              <div class="status"><span>17:05</span><span>ZANKU</span></div>
+              <div class="wa-head">
+                <div class="avatar">Z</div>
+                <div class="who">
+                  <strong>ZANKU Avisos</strong>
+                  <span>Comunicado oficial</span>
+                </div>
+              </div>
+              <div class="chat">
+                <div class="day">Jueves</div>
+                <div class="sys">Comunicado oficial · sector Mapasingue</div>
+                <div class="row"><div class="bubble">
+                  <p>AVISO DE SEGUIMIENTO — Sector Mapasingue.</p>
+                  <p>Han transcurrido varios días desde el último corte de agua en su sector.</p>
+                  <div class="meta">17:05</div>
+                </div></div>
+                <div class="row"><div class="bubble">
+                  <p>Se recomienda revisar floreros, bebederos, pilas y llantas. Elimine el agua estancada de recipientes en el hogar.</p>
+                  <div class="meta">17:05</div>
+                </div></div>
+                <div class="row"><div class="bubble">
+                  <p>Este comunicado no programa visita de brigada. Mensaje informativo; no requiere respuesta.</p>
+                  <div class="meta">17:05</div>
+                </div></div>
+              </div>
+              <div class="composer">Comunicado informativo · no requiere respuesta</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="story" id="story-recuerdo" data-tab="recuerdo" hidden>
+          <p class="story-label">4 · Recordatorio</p>
+          <div class="phone" aria-label="Recordatorio automático en Isla Trinitaria">
+            <div class="screen">
+              <div class="status"><span>06:30</span><span>ZANKU</span></div>
+              <div class="wa-head">
+                <div class="avatar">Z</div>
+                <div class="who">
+                  <strong>ZANKU Avisos</strong>
+                  <span>Comunicado oficial</span>
+                </div>
+              </div>
+              <div class="chat">
+                <div class="day">Sábado</div>
+                <div class="sys">Recordatorio oficial · sector Isla Trinitaria</div>
+                <div class="row"><div class="bubble">
+                  <p>RECORDATORIO SANITARIO — Sector Isla Trinitaria.</p>
+                  <div class="meta">06:30</div>
+                </div></div>
+                <div class="row"><div class="bubble">
+                  <p>Mantenga tapados los tanques de almacenamiento.<br>Coloque los baldes boca abajo.<br>Conserve las llantas bajo techo.</p>
+                  <div class="meta">06:30</div>
+                </div></div>
+                <div class="row"><div class="bubble">
+                  <p>Recomendación preventiva de rutina. Este mensaje no requiere respuesta.</p>
+                  <div class="meta">06:30</div>
+                </div></div>
+              </div>
+              <div class="composer">Comunicado informativo · no requiere respuesta</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <footer class="page">
+      El ciudadano no reporta casos ni criaderos. La cola elige el sector; WhatsApp solo comunica el aviso.
+      Enlace público: <code>/aviso</code> — no requiere cuenta.
+    </footer>
+  </div>
+
+  <script>
+    const notes = {
+      corte: {
+        badge: "Comunicado 1 · Zona A",
+        title: "Aviso de corte · Guasmo",
+        body: "Lunes. El sector está en cola A: corte o solicitud de almacenamiento esta semana. El comunicado indica la medida preventiva en el hogar.",
+        items: [
+          "Envío automático por sector.",
+          "Recomendación: tanque, balde, llanta.",
+          "El ciudadano no debe escribir.",
+        ],
+      },
+      brigada: {
+        badge: "Comunicado 2 · Zona A",
+        title: "Inspección · Pascuales",
+        body: "Misma cola, otro momento: se notifica una posible inspección de recipientes y se solicita colaboración si llega la brigada.",
+        items: [
+          "Revisión de tanques y baldes.",
+          "Se solicita facilitar el acceso.",
+          "No se pide foto, caso ni respuesta.",
+        ],
+      },
+      despues: {
+        badge: "Comunicado 3 · Zona B",
+        title: "Seguimiento · Mapasingue",
+        body: "Varios días después del corte. Aviso de seguimiento en el hogar. La zona B no programa por sí sola una ruta.",
+        items: [
+          "Revisión de florero, pila y llanta.",
+          "Eliminar agua estancada.",
+          "No confirma visita de brigada.",
+        ],
+      },
+      recuerdo: {
+        badge: "Comunicado 4",
+        title: "Recordatorio · Isla Trinitaria",
+        body: "Recordatorio sanitario de rutina. Sigue siendo automático y no requiere respuesta.",
+        items: [
+          "Tres medidas preventivas.",
+          "Cierra el comunicado.",
+          "Nadie reporta nada.",
+        ],
+      },
+    };
+
+    const tabs = [...document.querySelectorAll(".tab")];
+    const stories = [...document.querySelectorAll(".story")];
+    const gridBtn = document.getElementById("grid-btn");
+    const noteBadge = document.querySelector(".badge");
+    const noteTitle = document.getElementById("note-title");
+    const noteBody = document.getElementById("note-body");
+    const noteList = document.getElementById("note-list");
+
+    function renderNote(key) {
+      const n = notes[key];
+      noteBadge.textContent = n.badge;
+      noteTitle.textContent = n.title;
+      noteBody.textContent = n.body;
+      noteList.innerHTML = n.items.map((item) => `<li>${item}</li>`).join("");
+    }
+
+    function showTab(key) {
+      tabs.forEach((tab) => {
+        tab.setAttribute("aria-selected", String(tab.dataset.tab === key));
+      });
+      stories.forEach((story) => {
+        const on = story.dataset.tab === key;
+        story.classList.toggle("is-on", on);
+        story.hidden = !on && !document.body.classList.contains("is-grid");
+      });
+      renderNote(key);
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.body.classList.remove("is-grid");
+        gridBtn.setAttribute("aria-pressed", "false");
+        gridBtn.textContent = "Ver las 4";
+        stories.forEach((story) => {
+          story.hidden = story.dataset.tab !== tab.dataset.tab;
+        });
+        showTab(tab.dataset.tab);
+      });
+    });
+
+    gridBtn.addEventListener("click", () => {
+      const next = !document.body.classList.contains("is-grid");
+      document.body.classList.toggle("is-grid", next);
+      gridBtn.setAttribute("aria-pressed", String(next));
+      gridBtn.textContent = next ? "Una pestaña" : "Ver las 4";
+      stories.forEach((story) => { story.hidden = !next && !story.classList.contains("is-on"); });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const map = { "1": "corte", "2": "brigada", "3": "despues", "4": "recuerdo" };
+      if (map[event.key]) {
+        document.body.classList.remove("is-grid");
+        gridBtn.setAttribute("aria-pressed", "false");
+        gridBtn.textContent = "Ver las 4";
+        showTab(map[event.key]);
+      }
+    });
+  </script>
+</body>
+</html>

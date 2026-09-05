@@ -63,6 +63,12 @@ export default function HomePage() {
         <footer className="mt-10 text-center text-xs text-muted-fg">
           <p>Herramienta operativa · Guayaquil · Los vecinos reciben avisos por WhatsApp</p>
           <p className="mt-2">
+            <Link href="/aviso" className="font-bold text-accent hover:underline">
+              Ver avisos al ciudadano
+            </Link>
+            <span> · no requiere cuenta</span>
+          </p>
+          <p className="mt-2">
             <Link href="/registro" className="font-bold text-accent hover:underline">
               Crear cuenta
             </Link>

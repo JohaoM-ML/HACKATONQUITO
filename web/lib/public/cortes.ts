@@ -61,19 +61,21 @@ export function normalizarSector(s: string): string {
     .trim();
 }
 
-/** Texto WhatsApp por zona. No promete dengue ni fumigación. */
+/** Comunicado formal por zona. No promete dengue ni fumigación. */
 export function buildAvisoVecino(regla: "A" | "B", sector: string | null): string {
-  const s = sector?.trim() || "tu sector";
+  const s = sector?.trim() || "su sector";
   if (regla === "A") {
     return (
-      `Zona A (${s}): hay corte/cola de esta semana. Tapa tanques y vacía baldes o llantas. ` +
-      `Pueden pasar brigadistas a revisar recipientes. No es fumigación confirmada ni promesa de menos dengue.`
+      `AVISO — Sector ${s}. Se informa que esta semana hay corte de agua o solicitud de almacenamiento en su sector. ` +
+      `Recomendación sanitaria: cubra tanques y vacíe baldes o llantas. Personal de brigada podría inspeccionar recipientes. ` +
+      `Este comunicado no confirma fumigación ni reducción de dengue.`
     );
   }
   return (
-    `Zona B (${s}): ventana de cuidado 7–14 días post-corte (hipótesis, no validada en Ecuador). ` +
-    `Revisa recipientes en casa. B no agenda sola la ruta ni confirma fumigación. ` +
-    `Si ves brigada, colabora. Esto no evita enfermarte.`
+    `AVISO — Sector ${s}. Se recomienda revisar recipientes en el hogar ` +
+    `(ventana de 7 a 14 días posteriores al corte; hipótesis no validada en Ecuador). ` +
+    `Este aviso no programa visita de brigada ni confirma fumigación. Si hay inspección, se solicita su colaboración. ` +
+    `No garantiza evitar enfermedad.`
   );
 }
 
@@ -131,8 +133,9 @@ export function lookupZonaVecino(
     regla: null,
     sector: q,
     aviso_vecino:
-      `${q} no está hoy en cola A ni B. Igual: tapa tanques y vacía recipientes. ` +
-      `No prometemos visita, fumigación ni menos dengue.`,
+      `Sector ${q}: no figura hoy en la cola de avisos. ` +
+      `Recomendación general: cubra tanques y vacíe recipientes. ` +
+      `Este comunicado no promete visita, fumigación ni reducción de dengue.`,
   };
 }
 
@@ -224,8 +227,8 @@ export async function fetchCortesPublicos(
 /** Mensaje corto en español para WhatsApp (Twilio / n8n). */
 export function buildWhatsAppReply(data: CortesPublicPayload): string {
   const lineas: string[] = [
-    "ZANKU — info vecinos",
-    "Cortes Interagua y avisos A/B (no es diagnóstico ni promesa de menos dengue).",
+    "ZANKU — Aviso a la ciudadanía",
+    "Información de cortes de agua e indicaciones preventivas. No constituye diagnóstico ni promesa de reducción de dengue.",
     "",
   ];
 
@@ -262,7 +265,7 @@ export function buildWhatsAppReply(data: CortesPublicPayload): string {
   }
 
   lineas.push("");
-  lineas.push("Tapa tanques y vacía baldes/llantas. No garantiza prevenir dengue.");
+  lineas.push("Recomendación: cubra tanques y vacíe baldes o llantas. Este aviso no garantiza prevenir dengue.");
 
   return lineas.join("\n").slice(0, 1500);
 }

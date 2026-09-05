@@ -56,7 +56,7 @@ export function AvisosClient() {
             }
           ).cortes;
           const msg = encodeURIComponent(
-            `Hola, soy de la brigada antidengue. Hoy priorizamos ${nombre}: ${it.accion || "inspección de recipientes"}. ${it.justificacion || ""}`.slice(
+            `AVISO — Brigada antidengue. Se prioriza el sector ${nombre} para ${it.accion || "inspección de recipientes"}. ${it.justificacion || ""}`.slice(
               0,
               500
             )

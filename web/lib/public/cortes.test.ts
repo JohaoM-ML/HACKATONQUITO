@@ -16,19 +16,16 @@ function ok(name: string, fn: () => void) {
 
 ok("aviso A no promete fumigación ni dengue", () => {
   const t = buildAvisoVecino("A", "Guasmo");
-  if (!t.includes("Zona A")) throw new Error(t);
-  if (!/brigadistas| recipientes/i.test(t)) throw new Error(t);
-  if (/menos dengue|evitas|fumigación confirmada/i.test(t) && !t.includes("No es fumigación")) {
-    throw new Error(t);
-  }
-  if (!t.includes("No es fumigación confirmada")) throw new Error(t);
+  if (!t.includes("Sector Guasmo")) throw new Error(t);
+  if (!/brigada|recipientes/i.test(t)) throw new Error(t);
+  if (!t.includes("no confirma fumigación")) throw new Error(t);
 });
 
 ok("aviso B es hipótesis y no agenda ruta", () => {
   const t = buildAvisoVecino("B", "Mapasingue");
-  if (!t.includes("Zona B")) throw new Error(t);
+  if (!t.includes("Sector Mapasingue")) throw new Error(t);
   if (!t.includes("hipótesis")) throw new Error(t);
-  if (!t.includes("no agenda sola la ruta")) throw new Error(t);
+  if (!t.includes("no programa visita")) throw new Error(t);
   if (/vamos a fumigar|se reduce el dengue/i.test(t)) throw new Error(t);
 });
 

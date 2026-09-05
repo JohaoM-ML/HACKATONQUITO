@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       message = buildWhatsAppReply(data);
     } else {
       message =
-        "ZANKU — escribe *cortes*, *agua* o *info* para ver anuncios de cortes Interagua y tip de tanques. No prometemos reducción de dengue.";
+        "ZANKU — Aviso a la ciudadanía. Escriba *cortes*, *agua* o *info* para consultar anuncios de cortes Interagua e indicaciones preventivas. Este comunicado no promete reducción de dengue.";
     }
 
     return new NextResponse(twiml(message), {
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     const errMsg =
-      "ZANKU: no pude consultar cortes ahora. Intenta más tarde. (Fallback sin n8n)";
+      "ZANKU: no fue posible consultar los cortes en este momento. Intente más tarde.";
     console.error("[whatsapp fallback]", e instanceof Error ? e.message : e);
     return new NextResponse(twiml(errMsg), {
       status: 200,
